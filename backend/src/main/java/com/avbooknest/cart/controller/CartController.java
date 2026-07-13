@@ -18,21 +18,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
-    private final CartService cartService;
-    public CartController(CartService cartService) { this.cartService = cartService; }
-    @GetMapping public CartResponse get(Authentication authentication) { return cartService.get(authentication.getName()); }
-    @PostMapping("/items")
-    public ResponseEntity<CartResponse> addItem(@Valid @RequestBody AddCartItemRequest request, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addItem(request.bookId(), authentication.getName()));
-    }
-    @DeleteMapping("/items/{bookId}")
-    public ResponseEntity<Void> removeItem(@PathVariable Long bookId, Authentication authentication) {
-        cartService.removeItem(bookId, authentication.getName());
-        return ResponseEntity.noContent().build();
-    }
-    @DeleteMapping
-    public ResponseEntity<Void> clear(Authentication authentication) {
-        cartService.clear(authentication.getName());
-        return ResponseEntity.noContent().build();
-    }
+  private final CartService cartService;
+
+  public CartController(CartService cartService) {
+    this.cartService = cartService;
+  }
+
+  @GetMapping
+  public CartResponse get(Authentication authentication) {
+    return cartService.get(authentication.getName());
+  }
+
+  @PostMapping("/items")
+  public ResponseEntity<CartResponse> addItem(
+      @Valid @RequestBody AddCartItemRequest request, Authentication authentication) {
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(cartService.addItem(request.bookId(), authentication.getName()));
+  }
+
+  @DeleteMapping("/items/{bookId}")
+  public ResponseEntity<Void> removeItem(@PathVariable Long bookId, Authentication authentication) {
+    cartService.removeItem(bookId, authentication.getName());
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping
+  public ResponseEntity<Void> clear(Authentication authentication) {
+    cartService.clear(authentication.getName());
+    return ResponseEntity.noContent().build();
+  }
 }

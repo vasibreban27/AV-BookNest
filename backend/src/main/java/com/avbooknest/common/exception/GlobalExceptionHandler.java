@@ -34,6 +34,16 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, Map.of());
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(NotFoundException exception, HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenException exception, HttpServletRequest request) {
+        return response(HttpStatus.FORBIDDEN, exception.getMessage(), request, Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception exception, HttpServletRequest request) {
         return response(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request, Map.of());

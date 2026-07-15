@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import './base/tokens.css';
+@import './base/global.css';
+@import './components/common/logo.css';
+@import './components/auth/auth-layout.css';
+@import './components/auth/auth-form.css';
+@import './components/feedback/loading.css';
+@import './pages/auth/auth-pages.css';
+@import './pages/account/account-page.css';

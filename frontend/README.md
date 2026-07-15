@@ -1,75 +1,64 @@
-# React + TypeScript + Vite
+# BookNest frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfață React + TypeScript pentru aplicația BookNest. Fluxul de autentificare este conectat la API-ul Spring Boot din folderul `backend`.
 
-Currently, two official plugins are available:
+## Rulare locală
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Backend-ul rulează implicit pe portul `8085`, iar Vite pe `5173`:
 
-## React Compiler
+```bash
+# din backend
+./mvnw spring-boot:run
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+# din frontend, într-un alt terminal
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+În development, cererile către `/api` sunt redirecționate de Vite către `http://localhost:8085`. Pentru un backend găzduit separat, copiază `.env.example` ca `.env` și schimbă `VITE_API_URL`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Fișierul local `frontend/.env` este ignorat de Git. Variabilele frontend care încep cu `VITE_` sunt incluse în bundle-ul trimis browserului și nu trebuie să conțină parole, tokenuri sau alte secrete. Variabilele backend rămân configurate separat în mediul de rulare IntelliJ.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Rute
 
+- `/login` — autentificare;
+- `/register` — creare cont;
+- `/account` — rută protejată și confirmarea sesiunii active.
+
+Sesiunea folosește access token-ul primit de backend și reînnoiește automat token-urile prin `/api/auth/refresh` atunci când o cerere protejată răspunde cu `401`.
+
+## Structură
+
+```text
+src/
+├── api/                    # infrastructură HTTP comună
+├── components/
+│   ├── auth/               # componente reutilizabile pentru formularele auth
+│   └── common/             # logo și iconuri comune
+├── features/
+│   └── auth/
+│       ├── api/            # apelurile către endpoint-urile auth
+│       ├── context/        # provider-ul sesiunii
+│       ├── hooks/          # accesul la contextul auth
+│       ├── schemas/        # validările Zod
+│       ├── storage/        # persistența tokenurilor
+│       ├── types/          # toate tipurile feature-ului
+│       └── utils/          # maparea erorilor API/formular
+├── pages/
+│   ├── account/
+│   └── auth/
+│       ├── login/
+│       └── register/
+├── routes/                 # configurarea și protecția rutelor
+└── styles/
+    ├── base/
+    ├── components/
+    └── pages/
+```
+
+## Verificare
+
+```bash
+npm run lint
+npm run build
 ```

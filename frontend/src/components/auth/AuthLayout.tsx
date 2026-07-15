@@ -28,6 +28,9 @@ export function AuthLayout() {
               </li>
             ))}
           </ul>
+          <p className="auth-story__quote">
+            „O cameră fără cărți este ca un trup fără suflet.”
+          </p>
         </div>
 
         <div className="book-scene" aria-hidden="true">
@@ -38,7 +41,6 @@ export function AuthLayout() {
           <div className="book book--four" />
           <div className="book-scene__plant"><i /><i /><i /></div>
         </div>
-        <p className="auth-story__quote">„O cameră fără cărți este ca un trup fără suflet.”</p>
       </section>
 
       <section className="auth-panel">

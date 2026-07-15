@@ -89,11 +89,13 @@
 .auth-story__quote {
   position: relative;
   z-index: 2;
-  margin: 0;
+  max-width: 360px;
+  margin: 22px 0 0;
   color: #667872;
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 13px;
   font-style: italic;
+  line-height: 1.55;
 }
 
 .book-scene {

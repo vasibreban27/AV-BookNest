@@ -28,7 +28,7 @@ export function LoginPage() {
   })
 
   const destination =
-    (location.state as { from?: string } | null)?.from ?? '/account'
+    (location.state as { from?: string } | null)?.from ?? '/'
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null)

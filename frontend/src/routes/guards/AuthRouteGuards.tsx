@@ -27,6 +27,6 @@ export function PublicOnlyRoute() {
   const { isAuthenticated, isInitializing } = useAuth()
 
   if (isInitializing) return <LoadingScreen />
-  if (isAuthenticated) return <Navigate to="/account" replace />
+  if (isAuthenticated) return <Navigate to="/" replace />
   return <Outlet />
 }

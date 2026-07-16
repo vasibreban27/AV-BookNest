@@ -42,7 +42,7 @@ export function RegisterPage() {
         email: values.email,
         password: values.password,
       })
-      navigate('/account', { replace: true })
+      navigate('/', { replace: true })
     } catch (error) {
       applyApiFieldErrors(error, setError)
       setSubmitError(getFormErrorMessage(error))

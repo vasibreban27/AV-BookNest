@@ -1,0 +1,95 @@
+.catalog-search {
+  /* Search and category controls are reusable catalog components. */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  width: min(100%, 660px);
+  min-height: 64px;
+  padding: 7px 7px 7px 20px;
+  border: 1px solid rgba(31, 92, 78, .18);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 15px 40px rgba(31, 65, 57, .1);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+
+.catalog-search:focus-within {
+  border-color: var(--forest);
+  box-shadow: 0 18px 45px rgba(31, 92, 78, .16), 0 0 0 4px rgba(31, 92, 78, .08);
+  transform: translateY(-1px);
+}
+
+.catalog-search__icon {
+  width: 22px;
+  height: 22px;
+  color: var(--forest);
+}
+
+.catalog-search input {
+  min-width: 0;
+  height: 48px;
+  padding: 0 15px;
+  outline: 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 15px;
+}
+
+.catalog-search input::placeholder { color: #8a9693; }
+.catalog-search input::-webkit-search-cancel-button { cursor: pointer; }
+
+.catalog-search button {
+  height: 49px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 12px;
+  color: white;
+  background: var(--forest);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background .18s, transform .18s;
+}
+
+.catalog-search button:hover {
+  background: var(--forest-dark);
+  transform: translateY(-1px);
+}
+
+.category-filter {
+  display: flex;
+  overflow-x: auto;
+  gap: 9px;
+  margin: 28px 0 34px;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.category-filter button {
+  flex: 0 0 auto;
+  min-height: 39px;
+  padding: 0 17px;
+  border: 1px solid var(--home-line);
+  border-radius: 30px;
+  color: #5e6c69;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: color .18s, background .18s, border-color .18s;
+}
+
+.category-filter button:hover,
+.category-filter .category-filter__item--active {
+  border-color: var(--forest);
+  color: white;
+  background: var(--forest);
+}
+
+@media (max-width: 560px) {
+  .catalog-search { min-height: 58px; padding: 5px 5px 5px 16px; border-radius: 14px; }
+  .catalog-search input { height: 46px; padding-inline: 11px; font-size: 13px; }
+  .catalog-search button { width: 46px; height: 46px; overflow: hidden; padding: 0; color: transparent; font-size: 0; }
+  .catalog-search button::after { content: '→'; color: white; font-size: 19px; }
+}

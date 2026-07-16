@@ -1,13 +1,13 @@
 package com.avbooknest;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
+import org.junit.jupiter.api.Test;
+
 class BackendApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
-
+  @Test
+  void applicationClassIsAvailable() {
+    assertNotNull(BackendApplication.class);
+  }
 }

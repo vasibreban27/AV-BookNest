@@ -1,0 +1,13 @@
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.loading-screen .spinner {
+  border-color: rgba(31, 92, 78, .2);
+  border-top-color: var(--forest);
+}

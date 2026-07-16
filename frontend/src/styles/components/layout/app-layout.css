@@ -1,0 +1,8 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--home-surface);
+}
+
+.app-layout > main { flex: 1; }

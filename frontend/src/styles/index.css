@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import './base/tokens.css';
+@import './base/global.css';
+@import './components/common/logo.css';
+@import './components/auth/auth-layout.css';
+@import './components/auth/auth-form.css';
+@import './components/feedback/loading.css';
+@import './components/layout/app-layout.css';
+@import './components/navbar/navbar.css';
+@import './components/catalog/catalog-search.css';
+@import './components/catalog/book-card.css';
+@import './components/interactive-book/interactive-book.css';
+@import './components/footer/footer.css';
+@import './pages/auth/auth-pages.css';
+@import './pages/account/account-page.css';
+@import './pages/home/home-page.css';

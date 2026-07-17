@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AddToCartButton } from '../cart/AddToCartButton'
 import { BookOutlineIcon } from '../common/icons/AppIcons'
 import {
   formatBookCondition,
@@ -40,6 +41,7 @@ export function BookCard({ book }: BookCardProps) {
           <strong>{formatBookPrice(book.price)}</strong>
           <small>de la {book.sellerName}</small>
         </div>
+        <AddToCartButton bookId={book.id} sellerId={book.sellerId} />
       </div>
     </article>
   )

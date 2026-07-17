@@ -4,6 +4,7 @@ import { AppLayout } from '../layout/AppLayout'
 import { AccountPage } from '../pages/account/AccountPage'
 import { LoginPage } from '../pages/auth/login/LoginPage'
 import { RegisterPage } from '../pages/auth/register/RegisterPage'
+import { CartPage } from '../pages/cart/CartPage'
 import { HomePage } from '../pages/home/HomePage'
 import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 
@@ -22,6 +23,7 @@ export function AppRoutes() {
           <Route path="/" element={<HomePage />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/cart" element={<CartPage />} />
         </Route>
       </Route>
 

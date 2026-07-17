@@ -9,8 +9,10 @@
 @import './components/navbar/navbar.css';
 @import './components/catalog/catalog-search.css';
 @import './components/catalog/book-card.css';
+@import './components/cart/cart-components.css';
 @import './components/interactive-book/interactive-book.css';
 @import './components/footer/footer.css';
 @import './pages/auth/auth-pages.css';
 @import './pages/account/account-page.css';
 @import './pages/home/home-page.css';
+@import './pages/cart/cart-page.css';

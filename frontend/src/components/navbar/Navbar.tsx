@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { NavbarCart } from '../cart/NavbarCart'
 import { CloseIcon, LogoutIcon, MenuIcon } from '../common/icons/AppIcons'
 import { Logo } from '../common/Logo'
 
@@ -58,6 +59,7 @@ export function Navbar() {
           </div>
 
           <div className="app-navbar__account">
+            <NavbarCart onNavigate={closeMenu} />
             <Link className="app-navbar__profile" to="/account" onClick={closeMenu}>
               <span>{initials}</span>
               <span>

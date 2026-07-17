@@ -1,57 +1,5 @@
-.navbar-cart { position: relative; }
-
-.navbar-cart__trigger {
-  position: relative;
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid var(--home-line);
-  border-radius: 12px;
-  color: var(--forest);
-  background: rgba(255, 255, 255, .75);
-  text-decoration: none;
-  transition: border-color .2s, background .2s, transform .2s;
-}
-
-.navbar-cart__trigger:hover { border-color: rgba(31, 92, 78, .35); background: white; transform: translateY(-1px); }
-.navbar-cart__trigger svg { width: 21px; height: 21px; }
-.navbar-cart__badge { position: absolute; top: -7px; right: -7px; display: grid; min-width: 19px; height: 19px; padding: 0 4px; place-items: center; border: 2px solid #fbfaf5; border-radius: 20px; color: white; background: var(--terracotta); font-size: 9px; font-weight: 800; }
-
-.navbar-cart__preview {
-  position: absolute;
-  top: calc(100% + 15px);
-  right: -12px;
-  z-index: 60;
-  width: 310px;
-  padding: 18px;
-  border: 1px solid var(--home-line);
-  border-radius: 17px;
-  background: rgba(255, 253, 248, .98);
-  box-shadow: 0 24px 55px rgba(23, 43, 42, .17);
-  opacity: 0;
-  transform: translateY(-7px) scale(.98);
-  transform-origin: top right;
-  transition: opacity .2s, transform .2s, visibility .2s;
-  visibility: hidden;
-}
-
-.navbar-cart__preview::before { content: ''; position: absolute; right: 0; bottom: 100%; width: 100%; height: 16px; }
-.navbar-cart:hover .navbar-cart__preview,
-.navbar-cart:focus-within .navbar-cart__preview { opacity: 1; transform: translateY(0) scale(1); visibility: visible; }
-.navbar-cart__heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--home-line); }
-.navbar-cart__heading strong { font-family: 'Playfair Display', Georgia, serif; font-size: 17px; }
-.navbar-cart__heading span { color: var(--muted); font-size: 10px; }
-.navbar-cart__preview > p { margin: 18px 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
-.navbar-cart__preview ul { display: grid; gap: 0; margin: 8px 0 0; padding: 0; list-style: none; }
-.navbar-cart__preview li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid rgba(23,43,42,.07); }
-.navbar-cart__preview li span { overflow: hidden; color: #465954; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.navbar-cart__preview li strong { flex: 0 0 auto; color: var(--forest); font-size: 10px; }
-.navbar-cart__preview > small { display: block; margin-top: 8px; color: var(--muted); font-size: 9px; }
 .navbar-cart__total { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--home-line); font-size: 11px; }
 .navbar-cart__total strong { color: var(--forest); font-size: 15px; }
-.navbar-cart__view { display: grid; min-height: 39px; margin-top: 14px; place-items: center; border-radius: 10px; color: white; background: var(--forest); font-size: 11px; font-weight: 700; text-decoration: none; }
-.navbar-cart__view:hover { background: var(--forest-dark); }
 
 .add-to-cart { margin-top: 13px; }
 .add-to-cart__button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 40px; border: 1px solid rgba(31,92,78,.2); border-radius: 10px; color: var(--forest); background: #edf3ee; cursor: pointer; font-size: 11px; font-weight: 700; transition: color .18s, background .18s, border-color .18s, transform .18s; }
@@ -99,11 +47,6 @@
 .cart-summary__clear button { display: flex; align-items: center; gap: 5px; padding: 7px; border: 0; color: #95675d; background: transparent; cursor: pointer; font-size: 9px; }
 .cart-summary__clear button:hover { color: #7e3f32; }
 .cart-summary__clear svg { width: 13px; height: 13px; }
-
-@media (max-width: 820px) {
-  .navbar-cart__preview { display: none; }
-  .app-navbar__account .navbar-cart { margin-left: auto; }
-}
 
 @media (max-width: 620px) {
   .cart-item { grid-template-columns: 82px minmax(0, 1fr); gap: 14px; }

@@ -12,14 +12,14 @@ export function NavbarCart({ onNavigate }: NavbarCartProps) {
     : `Coșul meu, ${itemCount} ${itemCount === 1 ? 'carte' : 'cărți'}`
 
   return (
-    <div className="navbar-cart">
-      <Link className="navbar-cart__trigger" to="/cart" onClick={onNavigate} aria-label={accessibleLabel}>
+    <div className="navbar-collection navbar-cart">
+      <Link className="navbar-collection__trigger" to="/cart" onClick={onNavigate} aria-label={accessibleLabel}>
         <CartIcon />
-        {itemCount > 0 && <span className="navbar-cart__badge">{itemCount > 9 ? '9+' : itemCount}</span>}
+        {itemCount > 0 && <span className="navbar-collection__badge">{itemCount > 9 ? '9+' : itemCount}</span>}
       </Link>
 
-      <div className="navbar-cart__preview">
-        <div className="navbar-cart__heading">
+      <div className="navbar-collection__preview">
+        <div className="navbar-collection__heading">
           <strong>Coșul tău</strong>
           <span>{itemCount} {itemCount === 1 ? 'carte' : 'cărți'}</span>
         </div>
@@ -47,7 +47,7 @@ export function NavbarCart({ onNavigate }: NavbarCartProps) {
           </>
         )}
 
-        <Link className="navbar-cart__view" to="/cart" onClick={onNavigate}>Vezi coșul</Link>
+        <Link className="navbar-collection__view" to="/cart" onClick={onNavigate}>Vezi coșul</Link>
       </div>
     </div>
   )

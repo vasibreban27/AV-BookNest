@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AddToCartButton } from '../cart/AddToCartButton'
 import { BookOutlineIcon } from '../common/icons/AppIcons'
+import { FavoriteButton } from '../wishlist/FavoriteButton'
 import {
   formatBookCondition,
   formatBookPrice,
@@ -15,6 +16,7 @@ export function BookCard({ book }: BookCardProps) {
   return (
     <article className="book-card">
       <div className={`book-card__cover book-card__cover--${getBookCoverTone(book.id)}`}>
+        <FavoriteButton bookId={book.id} />
         {showCoverImage ? (
           <img
             src={book.coverImageUrl ?? ''}

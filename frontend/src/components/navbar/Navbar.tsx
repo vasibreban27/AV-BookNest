@@ -4,6 +4,7 @@ import { useAuth } from '../../features/auth/hooks/useAuth'
 import { NavbarCart } from '../cart/NavbarCart'
 import { CloseIcon, LogoutIcon, MenuIcon } from '../common/icons/AppIcons'
 import { Logo } from '../common/Logo'
+import { NavbarWishlist } from '../wishlist/NavbarWishlist'
 
 const navigationItems = [
   { label: 'Acasă', hash: '' },
@@ -59,6 +60,7 @@ export function Navbar() {
           </div>
 
           <div className="app-navbar__account">
+            <NavbarWishlist onNavigate={closeMenu} />
             <NavbarCart onNavigate={closeMenu} />
             <Link className="app-navbar__profile" to="/account" onClick={closeMenu}>
               <span>{initials}</span>

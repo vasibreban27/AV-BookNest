@@ -34,9 +34,10 @@ export function CartSummary({ itemCount, total, isClearing, onClear }: CartSumma
         <strong>{formatBookPrice(total)}</strong>
       </div>
 
-      <Link className="cart-summary__continue" to={{ pathname: '/', hash: '#catalog' }}>
-        Continuă cumpărăturile <ArrowUpRightIcon />
+      <Link className="cart-summary__checkout" to="/checkout">
+        Continuă către checkout <ArrowUpRightIcon />
       </Link>
+      <Link className="cart-summary__continue" to={{ pathname: '/', hash: '#catalog' }}>Continuă cumpărăturile</Link>
 
       <div className="cart-summary__clear">
         <button type="button" onClick={handleClear} disabled={isClearing}>

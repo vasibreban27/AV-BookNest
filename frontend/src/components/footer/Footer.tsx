@@ -20,6 +20,7 @@ export function Footer() {
           <div>
             <strong>BookNest</strong>
             <Link to="/account">Contul meu</Link>
+            <Link to="/orders">Comenzile mele</Link>
             <Link to="/wishlist">Favorite</Link>
             <span>Comunitate</span>
           </div>

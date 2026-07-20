@@ -3,7 +3,7 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import { cartApi } from '../api/cartApi'
 import type { Cart } from '../types/cart.types'
 
-const cartQueryKey = (userId: number | undefined) => ['cart', 'current', userId] as const
+export const cartQueryKey = (userId: number | undefined) => ['cart', 'current', userId] as const
 
 export function useCart() {
   const { user } = useAuth()

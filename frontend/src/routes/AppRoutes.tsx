@@ -5,7 +5,10 @@ import { AccountPage } from '../pages/account/AccountPage'
 import { LoginPage } from '../pages/auth/login/LoginPage'
 import { RegisterPage } from '../pages/auth/register/RegisterPage'
 import { CartPage } from '../pages/cart/CartPage'
+import { CheckoutPage } from '../pages/checkout/CheckoutPage'
 import { HomePage } from '../pages/home/HomePage'
+import { OrderDetailsPage } from '../pages/orders/details/OrderDetailsPage'
+import { OrdersPage } from '../pages/orders/OrdersPage'
 import { WishlistPage } from '../pages/wishlist/WishlistPage'
 import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 
@@ -26,6 +29,9 @@ export function AppRoutes() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
         </Route>
       </Route>
 

@@ -7,9 +7,10 @@ import { Logo } from '../common/Logo'
 import { NavbarWishlist } from '../wishlist/NavbarWishlist'
 
 const navigationItems = [
-  { label: 'Acasă', hash: '' },
-  { label: 'Recomandări', hash: '#recomandari' },
-  { label: 'Descoperă', hash: '#catalog' },
+  { label: 'Acasă', to: '/' },
+  { label: 'Recomandări', to: '/#recomandari' },
+  { label: 'Descoperă', to: '/#catalog' },
+  { label: 'Comenzi', to: '/orders' },
 ] as const
 
 export function Navbar() {
@@ -50,7 +51,7 @@ export function Navbar() {
           <div className="app-navbar__links">
             {navigationItems.map((item) => (
               <Link
-                to={{ pathname: '/', hash: item.hash }}
+                to={item.to}
                 onClick={closeMenu}
                 key={item.label}
               >

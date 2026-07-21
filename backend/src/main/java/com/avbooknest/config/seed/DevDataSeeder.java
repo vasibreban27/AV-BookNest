@@ -178,7 +178,7 @@ public class DevDataSeeder implements ApplicationRunner {
             UPDATE books SET
                 title = ?, author = ?, description = ?, price = ?, book_condition = ?,
                 language = ?, publisher = ?, published_year = ?, cover_image_url = ?,
-                seller_id = ?, category_id = ?, status = ?
+                cover_image_public_id = NULL, seller_id = ?, category_id = ?, status = ?
             WHERE id = ?
             """,
             book.title(),

@@ -1,5 +1,31 @@
 # BookNest backend
 
+## Configurare Cloudinary
+
+Upload-ul coperților este făcut server-side, astfel încât secretul Cloudinary nu ajunge în
+frontend. Adaugă următoarele variabile în configurația de rulare:
+
+```text
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+```
+
+Opțional, directorul poate fi schimbat cu `CLOUDINARY_FOLDER`; valoarea implicită este
+`booknest/book-covers`. Sunt acceptate imagini JPEG, PNG și WebP de maximum 5 MB.
+
+Fluxul API pentru o listare este:
+
+1. `POST /api/books` cu metadatele JSON ale cărții;
+2. `POST /api/books/{bookId}/cover` ca `multipart/form-data`, câmpul `file`;
+3. `PUT /api/books/{bookId}` pentru modificarea metadatelor;
+4. `DELETE /api/books/{bookId}/cover` pentru eliminarea coperții;
+5. `PATCH /api/books/{bookId}/archive` și `PATCH /api/books/{bookId}/publish` pentru
+   administrarea vizibilității.
+
+Statusul și URL-ul coperții nu sunt acceptate în request-ul de creare/modificare. Backend-ul
+setează statusul inițial `AVAILABLE`, iar URL-ul este preluat exclusiv din răspunsul Cloudinary.
+
 ## Date demo pentru dezvoltare
 
 Datele de test sunt izolate în profilul Spring `dev`; profilurile obișnuite și producția nu sunt populate automat.

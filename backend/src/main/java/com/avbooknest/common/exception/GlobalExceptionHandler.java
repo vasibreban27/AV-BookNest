@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,6 +29,25 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiError> handleConflict(
       ConflictException exception, HttpServletRequest request) {
     return response(HttpStatus.CONFLICT, exception.getMessage(), request, Map.of());
+  }
+
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ApiError> handleBadRequest(
+      BadRequestException exception, HttpServletRequest request) {
+    return response(HttpStatus.BAD_REQUEST, exception.getMessage(), request, Map.of());
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<ApiError> handleUploadTooLarge(
+      MaxUploadSizeExceededException exception, HttpServletRequest request) {
+    return response(
+        HttpStatus.PAYLOAD_TOO_LARGE, "The uploaded cover image is too large", request, Map.of());
+  }
+
+  @ExceptionHandler(ImageStorageException.class)
+  public ResponseEntity<ApiError> handleImageStorage(
+      ImageStorageException exception, HttpServletRequest request) {
+    return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request, Map.of());
   }
 
   @ExceptionHandler(UnauthorizedException.class)

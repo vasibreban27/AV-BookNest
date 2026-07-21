@@ -53,6 +53,9 @@ public class Book {
   @Column(name = "cover_image_url", length = 2048)
   private String coverImageUrl;
 
+  @Column(name = "cover_image_public_id", length = 255)
+  private String coverImagePublicId;
+
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "seller_id", nullable = false)
   private User seller;
@@ -85,6 +88,7 @@ public class Book {
     publisher = builder.publisher;
     publishedYear = builder.publishedYear;
     coverImageUrl = builder.coverImageUrl;
+    coverImagePublicId = builder.coverImagePublicId;
     seller = builder.seller;
     category = builder.category;
     status = builder.status;
@@ -136,6 +140,10 @@ public class Book {
     return coverImageUrl;
   }
 
+  public String getCoverImagePublicId() {
+    return coverImagePublicId;
+  }
+
   public User getSeller() {
     return seller;
   }
@@ -156,7 +164,7 @@ public class Book {
     return updatedAt;
   }
 
-  public void update(
+  public void updateDetails(
       String newTitle,
       String newAuthor,
       String newIsbn,
@@ -166,9 +174,7 @@ public class Book {
       String newLanguage,
       String newPublisher,
       Short newPublishedYear,
-      String newCoverImageUrl,
-      Category newCategory,
-      BookStatus newStatus) {
+      Category newCategory) {
     title = newTitle;
     author = newAuthor;
     isbn = newIsbn;
@@ -178,9 +184,29 @@ public class Book {
     language = newLanguage;
     publisher = newPublisher;
     publishedYear = newPublishedYear;
-    coverImageUrl = newCoverImageUrl;
     category = newCategory;
-    status = newStatus;
+    updatedAt = Instant.now();
+  }
+
+  public void updateCover(String newCoverImageUrl, String newCoverImagePublicId) {
+    coverImageUrl = newCoverImageUrl;
+    coverImagePublicId = newCoverImagePublicId;
+    updatedAt = Instant.now();
+  }
+
+  public void removeCover() {
+    coverImageUrl = null;
+    coverImagePublicId = null;
+    updatedAt = Instant.now();
+  }
+
+  public void archive() {
+    status = BookStatus.ARCHIVED;
+    updatedAt = Instant.now();
+  }
+
+  public void publish() {
+    status = BookStatus.AVAILABLE;
     updatedAt = Instant.now();
   }
 
@@ -208,6 +234,7 @@ public class Book {
     private String publisher;
     private Short publishedYear;
     private String coverImageUrl;
+    private String coverImagePublicId;
     private User seller;
     private Category category;
     private BookStatus status;
@@ -266,6 +293,11 @@ public class Book {
 
     public Builder coverImageUrl(String value) {
       coverImageUrl = value;
+      return this;
+    }
+
+    public Builder coverImagePublicId(String value) {
+      coverImagePublicId = value;
       return this;
     }
 

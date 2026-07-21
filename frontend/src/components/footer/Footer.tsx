@@ -21,6 +21,8 @@ export function Footer() {
             <strong>BookNest</strong>
             <Link to="/account">Contul meu</Link>
             <Link to="/orders">Comenzile mele</Link>
+            <Link to="/my-books">Cărțile mele</Link>
+            <Link to="/sell">Vinde o carte</Link>
             <Link to="/wishlist">Favorite</Link>
             <span>Comunitate</span>
           </div>

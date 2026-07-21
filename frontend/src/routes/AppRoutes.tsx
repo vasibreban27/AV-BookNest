@@ -9,6 +9,9 @@ import { CheckoutPage } from '../pages/checkout/CheckoutPage'
 import { HomePage } from '../pages/home/HomePage'
 import { OrderDetailsPage } from '../pages/orders/details/OrderDetailsPage'
 import { OrdersPage } from '../pages/orders/OrdersPage'
+import { CreateListingPage } from '../pages/listings/CreateListingPage'
+import { EditListingPage } from '../pages/listings/EditListingPage'
+import { MyListingsPage } from '../pages/listings/MyListingsPage'
 import { WishlistPage } from '../pages/wishlist/WishlistPage'
 import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 
@@ -32,6 +35,9 @@ export function AppRoutes() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
+          <Route path="/sell" element={<CreateListingPage />} />
+          <Route path="/my-books" element={<MyListingsPage />} />
+          <Route path="/my-books/:bookId/edit" element={<EditListingPage />} />
         </Route>
       </Route>
 

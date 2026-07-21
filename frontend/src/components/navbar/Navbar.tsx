@@ -8,8 +8,9 @@ import { NavbarWishlist } from '../wishlist/NavbarWishlist'
 
 const navigationItems = [
   { label: 'Acasă', to: '/' },
-  { label: 'Recomandări', to: '/#recomandari' },
   { label: 'Descoperă', to: '/#catalog' },
+  { label: 'Vinde', to: '/sell' },
+  { label: 'Cărțile mele', to: '/my-books' },
   { label: 'Comenzi', to: '/orders' },
 ] as const
 

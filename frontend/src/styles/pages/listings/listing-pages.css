@@ -1,0 +1,29 @@
+.listings-page,
+.listing-editor-page { color: var(--ink); background: #f3f5ef; }
+.listings-page__container { width: min(1080px, calc(100% - 48px)); margin: 0 auto; }
+.listings-hero { overflow: hidden; border-bottom: 1px solid var(--home-line); background: linear-gradient(112deg, #e9f0e9, #fbf5e9 68%, #e9d7c6); }
+.listings-hero__inner { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 245px; padding-block: 42px; }
+.listings-hero__inner::after { content: ''; position: absolute; top: -240px; right: -90px; width: 450px; height: 450px; border: 1px solid rgba(31,92,78,.12); border-radius: 50%; box-shadow: 0 0 0 65px rgba(255,255,255,.14), 0 0 0 130px rgba(255,255,255,.08); }
+.listings-hero h1 { position: relative; z-index: 2; margin: 10px 0 8px; font-family: 'Playfair Display', Georgia, serif; font-size: clamp(42px, 6vw, 64px); line-height: 1; }
+.listings-hero p { position: relative; z-index: 2; margin: 0; color: #667872; font-size: 12px; }
+.listings-hero__icon { position: relative; z-index: 2; display: grid; width: 88px; height: 88px; margin-right: 65px; place-items: center; border: 1px solid rgba(31,92,78,.16); border-radius: 27px; color: var(--forest); background: rgba(255,255,255,.66); box-shadow: 0 22px 45px rgba(31,65,57,.1); transform: rotate(5deg); }
+.listings-hero__icon svg { width: 43px; height: 43px; }
+.listings-content { min-height: 540px; padding: 58px 0 90px; }
+.listings-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 28px; }
+.listings-heading h2 { margin: 8px 0 0; font-family: 'Playfair Display', Georgia, serif; font-size: 34px; }
+.listings-heading > a { display: grid; min-height: 44px; padding: 0 18px; place-items: center; border-radius: 11px; color: white; background: var(--forest); font-size: 10px; font-weight: 700; text-decoration: none; }
+.listings-success { margin-bottom: 22px; padding: 14px 16px; border: 1px solid #c8ddcf; border-radius: 12px; color: #386454; background: #eff8f1; font-size: 10px; font-weight: 700; }
+.listings-action-error { margin-bottom: 18px; }
+.listing-editor-content { min-height: 720px; padding: 45px 0 90px; }
+.listing-editor__back { display: inline-flex; margin-bottom: 24px; color: #657772; font-size: 10px; font-weight: 700; text-decoration: none; }
+.listing-editor__back:hover { color: var(--forest); }
+
+@media (max-width: 680px) {
+  .listings-page__container { width: min(100% - 28px, 1080px); }
+  .listings-hero__inner { min-height: 215px; }
+  .listings-hero__icon { width: 66px; height: 66px; margin-right: 5px; border-radius: 20px; }
+  .listings-hero__icon svg { width: 31px; height: 31px; }
+  .listings-content { padding: 42px 0 70px; }
+  .listings-heading { align-items: flex-start; flex-direction: column; }
+  .listing-editor-content { padding: 30px 0 70px; }
+}

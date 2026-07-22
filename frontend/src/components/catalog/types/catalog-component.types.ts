@@ -5,6 +5,10 @@ export type BookCardProps = {
   book: Book
 }
 
+export type BookDetailsProps = {
+  book: Book
+}
+
 export type CatalogSearchProps = {
   inputId: string
   value: string

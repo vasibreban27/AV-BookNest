@@ -5,6 +5,7 @@ import { AccountPage } from '../pages/account/AccountPage'
 import { LoginPage } from '../pages/auth/login/LoginPage'
 import { RegisterPage } from '../pages/auth/register/RegisterPage'
 import { CartPage } from '../pages/cart/CartPage'
+import { BookDetailsPage } from '../pages/books/details/BookDetailsPage'
 import { CheckoutPage } from '../pages/checkout/CheckoutPage'
 import { HomePage } from '../pages/home/HomePage'
 import { OrderDetailsPage } from '../pages/orders/details/OrderDetailsPage'
@@ -31,6 +32,7 @@ export function AppRoutes() {
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/books/:bookId" element={<BookDetailsPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />

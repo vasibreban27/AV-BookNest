@@ -15,6 +15,10 @@ export function NavbarCart({ onNavigate }: NavbarCartProps) {
     <div className="navbar-collection navbar-cart">
       <Link className="navbar-collection__trigger" to="/cart" onClick={onNavigate} aria-label={accessibleLabel}>
         <CartIcon />
+        <span className="navbar-collection__trigger-label">
+          <strong>Coș</strong>
+          <small>{itemCount} {itemCount === 1 ? 'carte' : 'cărți'}</small>
+        </span>
         {itemCount > 0 && <span className="navbar-collection__badge">{itemCount > 9 ? '9+' : itemCount}</span>}
       </Link>
 

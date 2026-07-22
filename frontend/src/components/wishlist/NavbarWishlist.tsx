@@ -14,6 +14,10 @@ export function NavbarWishlist({ onNavigate }: NavbarWishlistProps) {
     <div className="navbar-collection navbar-wishlist">
       <Link className="navbar-collection__trigger" to="/wishlist" onClick={onNavigate} aria-label={accessibleLabel}>
         <HeartIcon />
+        <span className="navbar-collection__trigger-label">
+          <strong>Favorite</strong>
+          <small>{itemCount} {itemCount === 1 ? 'carte' : 'cărți'}</small>
+        </span>
         {itemCount > 0 && <span className="navbar-collection__badge">{itemCount > 9 ? '9+' : itemCount}</span>}
       </Link>
 

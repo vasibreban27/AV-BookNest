@@ -1,31 +1,38 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../../features/auth/hooks/useAuth'
+import { useEffect, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { NavbarCart } from '../cart/NavbarCart'
-import { CloseIcon, LogoutIcon, MenuIcon } from '../common/icons/AppIcons'
+import { CloseIcon, MenuIcon } from '../common/icons/AppIcons'
 import { Logo } from '../common/Logo'
 import { NavbarWishlist } from '../wishlist/NavbarWishlist'
+import { UserMenu } from './UserMenu'
 
 const navigationItems = [
-  { label: 'Acasă', to: '/' },
   { label: 'Descoperă', to: '/#catalog' },
-  { label: 'Vinde', to: '/sell' },
-  { label: 'Cărțile mele', to: '/my-books' },
-  { label: 'Comenzi', to: '/orders' },
+  { label: 'Vinde o carte', to: '/sell' },
 ] as const
 
 export function Navbar() {
-  const { user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const initials = `${user?.firstName[0] ?? ''}${user?.lastName[0] ?? ''}`.toUpperCase()
 
   const closeMenu = () => setMenuOpen(false)
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true)
-    await logout()
-  }
+  useEffect(() => {
+    if (!menuOpen) return
+
+    const mobileQuery = window.matchMedia('(max-width: 1040px)')
+    const previousOverflow = document.body.style.overflow
+    if (mobileQuery.matches) document.body.style.overflow = 'hidden'
+
+    const handleBreakpointChange = (event: MediaQueryListEvent) => {
+      if (!event.matches) setMenuOpen(false)
+    }
+    mobileQuery.addEventListener('change', handleBreakpointChange)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      mobileQuery.removeEventListener('change', handleBreakpointChange)
+    }
+  }, [menuOpen])
 
   return (
     <header className="app-navbar">
@@ -50,36 +57,26 @@ export function Navbar() {
           id="app-navigation-menu"
         >
           <div className="app-navbar__links">
+            <span className="app-navbar__section-label">Explorează</span>
             {navigationItems.map((item) => (
-              <Link
+              <NavLink
                 to={item.to}
                 onClick={closeMenu}
                 key={item.label}
+                className={({ isActive }) => isActive ? 'app-navbar__link--active' : undefined}
               >
                 {item.label}
-              </Link>
+              </NavLink>
             ))}
           </div>
 
           <div className="app-navbar__account">
-            <NavbarWishlist onNavigate={closeMenu} />
-            <NavbarCart onNavigate={closeMenu} />
-            <Link className="app-navbar__profile" to="/account" onClick={closeMenu}>
-              <span>{initials}</span>
-              <span>
-                <small>Salut,</small>
-                {user?.firstName}
-              </span>
-            </Link>
-            <button
-              className="app-navbar__logout"
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              aria-label={isLoggingOut ? 'Se închide sesiunea' : 'Ieși din cont'}
-            >
-              <LogoutIcon />
-            </button>
+            <span className="app-navbar__section-label">Colecția ta</span>
+            <div className="app-navbar__quick-actions">
+              <NavbarWishlist onNavigate={closeMenu} />
+              <NavbarCart onNavigate={closeMenu} />
+            </div>
+            <UserMenu onNavigate={closeMenu} />
           </div>
         </div>
       </nav>

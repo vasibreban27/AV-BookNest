@@ -18,6 +18,7 @@ function useRefreshListingQueries() {
   return (book?: Book) => {
     if (book) {
       queryClient.setQueryData(listingQueryKeys.detail(user?.id, book.id), book)
+      queryClient.setQueryData(['catalog', 'book', book.id], book)
     }
     void queryClient.invalidateQueries({ queryKey: listingQueryKeys.mine(user?.id) })
     void queryClient.invalidateQueries({ queryKey: ['catalog', 'books'] })

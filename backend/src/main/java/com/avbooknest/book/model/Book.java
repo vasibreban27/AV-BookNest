@@ -218,6 +218,21 @@ public class Book {
     updatedAt = Instant.now();
   }
 
+  public void releaseReservation() {
+    if (status == BookStatus.RESERVED) {
+      status = BookStatus.AVAILABLE;
+      updatedAt = Instant.now();
+    }
+  }
+
+  public void markSold() {
+    if (status != BookStatus.RESERVED) {
+      throw new IllegalStateException("Only reserved books can be marked as sold");
+    }
+    status = BookStatus.SOLD;
+    updatedAt = Instant.now();
+  }
+
   public static Builder builder() {
     return new Builder();
   }

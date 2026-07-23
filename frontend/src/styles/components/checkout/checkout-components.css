@@ -68,3 +68,13 @@
   .checkout-summary { padding: 22px; border-radius: 17px; }
   .checkout-form__heading h2 { font-size: 24px; }
 }
+.checkout-easybox-note { margin: -4px 0 4px; color: var(--muted); font-size: 10px; }
+.checkout-easybox-results { display: grid; max-height: 260px; gap: 8px; overflow-y: auto; }
+.checkout-easybox-results button { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--home-line); border-radius: 10px; color: var(--ink); background: white; cursor: pointer; text-align: left; }
+.checkout-easybox-results button:hover { border-color: var(--forest); background: #f5f8f3; }
+.checkout-easybox-results span { color: var(--muted); font-size: 9px; }
+.checkout-easybox-selected { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 13px; border: 1px solid rgba(31,92,78,.25); border-radius: 11px; background: #edf5ee; }
+.checkout-easybox-selected > svg { width: 21px; color: var(--forest); }
+.checkout-easybox-selected > span { display: grid; gap: 3px; }
+.checkout-easybox-selected small { color: var(--muted); }
+.checkout-easybox-selected button { border: 0; color: var(--forest); background: transparent; cursor: pointer; font-weight: 700; }

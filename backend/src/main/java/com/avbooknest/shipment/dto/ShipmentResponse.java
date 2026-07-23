@@ -1,34 +1,41 @@
 package com.avbooknest.shipment.dto;
 
-import com.avbooknest.order.dto.OrderItemResponse;
+import com.avbooknest.shipment.model.PackageSize;
 import com.avbooknest.shipment.model.Shipment;
 import com.avbooknest.shipment.model.ShipmentStatus;
-import java.math.BigDecimal;
-import java.util.List;
+import java.time.Instant;
 
 public record ShipmentResponse(
     Long id,
-    Long sellerId,
-    String sellerName,
     String easyboxId,
     String easyboxName,
+    String easyboxAddress,
+    String easyboxCity,
+    String easyboxCounty,
+    String easyboxPostalCode,
     String trackingNumber,
     ShipmentStatus status,
-    BigDecimal codAmount,
-    List<OrderItemResponse> items) {
+    PackageSize packageSize,
+    String providerStatus,
+    Instant statusUpdatedAt,
+    String labelUrl,
+    Instant createdAt) {
 
   public static ShipmentResponse from(Shipment shipment) {
     return new ShipmentResponse(
         shipment.getId(),
-        shipment.getSeller().getId(),
-        shipment.getSeller().getFirstName() + " " + shipment.getSeller().getLastName(),
         shipment.getEasyboxId(),
         shipment.getEasyboxName(),
+        shipment.getEasyboxAddress(),
+        shipment.getEasyboxCity(),
+        shipment.getEasyboxCounty(),
+        shipment.getEasyboxPostalCode(),
         shipment.getTrackingNumber(),
         shipment.getStatus(),
-        shipment.getCodAmount(),
-        shipment.getItems().stream()
-            .map(item -> OrderItemResponse.from(item.getOrderItem()))
-            .toList());
+        shipment.getPackageSize(),
+        shipment.getProviderStatus(),
+        shipment.getStatusUpdatedAt(),
+        shipment.getLabelUrl(),
+        shipment.getCreatedAt());
   }
 }

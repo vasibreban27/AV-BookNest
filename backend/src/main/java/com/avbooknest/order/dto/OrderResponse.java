@@ -2,7 +2,6 @@ package com.avbooknest.order.dto;
 
 import com.avbooknest.order.model.Order;
 import com.avbooknest.order.model.OrderStatus;
-import com.avbooknest.shipment.dto.ShipmentResponse;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -12,7 +11,7 @@ public record OrderResponse(
     String orderNumber,
     OrderStatus status,
     List<OrderItemResponse> items,
-    List<ShipmentResponse> shipments,
+    List<SellerOrderResponse> sellerOrders,
     BigDecimal subtotal,
     BigDecimal shippingCost,
     BigDecimal totalAmount,
@@ -20,13 +19,13 @@ public record OrderResponse(
     Instant placedAt,
     PaymentResponse payment) {
   public static OrderResponse from(
-      Order order, PaymentResponse payment, List<ShipmentResponse> shipments) {
+      Order order, PaymentResponse payment, List<SellerOrderResponse> sellerOrders) {
     return new OrderResponse(
         order.getId(),
         order.getOrderNumber(),
         order.getStatus(),
         order.getItems().stream().map(OrderItemResponse::from).toList(),
-        shipments,
+        sellerOrders,
         order.getSubtotal(),
         order.getShippingCost(),
         order.getTotalAmount(),

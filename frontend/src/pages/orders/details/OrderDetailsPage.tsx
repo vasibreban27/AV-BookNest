@@ -59,8 +59,8 @@ export function OrderDetailsPage() {
                       </div>
                     </div>
                     <div className="shipments-list">
-                      {orderQuery.data.shipments.map((shipment) => (
-                        <ShipmentCard shipment={shipment} currency={orderQuery.data.currency} key={shipment.id} />
+                      {orderQuery.data.sellerOrders.map((sellerOrder) => (
+                        <ShipmentCard sellerOrder={sellerOrder} currency={orderQuery.data.currency} key={sellerOrder.id} />
                       ))}
                     </div>
                   </section>

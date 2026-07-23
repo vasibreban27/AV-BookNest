@@ -32,6 +32,9 @@ public class Payment {
   @Column(name = "provider_payment_id", unique = true, length = 255)
   private String providerPaymentId;
 
+  @Column(name = "provider_checkout_session_id", unique = true, length = 255)
+  private String providerCheckoutSessionId;
+
   @Column(nullable = false, precision = 12, scale = 2)
   private BigDecimal amount;
 
@@ -61,6 +64,7 @@ public class Payment {
     order = b.order;
     provider = b.provider;
     providerPaymentId = b.providerPaymentId;
+    providerCheckoutSessionId = b.providerCheckoutSessionId;
     amount = b.amount;
     currency = b.currency;
     status = b.status;
@@ -84,6 +88,10 @@ public class Payment {
 
   public String getProviderPaymentId() {
     return providerPaymentId;
+  }
+
+  public String getProviderCheckoutSessionId() {
+    return providerCheckoutSessionId;
   }
 
   public BigDecimal getAmount() {
@@ -114,6 +122,25 @@ public class Payment {
     return updatedAt;
   }
 
+  public void updatePendingAmount(BigDecimal newAmount) {
+    amount = newAmount;
+    status = PaymentStatus.PENDING;
+    paidAt = null;
+    updatedAt = Instant.now();
+  }
+
+  public void cancel() {
+    status = PaymentStatus.CANCELLED;
+    paidAt = null;
+    updatedAt = Instant.now();
+  }
+
+  public void succeed() {
+    status = PaymentStatus.SUCCEEDED;
+    paidAt = Instant.now();
+    updatedAt = paidAt;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -123,6 +150,7 @@ public class Payment {
     private Order order;
     private PaymentProvider provider;
     private String providerPaymentId;
+    private String providerCheckoutSessionId;
     private BigDecimal amount;
     private String currency;
     private PaymentStatus status;
@@ -148,6 +176,11 @@ public class Payment {
 
     public Builder providerPaymentId(String v) {
       providerPaymentId = v;
+      return this;
+    }
+
+    public Builder providerCheckoutSessionId(String value) {
+      providerCheckoutSessionId = value;
       return this;
     }
 

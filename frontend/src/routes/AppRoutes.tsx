@@ -14,6 +14,7 @@ import { CreateListingPage } from '../pages/listings/CreateListingPage'
 import { EditListingPage } from '../pages/listings/EditListingPage'
 import { MyListingsPage } from '../pages/listings/MyListingsPage'
 import { WishlistPage } from '../pages/wishlist/WishlistPage'
+import { SalesPage } from '../pages/sales/SalesPage'
 import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 
 export function AppRoutes() {
@@ -37,6 +38,7 @@ export function AppRoutes() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
+          <Route path="/sales" element={<SalesPage />} />
           <Route path="/sell" element={<CreateListingPage />} />
           <Route path="/my-books" element={<MyListingsPage />} />
           <Route path="/my-books/:bookId/edit" element={<EditListingPage />} />

@@ -21,6 +21,10 @@ function AccountLinks({ onNavigate }: UserMenuProps) {
         <PackageIcon />
         <span><strong>Comenzile mele</strong><small>Urmărește cumpărăturile</small></span>
       </NavLink>
+      <NavLink to="/sales" onClick={onNavigate}>
+        <PackageIcon />
+        <span><strong>Vânzările mele</strong><small>Procesează comenzile primite</small></span>
+      </NavLink>
       <NavLink to="/account" onClick={onNavigate}>
         <UserIcon />
         <span><strong>Contul meu</strong><small>Date personale și securitate</small></span>

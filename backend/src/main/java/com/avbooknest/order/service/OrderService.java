@@ -21,14 +21,21 @@ import com.avbooknest.order.model.OrderStatus;
 import com.avbooknest.order.model.Payment;
 import com.avbooknest.order.model.PaymentProvider;
 import com.avbooknest.order.model.PaymentStatus;
+import com.avbooknest.order.model.SellerOrder;
+import com.avbooknest.order.model.SellerOrderStatus;
 import com.avbooknest.order.repository.OrderRepository;
 import com.avbooknest.order.repository.PaymentRepository;
-import com.avbooknest.shipment.dto.ShipmentResponse;
-import com.avbooknest.shipment.service.ShipmentService;
+import com.avbooknest.payment.model.SellerTransfer;
+import com.avbooknest.payment.repository.SellerTransferRepository;
+import com.avbooknest.shipment.model.Shipment;
+import com.avbooknest.shipment.model.ShipmentStatus;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +48,8 @@ public class OrderService {
   private final CartRepository cartRepository;
   private final BookRepository bookRepository;
   private final UserRepository userRepository;
-  private final ShipmentService shipmentService;
+  private final SellerOrderService sellerOrderService;
+  private final SellerTransferRepository sellerTransferRepository;
   private final NotificationService notificationService;
 
   public OrderService(
@@ -50,14 +58,16 @@ public class OrderService {
       CartRepository cartRepository,
       BookRepository bookRepository,
       UserRepository userRepository,
-      ShipmentService shipmentService,
+      SellerOrderService sellerOrderService,
+      SellerTransferRepository sellerTransferRepository,
       NotificationService notificationService) {
     this.orderRepository = orderRepository;
     this.paymentRepository = paymentRepository;
     this.cartRepository = cartRepository;
     this.bookRepository = bookRepository;
     this.userRepository = userRepository;
-    this.shipmentService = shipmentService;
+    this.sellerOrderService = sellerOrderService;
+    this.sellerTransferRepository = sellerTransferRepository;
     this.notificationService = notificationService;
   }
 
@@ -96,6 +106,9 @@ public class OrderService {
             .shippingCost(BigDecimal.ZERO)
             .totalAmount(subtotal)
             .currency(CURRENCY)
+            .recipientName(request.recipientName().trim())
+            .recipientEmail(request.recipientEmail().trim().toLowerCase())
+            .recipientPhone(request.recipientPhone().replace(" ", ""))
             .placedAt(now)
             .updatedAt(now)
             .build();
@@ -121,12 +134,13 @@ public class OrderService {
               .build();
       order.addItem(item);
     }
+    createSellerOrders(order, request, now);
     Order savedOrder = orderRepository.save(order);
     Payment payment =
         paymentRepository.save(
             Payment.builder()
                 .order(savedOrder)
-                .provider(PaymentProvider.CASH_ON_DELIVERY)
+                .provider(PaymentProvider.STRIPE)
                 .amount(savedOrder.getTotalAmount())
                 .currency(CURRENCY)
                 .status(PaymentStatus.PENDING)
@@ -134,9 +148,13 @@ public class OrderService {
                 .updatedAt(now)
                 .build());
     cart.clearItems();
-    List<ShipmentResponse> shipments =
-        shipmentService.createForOrder(
-            savedOrder, request.easyboxId().trim(), request.easyboxName().trim());
+    savedOrder
+        .getSellerOrders()
+        .forEach(
+            sellerOrder ->
+                sellerTransferRepository.save(
+                    SellerTransfer.blocked(
+                        sellerOrder, sellerOrder.getSellerProceeds(), CURRENCY, now)));
     notificationService.create(
         buyer,
         NotificationType.ORDER_PLACED,
@@ -152,14 +170,81 @@ public class OrderService {
               + "' was reserved by order "
               + savedOrder.getOrderNumber()
               + ".");
-    return OrderResponse.from(savedOrder, PaymentResponse.from(payment), shipments);
+    return OrderResponse.from(
+        savedOrder,
+        PaymentResponse.from(payment),
+        savedOrder.getSellerOrders().stream()
+            .map(com.avbooknest.order.dto.SellerOrderResponse::from)
+            .toList());
+  }
+
+  public OrderResponse cancel(Long orderId, String email) {
+    User buyer = user(email);
+    Order order =
+        orderRepository
+            .findByIdAndBuyerIdForUpdate(orderId, buyer.getId())
+            .orElseThrow(() -> new NotFoundException("Order not found"));
+    if (order.getStatus() != OrderStatus.CANCELLED) {
+      sellerOrderService.cancelOrder(order);
+    }
+    return response(order);
   }
 
   private OrderResponse response(Order order) {
     return OrderResponse.from(
         order,
         paymentRepository.findByOrderId(order.getId()).map(PaymentResponse::from).orElse(null),
-        shipmentService.listForOrder(order.getId()));
+        sellerOrderService.listForOrder(order.getId()));
+  }
+
+  private void createSellerOrders(Order order, CheckoutRequest request, Instant now) {
+    Map<User, List<OrderItem>> itemsBySeller =
+        order.getItems().stream().collect(Collectors.groupingBy(OrderItem::getSeller));
+    itemsBySeller.forEach(
+        (seller, items) -> {
+          BigDecimal itemSubtotal =
+              items.stream()
+                  .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                  .reduce(BigDecimal.ZERO, BigDecimal::add);
+          BigDecimal commissionAmount =
+              itemSubtotal
+                  .multiply(SellerOrder.COMMISSION_RATE)
+                  .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+          SellerOrder sellerOrder =
+              SellerOrder.builder()
+                  .order(order)
+                  .seller(seller)
+                  .status(SellerOrderStatus.AWAITING_SELLER)
+                  .itemSubtotal(itemSubtotal)
+                  .commissionRate(SellerOrder.COMMISSION_RATE)
+                  .commissionAmount(commissionAmount)
+                  .sellerProceeds(itemSubtotal.subtract(commissionAmount))
+                  .shippingCost(BigDecimal.ZERO)
+                  .acceptBy(now.plus(SellerOrder.ACCEPTANCE_WINDOW))
+                  .createdAt(now)
+                  .updatedAt(now)
+                  .build();
+          Shipment shipment =
+              Shipment.builder()
+                  .sellerOrder(sellerOrder)
+                  .easyboxId(request.easyboxId().trim())
+                  .easyboxName(request.easyboxName().trim())
+                  .easyboxAddress(request.easyboxAddress().trim())
+                  .easyboxCity(request.easyboxCity().trim())
+                  .easyboxCounty(request.easyboxCounty().trim())
+                  .easyboxPostalCode(
+                      request.easyboxPostalCode() == null
+                          ? null
+                          : request.easyboxPostalCode().trim())
+                  .status(ShipmentStatus.NOT_CREATED)
+                  .statusUpdatedAt(now)
+                  .createdAt(now)
+                  .updatedAt(now)
+                  .build();
+          sellerOrder.assignShipment(shipment);
+          items.forEach(sellerOrder::addItem);
+          order.addSellerOrder(sellerOrder);
+        });
   }
 
   private User user(String email) {

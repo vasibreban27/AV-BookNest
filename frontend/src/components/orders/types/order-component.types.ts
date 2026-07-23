@@ -1,4 +1,4 @@
-import type { Order, OrderItem, OrderStatus, Shipment } from '../../../features/orders/types/orders.types'
+import type { Order, OrderItem, OrderStatus, SellerOrder } from '../../../features/orders/types/orders.types'
 
 export type OrderStatusBadgeProps = {
   status: OrderStatus
@@ -18,7 +18,7 @@ export type OrderItemsListProps = {
 }
 
 export type ShipmentCardProps = {
-  shipment: Shipment
+  sellerOrder: SellerOrder
   currency: string
 }
 

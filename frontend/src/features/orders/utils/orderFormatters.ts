@@ -1,4 +1,10 @@
-import type { OrderStatus, PaymentProvider, PaymentStatus, ShipmentStatus } from '../types/orders.types'
+import type {
+  OrderStatus,
+  PaymentProvider,
+  PaymentStatus,
+  SellerOrderStatus,
+  ShipmentStatus,
+} from '../types/orders.types'
 
 const orderStatusLabels: Record<OrderStatus, string> = {
   PENDING: 'În așteptare',
@@ -11,23 +17,35 @@ const orderStatusLabels: Record<OrderStatus, string> = {
 }
 
 const paymentStatusLabels: Record<PaymentStatus, string> = {
-  PENDING: 'Plată la livrare',
+  PENDING: 'Așteaptă plata Stripe',
   SUCCEEDED: 'Achitată',
   FAILED: 'Plată eșuată',
   CANCELLED: 'Plată anulată',
+  PARTIALLY_REFUNDED: 'Rambursată parțial',
   REFUNDED: 'Rambursată',
 }
 
+const sellerOrderStatusLabels: Record<SellerOrderStatus, string> = {
+  AWAITING_SELLER: 'Așteaptă acceptarea',
+  ACCEPTED: 'Acceptată',
+  FULFILLED: 'Finalizată',
+  CANCELLED: 'Anulată',
+}
+
 const shipmentStatusLabels: Record<ShipmentStatus, string> = {
-  AWAITING_SELLER: 'Așteaptă vânzătorul',
+  NOT_CREATED: 'Așteaptă acceptarea',
+  AWB_PENDING: 'Se generează AWB-ul',
   AWB_CREATED: 'AWB creat',
+  AWAITING_DROPOFF: 'Așteaptă predarea',
   IN_TRANSIT: 'În tranzit',
   DELIVERED: 'Livrată',
+  RETURNED: 'Returnată',
+  LOST: 'Problemă la transport',
   CANCELLED: 'Anulată',
 }
 
 const paymentProviderLabels: Record<PaymentProvider, string> = {
-  CASH_ON_DELIVERY: 'Ramburs la Easybox',
+  STRIPE: 'Card online prin Stripe',
 }
 
 export function formatOrderPrice(amount: number, currency = 'RON') {
@@ -55,6 +73,10 @@ export function formatOrderStatus(status: OrderStatus) {
 
 export function formatPaymentStatus(status: PaymentStatus) {
   return paymentStatusLabels[status]
+}
+
+export function formatSellerOrderStatus(status: SellerOrderStatus) {
+  return sellerOrderStatusLabels[status]
 }
 
 export function formatShipmentStatus(status: ShipmentStatus) {

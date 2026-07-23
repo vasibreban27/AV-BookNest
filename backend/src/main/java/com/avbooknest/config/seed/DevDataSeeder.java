@@ -7,6 +7,7 @@ import static com.avbooknest.config.seed.DevSeedData.USERS;
 
 import com.avbooknest.config.seed.DevSeedData.BookSeed;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -252,39 +253,31 @@ public class DevDataSeeder implements ApplicationRunner {
             "DELIVERED",
             new BigDecimal("73.40"),
             Instant.parse("2026-06-18T11:30:00Z"));
-    Long prideItem =
-        seedOrderItem(
-            deliveredOrder,
-            bookIds.get("9780141439518"),
-            userIds.get("mihai.ionescu@booknest.local"),
-            "9780141439518");
-    Long mockingbirdItem =
-        seedOrderItem(
-            deliveredOrder,
-            bookIds.get("9780061120084"),
-            userIds.get("elena.marinescu@booknest.local"),
-            "9780061120084");
+    seedOrderItem(
+        deliveredOrder,
+        bookIds.get("9780141439518"),
+        userIds.get("mihai.ionescu@booknest.local"),
+        "9780141439518");
+    seedOrderItem(
+        deliveredOrder,
+        bookIds.get("9780061120084"),
+        userIds.get("elena.marinescu@booknest.local"),
+        "9780061120084");
     seedPayment(deliveredOrder, new BigDecimal("73.40"), "SUCCEEDED", "2026-06-20T09:45:00Z");
-    Long firstDeliveredShipment =
-        seedShipment(
-            deliveredOrder,
-            userIds.get("mihai.ionescu@booknest.local"),
-            "DEMO-EASY-01",
-            "Easybox Piața Victoriei, București",
-            "BN-DEMO-AWB-1001",
-            "DELIVERED",
-            new BigDecimal("34.90"));
-    Long secondDeliveredShipment =
-        seedShipment(
-            deliveredOrder,
-            userIds.get("elena.marinescu@booknest.local"),
-            "DEMO-EASY-01",
-            "Easybox Piața Victoriei, București",
-            "BN-DEMO-AWB-1002",
-            "DELIVERED",
-            new BigDecimal("38.50"));
-    seedShipmentItem(firstDeliveredShipment, prideItem);
-    seedShipmentItem(secondDeliveredShipment, mockingbirdItem);
+    seedShipment(
+        deliveredOrder,
+        userIds.get("mihai.ionescu@booknest.local"),
+        "DEMO-EASY-01",
+        "Easybox Piața Victoriei, București",
+        "BN-DEMO-AWB-1001",
+        "DELIVERED");
+    seedShipment(
+        deliveredOrder,
+        userIds.get("elena.marinescu@booknest.local"),
+        "DEMO-EASY-01",
+        "Easybox Piața Victoriei, București",
+        "BN-DEMO-AWB-1002",
+        "DELIVERED");
 
     Long processingOrder =
         seedOrder(
@@ -293,23 +286,19 @@ public class DevDataSeeder implements ApplicationRunner {
             "PROCESSING",
             new BigDecimal("46.00"),
             Instant.parse("2026-07-12T08:15:00Z"));
-    Long hawkingItem =
-        seedOrderItem(
-            processingOrder,
-            bookIds.get("9780553380163"),
-            userIds.get("radu.georgescu@booknest.local"),
-            "9780553380163");
+    seedOrderItem(
+        processingOrder,
+        bookIds.get("9780553380163"),
+        userIds.get("radu.georgescu@booknest.local"),
+        "9780553380163");
     seedPayment(processingOrder, new BigDecimal("46.00"), "PENDING", null);
-    Long processingShipment =
-        seedShipment(
-            processingOrder,
-            userIds.get("radu.georgescu@booknest.local"),
-            "DEMO-EASY-02",
-            "Easybox Universitate, București",
-            "BN-DEMO-AWB-2001",
-            "AWB_CREATED",
-            new BigDecimal("46.00"));
-    seedShipmentItem(processingShipment, hawkingItem);
+    seedShipment(
+        processingOrder,
+        userIds.get("radu.georgescu@booknest.local"),
+        "DEMO-EASY-02",
+        "Easybox Universitate, București",
+        "BN-DEMO-AWB-2001",
+        "AWB_CREATED");
   }
 
   private Long seedOrder(
@@ -321,9 +310,12 @@ public class DevDataSeeder implements ApplicationRunner {
         """
         INSERT INTO orders (
             order_number, buyer_id, shipping_address_id, status, subtotal,
-            shipping_cost, total_amount, currency, placed_at, updated_at
+            shipping_cost, total_amount, currency, recipient_name, recipient_email,
+            recipient_phone, placed_at, updated_at
         )
-        VALUES (?, ?, NULL, ?, ?, 0, ?, ?, ?, CURRENT_TIMESTAMP)
+        SELECT ?, ?, NULL, ?, ?, 0, ?, ?, CONCAT_WS(' ', first_name, last_name),
+               email, '+40700111222', ?, CURRENT_TIMESTAMP
+        FROM users WHERE id = ?
         RETURNING id
         """,
         Long.class,
@@ -333,7 +325,8 @@ public class DevDataSeeder implements ApplicationRunner {
         total,
         total,
         CURRENCY,
-        databaseTimestamp(placedAt));
+        databaseTimestamp(placedAt),
+        buyerId);
   }
 
   private Long seedOrderItem(Long orderId, Long bookId, Long sellerId, String isbn) {
@@ -345,19 +338,42 @@ public class DevDataSeeder implements ApplicationRunner {
     if (existingId != null) return existingId;
 
     BookSeed book = bookByIsbn(isbn);
+    BigDecimal commission =
+        book.price().multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
+    Long sellerOrderId =
+        jdbcTemplate.queryForObject(
+            """
+            INSERT INTO seller_orders (
+                order_id, seller_id, status, item_subtotal, commission_rate,
+                commission_amount, seller_proceeds, shipping_cost, accept_by,
+                created_at, updated_at
+            )
+            VALUES (?, ?, 'AWAITING_SELLER', ?, 5.00, ?, ?, 0,
+                    CURRENT_TIMESTAMP + INTERVAL '24 hours',
+                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON CONFLICT (order_id, seller_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+            RETURNING id
+            """,
+            Long.class,
+            orderId,
+            sellerId,
+            book.price(),
+            commission,
+            book.price().subtract(commission));
     return jdbcTemplate.queryForObject(
         """
         INSERT INTO order_items (
-            order_id, book_id, seller_id, title, author, isbn,
+            order_id, book_id, seller_id, seller_order_id, title, author, isbn,
             unit_price, quantity, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
         RETURNING id
         """,
         Long.class,
         orderId,
         bookId,
         sellerId,
+        sellerOrderId,
         book.title(),
         book.author(),
         book.isbn(),
@@ -376,7 +392,7 @@ public class DevDataSeeder implements ApplicationRunner {
         INSERT INTO payments (
             order_id, provider, amount, currency, status, paid_at, created_at, updated_at
         )
-        VALUES (?, 'CASH_ON_DELIVERY', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        VALUES (?, 'STRIPE', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         """,
         orderId,
         amount,
@@ -385,48 +401,53 @@ public class DevDataSeeder implements ApplicationRunner {
         paidAt);
   }
 
-  private Long seedShipment(
+  private void seedShipment(
       Long orderId,
       Long sellerId,
       String easyboxId,
       String easyboxName,
       String trackingNumber,
-      String status,
-      BigDecimal codAmount) {
+      String status) {
+    Long sellerOrderId =
+        requiredId(
+            "SELECT id FROM seller_orders WHERE order_id = ? AND seller_id = ?", orderId, sellerId);
     jdbcTemplate.update(
         """
         INSERT INTO shipments (
-            order_id, seller_id, easybox_id, easybox_name, tracking_number,
-            status, cod_amount, created_at, updated_at
+            seller_order_id, easybox_id, easybox_name, easybox_address,
+            easybox_city, easybox_county, easybox_postal_code, tracking_number,
+            status, package_size, provider_status, status_updated_at,
+            created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        ON CONFLICT (order_id, seller_id) DO UPDATE SET
+        VALUES (?, ?, ?, 'Adresă demo', 'București', 'București', '010001', ?,
+                ?, 'S', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT (seller_order_id) DO UPDATE SET
             easybox_id = EXCLUDED.easybox_id,
             easybox_name = EXCLUDED.easybox_name,
             tracking_number = EXCLUDED.tracking_number,
             status = EXCLUDED.status,
-            cod_amount = EXCLUDED.cod_amount
+            provider_status = EXCLUDED.provider_status
         """,
-        orderId,
-        sellerId,
+        sellerOrderId,
         easyboxId,
         easyboxName,
         trackingNumber,
         status,
-        codAmount);
-    return requiredId(
-        "SELECT id FROM shipments WHERE order_id = ? AND seller_id = ?", orderId, sellerId);
-  }
-
-  private void seedShipmentItem(Long shipmentId, Long orderItemId) {
+        "DEMO_" + status);
     jdbcTemplate.update(
         """
-        INSERT INTO shipment_items (shipment_id, order_item_id)
-        VALUES (?, ?)
-        ON CONFLICT (order_item_id) DO NOTHING
+        UPDATE seller_orders
+        SET status = ?,
+            accepted_at = CASE WHEN ? = 'ACCEPTED' THEN CURRENT_TIMESTAMP ELSE accepted_at END,
+            dropoff_by = CASE WHEN ? = 'ACCEPTED' THEN CURRENT_TIMESTAMP + INTERVAL '48 hours' ELSE dropoff_by END,
+            fulfilled_at = CASE WHEN ? = 'FULFILLED' THEN CURRENT_TIMESTAMP ELSE fulfilled_at END
+        WHERE id = ?
         """,
-        shipmentId,
-        orderItemId);
+        "DELIVERED".equals(status) ? "FULFILLED" : "ACCEPTED",
+        "DELIVERED".equals(status) ? "FULFILLED" : "ACCEPTED",
+        "DELIVERED".equals(status) ? "FULFILLED" : "ACCEPTED",
+        "DELIVERED".equals(status) ? "FULFILLED" : "ACCEPTED",
+        sellerOrderId);
   }
 
   private void seedNotifications(Map<String, Long> userIds) {

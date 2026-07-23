@@ -14,6 +14,7 @@
 @import './components/wishlist/wishlist-components.css';
 @import './components/checkout/checkout-components.css';
 @import './components/orders/order-components.css';
+@import './components/sales/sales-components.css';
 @import './components/listings/listing-components.css';
 @import './components/interactive-book/interactive-book.css';
 @import './components/footer/footer.css';
@@ -24,5 +25,6 @@
 @import './pages/wishlist/wishlist-page.css';
 @import './pages/checkout/checkout-page.css';
 @import './pages/orders/orders-pages.css';
+@import './pages/sales/sales-page.css';
 @import './pages/listings/listing-pages.css';
 @import './pages/books/book-details-page.css';

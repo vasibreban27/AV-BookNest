@@ -1,8 +1,6 @@
 package com.avbooknest.shipment.model;
 
-import com.avbooknest.auth.model.User;
-import com.avbooknest.order.model.Order;
-import jakarta.persistence.CascadeType;
+import com.avbooknest.order.model.SellerOrder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,29 +10,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "shipments")
 public class Shipment {
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "order_id", nullable = false)
-  private Order order;
-
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "seller_id", nullable = false)
-  private User seller;
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "seller_order_id", nullable = false, unique = true)
+  private SellerOrder sellerOrder;
 
   @Column(name = "easybox_id", nullable = false, length = 100)
   private String easyboxId;
@@ -42,15 +31,40 @@ public class Shipment {
   @Column(name = "easybox_name", nullable = false, length = 255)
   private String easyboxName;
 
+  @Column(name = "easybox_address", length = 255)
+  private String easyboxAddress;
+
+  @Column(name = "easybox_city", length = 100)
+  private String easyboxCity;
+
+  @Column(name = "easybox_county", length = 100)
+  private String easyboxCounty;
+
+  @Column(name = "easybox_postal_code", length = 20)
+  private String easyboxPostalCode;
+
   @Column(name = "tracking_number", unique = true, length = 100)
   private String trackingNumber;
+
+  @Column(name = "sameday_parcel_id", length = 100)
+  private String samedayParcelId;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 30)
   private ShipmentStatus status;
 
-  @Column(name = "cod_amount", nullable = false, precision = 12, scale = 2)
-  private BigDecimal codAmount;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "package_size", length = 10)
+  private PackageSize packageSize;
+
+  @Column(name = "provider_status", length = 100)
+  private String providerStatus;
+
+  @Column(name = "status_updated_at")
+  private Instant statusUpdatedAt;
+
+  @Column(name = "label_url", length = 2048)
+  private String labelUrl;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -58,20 +72,24 @@ public class Shipment {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<ShipmentItem> items = new ArrayList<>();
-
   protected Shipment() {}
 
   private Shipment(Builder builder) {
     id = builder.id;
-    order = builder.order;
-    seller = builder.seller;
+    sellerOrder = builder.sellerOrder;
     easyboxId = builder.easyboxId;
     easyboxName = builder.easyboxName;
+    easyboxAddress = builder.easyboxAddress;
+    easyboxCity = builder.easyboxCity;
+    easyboxCounty = builder.easyboxCounty;
+    easyboxPostalCode = builder.easyboxPostalCode;
     trackingNumber = builder.trackingNumber;
+    samedayParcelId = builder.samedayParcelId;
     status = builder.status;
-    codAmount = builder.codAmount;
+    packageSize = builder.packageSize;
+    providerStatus = builder.providerStatus;
+    statusUpdatedAt = builder.statusUpdatedAt;
+    labelUrl = builder.labelUrl;
     createdAt = builder.createdAt;
     updatedAt = builder.updatedAt;
   }
@@ -80,12 +98,8 @@ public class Shipment {
     return id;
   }
 
-  public Order getOrder() {
-    return order;
-  }
-
-  public User getSeller() {
-    return seller;
+  public SellerOrder getSellerOrder() {
+    return sellerOrder;
   }
 
   public String getEasyboxId() {
@@ -96,16 +110,48 @@ public class Shipment {
     return easyboxName;
   }
 
+  public String getEasyboxAddress() {
+    return easyboxAddress;
+  }
+
+  public String getEasyboxCity() {
+    return easyboxCity;
+  }
+
+  public String getEasyboxCounty() {
+    return easyboxCounty;
+  }
+
+  public String getEasyboxPostalCode() {
+    return easyboxPostalCode;
+  }
+
   public String getTrackingNumber() {
     return trackingNumber;
+  }
+
+  public String getSamedayParcelId() {
+    return samedayParcelId;
   }
 
   public ShipmentStatus getStatus() {
     return status;
   }
 
-  public BigDecimal getCodAmount() {
-    return codAmount;
+  public PackageSize getPackageSize() {
+    return packageSize;
+  }
+
+  public String getProviderStatus() {
+    return providerStatus;
+  }
+
+  public Instant getStatusUpdatedAt() {
+    return statusUpdatedAt;
+  }
+
+  public String getLabelUrl() {
+    return labelUrl;
   }
 
   public Instant getCreatedAt() {
@@ -116,18 +162,34 @@ public class Shipment {
     return updatedAt;
   }
 
-  public List<ShipmentItem> getItems() {
-    return items;
+  public void queueAwb(PackageSize size, Instant now) {
+    packageSize = size;
+    status = ShipmentStatus.AWB_PENDING;
+    statusUpdatedAt = now;
+    updatedAt = now;
   }
 
-  public void addItem(ShipmentItem item) {
-    items.add(item);
-  }
-
-  public void registerTrackingNumber(String value) {
-    trackingNumber = value;
+  public void registerAwb(String awbNumber, String parcelId, String newLabelUrl, Instant now) {
+    trackingNumber = awbNumber;
+    samedayParcelId = parcelId;
+    labelUrl = newLabelUrl;
     status = ShipmentStatus.AWB_CREATED;
+    statusUpdatedAt = now;
+    updatedAt = now;
+  }
+
+  public void updateProviderStatus(
+      ShipmentStatus mappedStatus, String rawProviderStatus, Instant providerUpdatedAt) {
+    status = mappedStatus;
+    providerStatus = rawProviderStatus;
+    statusUpdatedAt = providerUpdatedAt;
     updatedAt = Instant.now();
+  }
+
+  public void cancel(Instant now) {
+    status = ShipmentStatus.CANCELLED;
+    statusUpdatedAt = now;
+    updatedAt = now;
   }
 
   public static Builder builder() {
@@ -136,13 +198,20 @@ public class Shipment {
 
   public static class Builder {
     private Long id;
-    private Order order;
-    private User seller;
+    private SellerOrder sellerOrder;
     private String easyboxId;
     private String easyboxName;
+    private String easyboxAddress;
+    private String easyboxCity;
+    private String easyboxCounty;
+    private String easyboxPostalCode;
     private String trackingNumber;
+    private String samedayParcelId;
     private ShipmentStatus status;
-    private BigDecimal codAmount;
+    private PackageSize packageSize;
+    private String providerStatus;
+    private Instant statusUpdatedAt;
+    private String labelUrl;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -151,13 +220,8 @@ public class Shipment {
       return this;
     }
 
-    public Builder order(Order value) {
-      order = value;
-      return this;
-    }
-
-    public Builder seller(User value) {
-      seller = value;
+    public Builder sellerOrder(SellerOrder value) {
+      sellerOrder = value;
       return this;
     }
 
@@ -171,8 +235,33 @@ public class Shipment {
       return this;
     }
 
+    public Builder easyboxAddress(String value) {
+      easyboxAddress = value;
+      return this;
+    }
+
+    public Builder easyboxCity(String value) {
+      easyboxCity = value;
+      return this;
+    }
+
+    public Builder easyboxCounty(String value) {
+      easyboxCounty = value;
+      return this;
+    }
+
+    public Builder easyboxPostalCode(String value) {
+      easyboxPostalCode = value;
+      return this;
+    }
+
     public Builder trackingNumber(String value) {
       trackingNumber = value;
+      return this;
+    }
+
+    public Builder samedayParcelId(String value) {
+      samedayParcelId = value;
       return this;
     }
 
@@ -181,8 +270,23 @@ public class Shipment {
       return this;
     }
 
-    public Builder codAmount(BigDecimal value) {
-      codAmount = value;
+    public Builder packageSize(PackageSize value) {
+      packageSize = value;
+      return this;
+    }
+
+    public Builder providerStatus(String value) {
+      providerStatus = value;
+      return this;
+    }
+
+    public Builder statusUpdatedAt(Instant value) {
+      statusUpdatedAt = value;
+      return this;
+    }
+
+    public Builder labelUrl(String value) {
+      labelUrl = value;
       return this;
     }
 

@@ -49,6 +49,15 @@ public class Order {
   @Column(nullable = false, length = 3)
   private String currency;
 
+  @Column(name = "recipient_name", nullable = false, length = 200)
+  private String recipientName;
+
+  @Column(name = "recipient_email", nullable = false, length = 255)
+  private String recipientEmail;
+
+  @Column(name = "recipient_phone", nullable = false, length = 30)
+  private String recipientPhone;
+
   @Column(name = "placed_at", nullable = false, updatable = false)
   private Instant placedAt;
 
@@ -57,6 +66,9 @@ public class Order {
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> items = new ArrayList<>();
+
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<SellerOrder> sellerOrders = new ArrayList<>();
 
   protected Order() {}
 
@@ -69,6 +81,9 @@ public class Order {
     shippingCost = b.shippingCost;
     totalAmount = b.totalAmount;
     currency = b.currency;
+    recipientName = b.recipientName;
+    recipientEmail = b.recipientEmail;
+    recipientPhone = b.recipientPhone;
     placedAt = b.placedAt;
     updatedAt = b.updatedAt;
   }
@@ -105,6 +120,18 @@ public class Order {
     return currency;
   }
 
+  public String getRecipientName() {
+    return recipientName;
+  }
+
+  public String getRecipientEmail() {
+    return recipientEmail;
+  }
+
+  public String getRecipientPhone() {
+    return recipientPhone;
+  }
+
   public Instant getPlacedAt() {
     return placedAt;
   }
@@ -117,8 +144,24 @@ public class Order {
     return items;
   }
 
+  public List<SellerOrder> getSellerOrders() {
+    return sellerOrders;
+  }
+
   public void addItem(OrderItem item) {
     items.add(item);
+  }
+
+  public void addSellerOrder(SellerOrder sellerOrder) {
+    sellerOrders.add(sellerOrder);
+  }
+
+  public void updateProgress(
+      OrderStatus newStatus, BigDecimal newSubtotal, BigDecimal newTotalAmount) {
+    status = newStatus;
+    subtotal = newSubtotal;
+    totalAmount = newTotalAmount;
+    updatedAt = Instant.now();
   }
 
   public static Builder builder() {
@@ -134,6 +177,9 @@ public class Order {
     private BigDecimal shippingCost;
     private BigDecimal totalAmount;
     private String currency;
+    private String recipientName;
+    private String recipientEmail;
+    private String recipientPhone;
     private Instant placedAt;
     private Instant updatedAt;
 
@@ -174,6 +220,21 @@ public class Order {
 
     public Builder currency(String v) {
       currency = v;
+      return this;
+    }
+
+    public Builder recipientName(String value) {
+      recipientName = value;
+      return this;
+    }
+
+    public Builder recipientEmail(String value) {
+      recipientEmail = value;
+      return this;
+    }
+
+    public Builder recipientPhone(String value) {
+      recipientPhone = value;
       return this;
     }
 

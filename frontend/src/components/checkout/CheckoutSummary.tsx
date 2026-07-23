@@ -33,11 +33,11 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
       </div>
       <div className="checkout-summary__line">
         <span>Livrare</span>
-        <strong>Gratuită</strong>
+        <strong>Tarif Sameday Basic</strong>
       </div>
       <div className="checkout-summary__total">
         <span>Total</span>
-        <strong>{formatOrderPrice(cart.total)}</strong>
+        <strong>{formatOrderPrice(cart.total)} + transport</strong>
       </div>
       <p>Comanda poate genera colete separate dacă volumele provin de la vânzători diferiți.</p>
     </aside>

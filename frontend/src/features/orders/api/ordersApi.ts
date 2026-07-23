@@ -16,4 +16,9 @@ export const ordersApi = {
     const { data } = await api.post<Order>('/orders/checkout', payload)
     return data
   },
+
+  async cancel(orderId: number) {
+    const { data } = await api.patch<Order>(`/orders/${orderId}/cancel`)
+    return data
+  },
 }

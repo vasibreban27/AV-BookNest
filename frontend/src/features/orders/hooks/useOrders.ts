@@ -58,3 +58,22 @@ export function useCheckout() {
     },
   })
 }
+
+export function useCancelOrder() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ordersApi.cancel,
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderQueryKeys.detail(user?.id, order.id), order)
+      queryClient.setQueryData<Order[]>(orderQueryKeys.list(user?.id), (orders = []) =>
+        orders.map((currentOrder) => (currentOrder.id === order.id ? order : currentOrder)),
+      )
+      void queryClient.invalidateQueries({ queryKey: ['seller-orders', 'seller'] })
+      void queryClient.invalidateQueries({ queryKey: ['catalog', 'books'] })
+      void queryClient.invalidateQueries({ queryKey: ['listings', 'mine', user?.id] })
+      void queryClient.invalidateQueries({ queryKey: ['wishlist', 'current', user?.id] })
+    },
+  })
+}

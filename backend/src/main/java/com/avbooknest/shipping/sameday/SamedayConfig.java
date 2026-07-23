@@ -1,0 +1,8 @@
+package com.avbooknest.shipping.sameday;
+
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableConfigurationProperties(SamedayProperties.class)
+public class SamedayConfig {}

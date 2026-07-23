@@ -1,0 +1,23 @@
+.seller-shipments-page { color: var(--ink); background: #f3f5ef; }
+.seller-shipments-container { width: min(1050px, calc(100% - 48px)); margin: 0 auto; }
+.seller-shipments-hero { overflow: hidden; border-bottom: 1px solid var(--home-line); background: linear-gradient(112deg,#edf2ea,#faf5e9 68%,#e5d4c0); }
+.seller-shipments-hero__inner { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 245px; padding-block: 42px; }
+.seller-shipments-hero__inner::after { content: ''; position: absolute; top: -240px; right: -90px; width: 450px; height: 450px; border: 1px solid rgba(31,92,78,.12); border-radius: 50%; box-shadow: 0 0 0 65px rgba(255,255,255,.14),0 0 0 130px rgba(255,255,255,.08); }
+.seller-shipments-hero h1 { position: relative; z-index: 2; margin: 10px 0 8px; font-family: 'Playfair Display',Georgia,serif; font-size: clamp(42px,6vw,64px); line-height: 1; }
+.seller-shipments-hero p { position: relative; z-index: 2; margin: 0; color: #667872; font-size: 12px; }
+.seller-shipments-hero__icon { position: relative; z-index: 2; display: grid; width: 88px; height: 88px; margin-right: 65px; place-items: center; border: 1px solid rgba(31,92,78,.16); border-radius: 27px; color: var(--forest); background: rgba(255,255,255,.66); box-shadow: 0 22px 45px rgba(31,65,57,.1); transform: rotate(5deg); }
+.seller-shipments-hero__icon svg { width: 42px; height: 42px; }
+.seller-shipments-content { min-height: 500px; padding: 64px 0 90px; }
+.seller-shipments-list { display: grid; gap: 17px; }
+.seller-shipments-list__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 12px; }
+.seller-shipments-list__heading h2 { margin: 8px 0 0; font-family: 'Playfair Display',Georgia,serif; font-size: 34px; }
+.seller-shipments-list__heading > span { color: var(--muted); font-size: 9px; }
+
+@media (max-width: 620px) {
+  .seller-shipments-container { width: min(100% - 28px,1050px); }
+  .seller-shipments-hero__inner { min-height: 215px; }
+  .seller-shipments-hero__icon { width: 66px; height: 66px; margin-right: 5px; border-radius: 20px; }
+  .seller-shipments-hero__icon svg { width: 31px; height: 31px; }
+  .seller-shipments-content { padding: 45px 0 70px; }
+  .seller-shipments-list__heading { align-items: flex-start; flex-direction: column; gap: 7px; }
+}

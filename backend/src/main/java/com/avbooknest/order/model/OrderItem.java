@@ -33,6 +33,10 @@ public class OrderItem {
   @JoinColumn(name = "seller_id", nullable = false)
   private User seller;
 
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "seller_order_id", nullable = false)
+  private SellerOrder sellerOrder;
+
   @Column(nullable = false, length = 255)
   private String title;
 
@@ -80,6 +84,14 @@ public class OrderItem {
 
   public User getSeller() {
     return seller;
+  }
+
+  public SellerOrder getSellerOrder() {
+    return sellerOrder;
+  }
+
+  void assignSellerOrder(SellerOrder value) {
+    sellerOrder = value;
   }
 
   public String getTitle() {

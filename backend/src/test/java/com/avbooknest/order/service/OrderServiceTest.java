@@ -19,10 +19,14 @@ import com.avbooknest.cart.repository.CartRepository;
 import com.avbooknest.notification.service.NotificationService;
 import com.avbooknest.order.dto.CheckoutRequest;
 import com.avbooknest.order.dto.OrderResponse;
+import com.avbooknest.order.model.Order;
+import com.avbooknest.order.model.OrderStatus;
 import com.avbooknest.order.model.Payment;
+import com.avbooknest.order.model.PaymentProvider;
 import com.avbooknest.order.repository.OrderRepository;
 import com.avbooknest.order.repository.PaymentRepository;
-import com.avbooknest.shipment.service.ShipmentService;
+import com.avbooknest.payment.model.SellerTransfer;
+import com.avbooknest.payment.repository.SellerTransferRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -39,7 +43,8 @@ class OrderServiceTest {
   @Mock private CartRepository cartRepository;
   @Mock private BookRepository bookRepository;
   @Mock private UserRepository userRepository;
-  @Mock private ShipmentService shipmentService;
+  @Mock private SellerOrderService sellerOrderService;
+  @Mock private SellerTransferRepository sellerTransferRepository;
   @Mock private NotificationService notificationService;
   private OrderService orderService;
 
@@ -52,42 +57,79 @@ class OrderServiceTest {
             cartRepository,
             bookRepository,
             userRepository,
-            shipmentService,
+            sellerOrderService,
+            sellerTransferRepository,
             notificationService);
   }
 
   @Test
-  void checkoutCreatesSnapshotPaymentNotificationsAndReservesBook() {
+  void checkoutCreatesStripeMarketplaceSplitWithFivePercentCommission() {
     User buyer = user(1L, "buyer@example.com");
     User seller = user(2L, "seller@example.com");
     Book book = book(seller);
-    Cart cart = cart(buyer);
+    Cart cart =
+        Cart.builder().user(buyer).createdAt(Instant.now()).updatedAt(Instant.now()).build();
     cart.addItem(CartItem.builder().cart(cart).book(book).addedAt(Instant.now()).build());
     when(userRepository.findByEmail("buyer@example.com")).thenReturn(Optional.of(buyer));
     when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(cart));
     when(bookRepository.findByIdForUpdate(9L)).thenReturn(Optional.of(book));
-    when(orderRepository.save(any(com.avbooknest.order.model.Order.class)))
+    when(orderRepository.save(any(Order.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
     when(paymentRepository.save(any(Payment.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
-    when(shipmentService.createForOrder(any(), any(), any())).thenReturn(java.util.List.of());
+    when(sellerTransferRepository.save(any(SellerTransfer.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     OrderResponse response =
         orderService.checkout(
-            new CheckoutRequest("easybox-123", "Easybox Universitate"), "buyer@example.com");
+            new CheckoutRequest(
+                "locker-1",
+                "Easybox Central",
+                "Strada Test 1",
+                "Cluj-Napoca",
+                "Cluj",
+                "400000",
+                "Ana Pop",
+                "buyer@example.com",
+                "+40700111222"),
+            "buyer@example.com");
 
-    assertEquals(1, response.items().size());
-    assertEquals(new BigDecimal("30.00"), response.totalAmount());
+    assertEquals(PaymentProvider.STRIPE, response.payment().provider());
+    assertEquals(new BigDecimal("1.50"), response.sellerOrders().getFirst().commissionAmount());
+    assertEquals(new BigDecimal("28.50"), response.sellerOrders().getFirst().sellerProceeds());
     assertEquals(BookStatus.RESERVED, book.getStatus());
     assertEquals(0, cart.getItems().size());
-    assertEquals(
-        com.avbooknest.order.model.PaymentProvider.CASH_ON_DELIVERY, response.payment().provider());
-    verify(notificationService, org.mockito.Mockito.times(2)).create(any(), any(), any(), any());
+    verify(sellerTransferRepository).save(any(SellerTransfer.class));
   }
 
-  private Cart cart(User buyer) {
+  @Test
+  void buyerCancellationDelegatesToSellerOrderWorkflow() {
+    User buyer = user(1L, "buyer@example.com");
     Instant now = Instant.now();
-    return Cart.builder().user(buyer).createdAt(now).updatedAt(now).build();
+    Order order =
+        Order.builder()
+            .id(77L)
+            .orderNumber("ORD-77")
+            .buyer(buyer)
+            .status(OrderStatus.PENDING)
+            .subtotal(new BigDecimal("30.00"))
+            .shippingCost(BigDecimal.ZERO)
+            .totalAmount(new BigDecimal("30.00"))
+            .currency("RON")
+            .recipientName("Ana Pop")
+            .recipientEmail("buyer@example.com")
+            .recipientPhone("+40700111222")
+            .placedAt(now)
+            .updatedAt(now)
+            .build();
+    when(userRepository.findByEmail("buyer@example.com")).thenReturn(Optional.of(buyer));
+    when(orderRepository.findByIdAndBuyerIdForUpdate(77L, 1L)).thenReturn(Optional.of(order));
+    when(paymentRepository.findByOrderId(77L)).thenReturn(Optional.empty());
+    when(sellerOrderService.listForOrder(77L)).thenReturn(java.util.List.of());
+
+    orderService.cancel(77L, "buyer@example.com");
+
+    verify(sellerOrderService).cancelOrder(order);
   }
 
   private Book book(User seller) {

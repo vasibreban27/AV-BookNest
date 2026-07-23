@@ -5,6 +5,7 @@ import {
   formatPaymentStatus,
 } from '../../features/orders/utils/orderFormatters'
 import { PackageIcon, ReceiptIcon } from '../common/icons/AppIcons'
+import { OrderCancellation } from './OrderCancellation'
 import type { OrderDetailsSummaryProps } from './types/order-component.types'
 
 export function OrderDetailsSummary({ order }: OrderDetailsSummaryProps) {
@@ -40,8 +41,10 @@ export function OrderDetailsSummary({ order }: OrderDetailsSummaryProps) {
 
       <div className="order-details-summary__shipments">
         <PackageIcon />
-        <span>{order.shipments.length} {order.shipments.length === 1 ? 'colet' : 'colete'} pentru această comandă</span>
+        <span>{order.sellerOrders.length} {order.sellerOrders.length === 1 ? 'colet' : 'colete'} pentru această comandă</span>
       </div>
+
+      <OrderCancellation order={order} />
     </aside>
   )
 }

@@ -50,6 +50,12 @@ public class GlobalExceptionHandler {
     return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request, Map.of());
   }
 
+  @ExceptionHandler(ExternalServiceException.class)
+  public ResponseEntity<ApiError> handleExternalService(
+      ExternalServiceException exception, HttpServletRequest request) {
+    return response(HttpStatus.BAD_GATEWAY, exception.getMessage(), request, Map.of());
+  }
+
   @ExceptionHandler(UnauthorizedException.class)
   public ResponseEntity<ApiError> handleUnauthorized(
       UnauthorizedException exception, HttpServletRequest request) {

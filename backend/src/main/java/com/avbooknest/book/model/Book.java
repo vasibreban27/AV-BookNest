@@ -50,6 +50,18 @@ public class Book {
   @Column(name = "published_year")
   private Short publishedYear;
 
+  @Column(name = "weight_grams", nullable = false)
+  private Integer weightGrams;
+
+  @Column(name = "length_mm", nullable = false)
+  private Integer lengthMm;
+
+  @Column(name = "width_mm", nullable = false)
+  private Integer widthMm;
+
+  @Column(name = "height_mm", nullable = false)
+  private Integer heightMm;
+
   @Column(name = "cover_image_url", length = 2048)
   private String coverImageUrl;
 
@@ -87,6 +99,10 @@ public class Book {
     language = builder.language;
     publisher = builder.publisher;
     publishedYear = builder.publishedYear;
+    weightGrams = builder.weightGrams;
+    lengthMm = builder.lengthMm;
+    widthMm = builder.widthMm;
+    heightMm = builder.heightMm;
     coverImageUrl = builder.coverImageUrl;
     coverImagePublicId = builder.coverImagePublicId;
     seller = builder.seller;
@@ -136,6 +152,22 @@ public class Book {
     return publishedYear;
   }
 
+  public Integer getWeightGrams() {
+    return weightGrams;
+  }
+
+  public Integer getLengthMm() {
+    return lengthMm;
+  }
+
+  public Integer getWidthMm() {
+    return widthMm;
+  }
+
+  public Integer getHeightMm() {
+    return heightMm;
+  }
+
   public String getCoverImageUrl() {
     return coverImageUrl;
   }
@@ -174,6 +206,10 @@ public class Book {
       String newLanguage,
       String newPublisher,
       Short newPublishedYear,
+      Integer newWeightGrams,
+      Integer newLengthMm,
+      Integer newWidthMm,
+      Integer newHeightMm,
       Category newCategory) {
     title = newTitle;
     author = newAuthor;
@@ -184,6 +220,10 @@ public class Book {
     language = newLanguage;
     publisher = newPublisher;
     publishedYear = newPublishedYear;
+    weightGrams = newWeightGrams;
+    lengthMm = newLengthMm;
+    widthMm = newWidthMm;
+    heightMm = newHeightMm;
     category = newCategory;
     updatedAt = Instant.now();
   }
@@ -248,6 +288,10 @@ public class Book {
     private String language;
     private String publisher;
     private Short publishedYear;
+    private Integer weightGrams = 500;
+    private Integer lengthMm = 210;
+    private Integer widthMm = 140;
+    private Integer heightMm = 30;
     private String coverImageUrl;
     private String coverImagePublicId;
     private User seller;
@@ -303,6 +347,26 @@ public class Book {
 
     public Builder publishedYear(Short value) {
       publishedYear = value;
+      return this;
+    }
+
+    public Builder weightGrams(Integer value) {
+      weightGrams = value;
+      return this;
+    }
+
+    public Builder lengthMm(Integer value) {
+      lengthMm = value;
+      return this;
+    }
+
+    public Builder widthMm(Integer value) {
+      widthMm = value;
+      return this;
+    }
+
+    public Builder heightMm(Integer value) {
+      heightMm = value;
       return this;
     }
 

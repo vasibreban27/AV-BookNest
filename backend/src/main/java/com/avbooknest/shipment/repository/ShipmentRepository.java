@@ -9,5 +9,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
   Optional<Shipment> findByTrackingNumber(String trackingNumber);
 
+  Optional<Shipment> findByTrackingNumberOrSamedayParcelId(
+      String trackingNumber, String samedayParcelId);
+
   Optional<Shipment> findBySellerOrderId(Long sellerOrderId);
 }

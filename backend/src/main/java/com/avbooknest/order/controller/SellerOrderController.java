@@ -1,15 +1,12 @@
 package com.avbooknest.order.controller;
 
-import com.avbooknest.order.dto.AcceptSellerOrderRequest;
 import com.avbooknest.order.dto.SellerOrderResponse;
 import com.avbooknest.order.service.SellerOrderService;
-import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,11 +26,8 @@ public class SellerOrderController {
 
   @PatchMapping("/{sellerOrderId}/accept")
   public SellerOrderResponse accept(
-      @PathVariable Long sellerOrderId,
-      @Valid @RequestBody AcceptSellerOrderRequest request,
-      Authentication authentication) {
-    return sellerOrderService.accept(
-        sellerOrderId, request.packageSize(), authentication.getName());
+      @PathVariable Long sellerOrderId, Authentication authentication) {
+    return sellerOrderService.accept(sellerOrderId, authentication.getName());
   }
 
   @PatchMapping("/{sellerOrderId}/cancel")

@@ -79,6 +79,11 @@ class SellerOrderServiceTest {
             .sellerOrder(sellerOrder)
             .easyboxId("locker-1")
             .easyboxName("Easybox Central")
+            .packageSize(PackageSize.M)
+            .packageWeightGrams(650)
+            .packageLengthMm(230)
+            .packageWidthMm(160)
+            .packageHeightMm(50)
             .status(ShipmentStatus.NOT_CREATED)
             .createdAt(now)
             .updatedAt(now)
@@ -95,7 +100,7 @@ class SellerOrderServiceTest {
         new SellerOrderService(
             sellerOrderRepository, userRepository, integrationEventRepository, notificationService);
 
-    service.accept(20L, PackageSize.M, seller.getEmail());
+    service.accept(20L, seller.getEmail());
 
     assertEquals(SellerOrderStatus.ACCEPTED, sellerOrder.getStatus());
     assertEquals(ShipmentStatus.AWB_PENDING, shipment.getStatus());

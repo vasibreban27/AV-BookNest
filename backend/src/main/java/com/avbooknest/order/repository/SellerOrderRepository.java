@@ -19,6 +19,10 @@ public interface SellerOrderRepository extends JpaRepository<SellerOrder, Long> 
   @EntityGraph(attributePaths = {"order", "seller", "items", "items.seller", "shipment"})
   List<SellerOrder> findAllByOrderId(Long orderId);
 
+  @EntityGraph(attributePaths = {"order", "order.buyer", "seller", "items", "shipment"})
+  @Query("select so from SellerOrder so where so.id = :id")
+  Optional<SellerOrder> findDetailedById(@Param("id") Long id);
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query(
       """

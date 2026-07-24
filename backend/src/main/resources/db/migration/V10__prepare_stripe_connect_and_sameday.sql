@@ -1,6 +1,18 @@
 -- V10 is intentionally the first marketplace-fulfilment migration.
 -- It may replace the previous, unapplied V10 during development.
 
+ALTER TABLE books
+    ADD COLUMN weight_grams INTEGER NOT NULL DEFAULT 500,
+    ADD COLUMN length_mm INTEGER NOT NULL DEFAULT 210,
+    ADD COLUMN width_mm INTEGER NOT NULL DEFAULT 140,
+    ADD COLUMN height_mm INTEGER NOT NULL DEFAULT 30,
+    ADD CONSTRAINT chk_books_shipping_measurements CHECK (
+        weight_grams BETWEEN 1 AND 19850
+        AND length_mm BETWEEN 10 AND 450
+        AND width_mm BETWEEN 10 AND 425
+        AND height_mm BETWEEN 1 AND 370
+    );
+
 ALTER TABLE orders
     ADD COLUMN recipient_name VARCHAR(200),
     ADD COLUMN recipient_email VARCHAR(255),
@@ -121,6 +133,10 @@ ALTER TABLE shipments
     ADD COLUMN easybox_county VARCHAR(100),
     ADD COLUMN easybox_postal_code VARCHAR(20),
     ADD COLUMN package_size VARCHAR(10),
+    ADD COLUMN package_weight_grams INTEGER,
+    ADD COLUMN package_length_mm INTEGER,
+    ADD COLUMN package_width_mm INTEGER,
+    ADD COLUMN package_height_mm INTEGER,
     ADD COLUMN sameday_parcel_id VARCHAR(100),
     ADD COLUMN provider_status VARCHAR(100),
     ADD COLUMN status_updated_at TIMESTAMPTZ,
@@ -136,6 +152,34 @@ SET seller_order_id = so.id,
         WHEN (SELECT COUNT(*) FROM shipment_items si WHERE si.shipment_id = s.id) <= 5 THEN 'M'
         ELSE 'L'
     END,
+    package_weight_grams = 150 + (
+        SELECT COALESCE(SUM(b.weight_grams), 0)
+        FROM shipment_items si
+        JOIN order_items oi ON oi.id = si.order_item_id
+        JOIN books b ON b.id = oi.book_id
+        WHERE si.shipment_id = s.id
+    ),
+    package_length_mm = 20 + (
+        SELECT COALESCE(MAX(b.length_mm), 210)
+        FROM shipment_items si
+        JOIN order_items oi ON oi.id = si.order_item_id
+        JOIN books b ON b.id = oi.book_id
+        WHERE si.shipment_id = s.id
+    ),
+    package_width_mm = 20 + (
+        SELECT COALESCE(MAX(b.width_mm), 140)
+        FROM shipment_items si
+        JOIN order_items oi ON oi.id = si.order_item_id
+        JOIN books b ON b.id = oi.book_id
+        WHERE si.shipment_id = s.id
+    ),
+    package_height_mm = 20 + (
+        SELECT COALESCE(SUM(b.height_mm), 30)
+        FROM shipment_items si
+        JOIN order_items oi ON oi.id = si.order_item_id
+        JOIN books b ON b.id = oi.book_id
+        WHERE si.shipment_id = s.id
+    ),
     status_updated_at = s.updated_at
 FROM seller_orders so
 WHERE so.order_id = s.order_id AND so.seller_id = s.seller_id;
@@ -165,6 +209,15 @@ ALTER TABLE shipments
         )
     ),
     ADD CONSTRAINT chk_shipments_package_size CHECK (package_size IN ('S', 'M', 'L')),
+    ADD CONSTRAINT chk_shipments_package_measurements CHECK (
+        package_weight_grams IS NULL
+        OR (
+            package_weight_grams BETWEEN 1 AND 20000
+            AND package_length_mm > 0
+            AND package_width_mm > 0
+            AND package_height_mm > 0
+        )
+    ),
     ADD CONSTRAINT fk_shipments_seller_order
         FOREIGN KEY (seller_order_id) REFERENCES seller_orders (id) ON DELETE CASCADE;
 
@@ -207,6 +260,11 @@ CREATE TABLE seller_transfers (
 INSERT INTO seller_transfers (seller_order_id, amount, currency, status, created_at, updated_at)
 SELECT id, seller_proceeds, 'RON', 'BLOCKED', created_at, updated_at
 FROM seller_orders;
+
+UPDATE seller_transfers st
+SET eligible_at = so.fulfilled_at + INTERVAL '24 hours'
+FROM seller_orders so
+WHERE so.id = st.seller_order_id AND so.fulfilled_at IS NOT NULL;
 
 CREATE TABLE integration_events (
     id BIGSERIAL PRIMARY KEY,

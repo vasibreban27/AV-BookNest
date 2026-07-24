@@ -51,19 +51,83 @@ public class IntegrationEvent {
   protected IntegrationEvent() {}
 
   private IntegrationEvent(
-      String aggregateType, Long aggregateId, String eventType, String payload, Instant now) {
+      String aggregateType,
+      Long aggregateId,
+      String eventType,
+      String payload,
+      Instant now,
+      Instant nextAttemptAt) {
     this.aggregateType = aggregateType;
     this.aggregateId = aggregateId;
     this.eventType = eventType;
     this.payload = payload;
     status = IntegrationEventStatus.PENDING;
     attempts = 0;
-    nextAttemptAt = now;
+    this.nextAttemptAt = nextAttemptAt;
     createdAt = now;
   }
 
   public static IntegrationEvent pending(
       String aggregateType, Long aggregateId, String eventType, String payload, Instant now) {
-    return new IntegrationEvent(aggregateType, aggregateId, eventType, payload, now);
+    return new IntegrationEvent(aggregateType, aggregateId, eventType, payload, now, now);
+  }
+
+  public static IntegrationEvent scheduled(
+      String aggregateType,
+      Long aggregateId,
+      String eventType,
+      String payload,
+      Instant now,
+      Instant nextAttemptAt) {
+    return new IntegrationEvent(aggregateType, aggregateId, eventType, payload, now, nextAttemptAt);
+  }
+
+  public Instant getNextAttemptAt() {
+    return nextAttemptAt;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public Long getAggregateId() {
+    return aggregateId;
+  }
+
+  public String getEventType() {
+    return eventType;
+  }
+
+  public IntegrationEventStatus getStatus() {
+    return status;
+  }
+
+  public int getAttempts() {
+    return attempts;
+  }
+
+  public void startProcessing() {
+    status = IntegrationEventStatus.PROCESSING;
+  }
+
+  public void markProcessed(Instant now) {
+    status = IntegrationEventStatus.PROCESSED;
+    processedAt = now;
+    lastError = null;
+  }
+
+  public void scheduleRetry(String error, Instant now) {
+    attempts++;
+    lastError =
+        error == null
+            ? "Unknown integration error"
+            : error.substring(0, Math.min(error.length(), 1000));
+    if (attempts >= 5) {
+      status = IntegrationEventStatus.FAILED;
+      return;
+    }
+    status = IntegrationEventStatus.PENDING;
+    long delayMinutes = Math.min(1L << (attempts - 1), 30L);
+    nextAttemptAt = now.plusSeconds(delayMinutes * 60);
   }
 }

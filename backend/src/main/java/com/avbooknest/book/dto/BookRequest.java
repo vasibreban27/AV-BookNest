@@ -19,4 +19,8 @@ public record BookRequest(
     @NotBlank @Size(max = 100) String language,
     @Size(max = 255) String publisher,
     @Min(1000) @Max(9999) Short publishedYear,
+    @NotNull @Min(1) @Max(19850) Integer weightGrams,
+    @NotNull @Min(10) @Max(450) Integer lengthMm,
+    @NotNull @Min(10) @Max(425) Integer widthMm,
+    @NotNull @Min(1) @Max(370) Integer heightMm,
     @NotNull Long categoryId) {}

@@ -16,7 +16,6 @@ import com.avbooknest.order.model.OrderStatus;
 import com.avbooknest.order.model.SellerOrder;
 import com.avbooknest.order.model.SellerOrderStatus;
 import com.avbooknest.order.repository.SellerOrderRepository;
-import com.avbooknest.shipment.model.PackageSize;
 import com.avbooknest.shipment.model.ShipmentStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -59,7 +58,7 @@ public class SellerOrderService {
         .toList();
   }
 
-  public SellerOrderResponse accept(Long sellerOrderId, PackageSize packageSize, String email) {
+  public SellerOrderResponse accept(Long sellerOrderId, String email) {
     SellerOrder sellerOrder = lockForSeller(sellerOrderId, email);
     Instant now = Instant.now();
     if (sellerOrder.getStatus() != SellerOrderStatus.AWAITING_SELLER) {
@@ -68,7 +67,7 @@ public class SellerOrderService {
     if (sellerOrder.acceptanceExpired(now)) {
       throw new ConflictException("The 24 hour acceptance window has expired");
     }
-    sellerOrder.accept(packageSize, now);
+    sellerOrder.accept(now);
     integrationEventRepository.save(
         IntegrationEvent.pending(
             "SELLER_ORDER",
@@ -77,7 +76,7 @@ public class SellerOrderService {
             "{\"sellerOrderId\":"
                 + sellerOrder.getId()
                 + ",\"packageSize\":\""
-                + packageSize
+                + sellerOrder.getShipment().getPackageSize()
                 + "\"}",
             now));
     notificationService.create(

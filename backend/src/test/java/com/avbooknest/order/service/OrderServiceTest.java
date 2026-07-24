@@ -27,8 +27,13 @@ import com.avbooknest.order.repository.OrderRepository;
 import com.avbooknest.order.repository.PaymentRepository;
 import com.avbooknest.payment.model.SellerTransfer;
 import com.avbooknest.payment.repository.SellerTransferRepository;
+import com.avbooknest.shipment.model.PackageSize;
+import com.avbooknest.shipping.dto.SellerShippingQuoteResponse;
+import com.avbooknest.shipping.dto.ShippingQuoteResponse;
+import com.avbooknest.shipping.service.ShippingQuoteService;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +51,7 @@ class OrderServiceTest {
   @Mock private SellerOrderService sellerOrderService;
   @Mock private SellerTransferRepository sellerTransferRepository;
   @Mock private NotificationService notificationService;
+  @Mock private ShippingQuoteService shippingQuoteService;
   private OrderService orderService;
 
   @BeforeEach
@@ -59,7 +65,8 @@ class OrderServiceTest {
             userRepository,
             sellerOrderService,
             sellerTransferRepository,
-            notificationService);
+            notificationService,
+            shippingQuoteService);
   }
 
   @Test
@@ -72,6 +79,14 @@ class OrderServiceTest {
     cart.addItem(CartItem.builder().cart(cart).book(book).addedAt(Instant.now()).build());
     when(userRepository.findByEmail("buyer@example.com")).thenReturn(Optional.of(buyer));
     when(cartRepository.findByUserId(1L)).thenReturn(Optional.of(cart));
+    when(shippingQuoteService.quote(any(Cart.class), any()))
+        .thenReturn(
+            new ShippingQuoteResponse(
+                new BigDecimal("17.99"),
+                "RON",
+                List.of(
+                    new SellerShippingQuoteResponse(
+                        2L, new BigDecimal("17.99"), PackageSize.S, 650, 230, 160, 50))));
     when(bookRepository.findByIdForUpdate(9L)).thenReturn(Optional.of(book));
     when(orderRepository.save(any(Order.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
@@ -97,6 +112,7 @@ class OrderServiceTest {
     assertEquals(PaymentProvider.STRIPE, response.payment().provider());
     assertEquals(new BigDecimal("1.50"), response.sellerOrders().getFirst().commissionAmount());
     assertEquals(new BigDecimal("28.50"), response.sellerOrders().getFirst().sellerProceeds());
+    assertEquals(new BigDecimal("47.99"), response.totalAmount());
     assertEquals(BookStatus.RESERVED, book.getStatus());
     assertEquals(0, cart.getItems().size());
     verify(sellerTransferRepository).save(any(SellerTransfer.class));

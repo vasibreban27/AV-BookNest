@@ -360,6 +360,18 @@ public class DevDataSeeder implements ApplicationRunner {
             book.price(),
             commission,
             book.price().subtract(commission));
+    jdbcTemplate.update(
+        """
+        INSERT INTO seller_transfers (
+            seller_order_id, amount, currency, status, created_at, updated_at
+        )
+        VALUES (?, ?, 'RON', 'BLOCKED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT (seller_order_id) DO UPDATE SET
+            amount = EXCLUDED.amount,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        sellerOrderId,
+        book.price().subtract(commission));
     return jdbcTemplate.queryForObject(
         """
         INSERT INTO order_items (
@@ -416,16 +428,23 @@ public class DevDataSeeder implements ApplicationRunner {
         INSERT INTO shipments (
             seller_order_id, easybox_id, easybox_name, easybox_address,
             easybox_city, easybox_county, easybox_postal_code, tracking_number,
-            status, package_size, provider_status, status_updated_at,
+            status, package_size, package_weight_grams, package_length_mm,
+            package_width_mm, package_height_mm, provider_status, status_updated_at,
             created_at, updated_at
         )
         VALUES (?, ?, ?, 'Adresă demo', 'București', 'București', '010001', ?,
-                ?, 'S', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ?, 'S', 650, 230, 160, 50, ?, CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ON CONFLICT (seller_order_id) DO UPDATE SET
             easybox_id = EXCLUDED.easybox_id,
             easybox_name = EXCLUDED.easybox_name,
             tracking_number = EXCLUDED.tracking_number,
             status = EXCLUDED.status,
+            package_size = EXCLUDED.package_size,
+            package_weight_grams = EXCLUDED.package_weight_grams,
+            package_length_mm = EXCLUDED.package_length_mm,
+            package_width_mm = EXCLUDED.package_width_mm,
+            package_height_mm = EXCLUDED.package_height_mm,
             provider_status = EXCLUDED.provider_status
         """,
         sellerOrderId,
@@ -448,6 +467,16 @@ public class DevDataSeeder implements ApplicationRunner {
         "DELIVERED".equals(status) ? "FULFILLED" : "ACCEPTED",
         "DELIVERED".equals(status) ? "FULFILLED" : "ACCEPTED",
         sellerOrderId);
+    if ("DELIVERED".equals(status)) {
+      jdbcTemplate.update(
+          """
+          UPDATE seller_transfers
+          SET eligible_at = CURRENT_TIMESTAMP + INTERVAL '24 hours',
+              updated_at = CURRENT_TIMESTAMP
+          WHERE seller_order_id = ?
+          """,
+          sellerOrderId);
+    }
   }
 
   private void seedNotifications(Map<String, Long> userIds) {

@@ -67,4 +67,17 @@ public class SellerTransfer {
       SellerOrder sellerOrder, BigDecimal amount, String currency, Instant now) {
     return new SellerTransfer(sellerOrder, amount, currency, now);
   }
+
+  public Instant getEligibleAt() {
+    return eligibleAt;
+  }
+
+  public SellerTransferStatus getStatus() {
+    return status;
+  }
+
+  public void scheduleEligibility(Instant value, Instant now) {
+    eligibleAt = value;
+    updatedAt = now;
+  }
 }

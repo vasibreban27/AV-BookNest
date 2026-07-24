@@ -57,6 +57,18 @@ public class Shipment {
   @Column(name = "package_size", length = 10)
   private PackageSize packageSize;
 
+  @Column(name = "package_weight_grams")
+  private Integer packageWeightGrams;
+
+  @Column(name = "package_length_mm")
+  private Integer packageLengthMm;
+
+  @Column(name = "package_width_mm")
+  private Integer packageWidthMm;
+
+  @Column(name = "package_height_mm")
+  private Integer packageHeightMm;
+
   @Column(name = "provider_status", length = 100)
   private String providerStatus;
 
@@ -87,6 +99,10 @@ public class Shipment {
     samedayParcelId = builder.samedayParcelId;
     status = builder.status;
     packageSize = builder.packageSize;
+    packageWeightGrams = builder.packageWeightGrams;
+    packageLengthMm = builder.packageLengthMm;
+    packageWidthMm = builder.packageWidthMm;
+    packageHeightMm = builder.packageHeightMm;
     providerStatus = builder.providerStatus;
     statusUpdatedAt = builder.statusUpdatedAt;
     labelUrl = builder.labelUrl;
@@ -142,6 +158,22 @@ public class Shipment {
     return packageSize;
   }
 
+  public Integer getPackageWeightGrams() {
+    return packageWeightGrams;
+  }
+
+  public Integer getPackageLengthMm() {
+    return packageLengthMm;
+  }
+
+  public Integer getPackageWidthMm() {
+    return packageWidthMm;
+  }
+
+  public Integer getPackageHeightMm() {
+    return packageHeightMm;
+  }
+
   public String getProviderStatus() {
     return providerStatus;
   }
@@ -162,8 +194,14 @@ public class Shipment {
     return updatedAt;
   }
 
-  public void queueAwb(PackageSize size, Instant now) {
-    packageSize = size;
+  public void queueAwb(Instant now) {
+    if (packageSize == null
+        || packageWeightGrams == null
+        || packageLengthMm == null
+        || packageWidthMm == null
+        || packageHeightMm == null) {
+      throw new IllegalStateException("Shipment package measurements are missing");
+    }
     status = ShipmentStatus.AWB_PENDING;
     statusUpdatedAt = now;
     updatedAt = now;
@@ -178,12 +216,18 @@ public class Shipment {
     updatedAt = now;
   }
 
-  public void updateProviderStatus(
+  public boolean updateProviderStatus(
       ShipmentStatus mappedStatus, String rawProviderStatus, Instant providerUpdatedAt) {
-    status = mappedStatus;
+    if (statusUpdatedAt != null && providerUpdatedAt.isBefore(statusUpdatedAt)) {
+      return false;
+    }
+    if (mappedStatus != null) {
+      status = mappedStatus;
+    }
     providerStatus = rawProviderStatus;
     statusUpdatedAt = providerUpdatedAt;
     updatedAt = Instant.now();
+    return true;
   }
 
   public void cancel(Instant now) {
@@ -209,6 +253,10 @@ public class Shipment {
     private String samedayParcelId;
     private ShipmentStatus status;
     private PackageSize packageSize;
+    private Integer packageWeightGrams;
+    private Integer packageLengthMm;
+    private Integer packageWidthMm;
+    private Integer packageHeightMm;
     private String providerStatus;
     private Instant statusUpdatedAt;
     private String labelUrl;
@@ -272,6 +320,26 @@ public class Shipment {
 
     public Builder packageSize(PackageSize value) {
       packageSize = value;
+      return this;
+    }
+
+    public Builder packageWeightGrams(Integer value) {
+      packageWeightGrams = value;
+      return this;
+    }
+
+    public Builder packageLengthMm(Integer value) {
+      packageLengthMm = value;
+      return this;
+    }
+
+    public Builder packageWidthMm(Integer value) {
+      packageWidthMm = value;
+      return this;
+    }
+
+    public Builder packageHeightMm(Integer value) {
+      packageHeightMm = value;
       return this;
     }
 

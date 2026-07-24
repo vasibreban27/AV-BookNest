@@ -78,6 +78,10 @@ public class BookService {
             .language(request.language().trim())
             .publisher(trimToNull(request.publisher()))
             .publishedYear(request.publishedYear())
+            .weightGrams(request.weightGrams())
+            .lengthMm(request.lengthMm())
+            .widthMm(request.widthMm())
+            .heightMm(request.heightMm())
             .seller(currentUser(email))
             .category(findCategory(request.categoryId()))
             .status(BookStatus.AVAILABLE)
@@ -101,6 +105,10 @@ public class BookService {
         request.language().trim(),
         trimToNull(request.publisher()),
         request.publishedYear(),
+        request.weightGrams(),
+        request.lengthMm(),
+        request.widthMm(),
+        request.heightMm(),
         findCategory(request.categoryId()));
     return BookResponse.from(book);
   }

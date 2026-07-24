@@ -1,7 +1,6 @@
 package com.avbooknest.order.model;
 
 import com.avbooknest.auth.model.User;
-import com.avbooknest.shipment.model.PackageSize;
 import com.avbooknest.shipment.model.Shipment;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -190,12 +189,12 @@ public class SellerOrder {
     shipment = value;
   }
 
-  public void accept(PackageSize packageSize, Instant now) {
+  public void accept(Instant now) {
     status = SellerOrderStatus.ACCEPTED;
     acceptedAt = now;
     dropoffBy = now.plus(DROPOFF_WINDOW);
     updatedAt = now;
-    shipment.queueAwb(packageSize, now);
+    shipment.queueAwb(now);
   }
 
   public void cancel(Instant now) {

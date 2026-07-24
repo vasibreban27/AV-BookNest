@@ -29,6 +29,10 @@ import com.avbooknest.payment.model.SellerTransfer;
 import com.avbooknest.payment.repository.SellerTransferRepository;
 import com.avbooknest.shipment.model.Shipment;
 import com.avbooknest.shipment.model.ShipmentStatus;
+import com.avbooknest.shipping.dto.SellerShippingQuoteResponse;
+import com.avbooknest.shipping.dto.ShippingQuoteRequest;
+import com.avbooknest.shipping.dto.ShippingQuoteResponse;
+import com.avbooknest.shipping.service.ShippingQuoteService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -51,6 +55,7 @@ public class OrderService {
   private final SellerOrderService sellerOrderService;
   private final SellerTransferRepository sellerTransferRepository;
   private final NotificationService notificationService;
+  private final ShippingQuoteService shippingQuoteService;
 
   public OrderService(
       OrderRepository orderRepository,
@@ -60,7 +65,8 @@ public class OrderService {
       UserRepository userRepository,
       SellerOrderService sellerOrderService,
       SellerTransferRepository sellerTransferRepository,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      ShippingQuoteService shippingQuoteService) {
     this.orderRepository = orderRepository;
     this.paymentRepository = paymentRepository;
     this.cartRepository = cartRepository;
@@ -69,6 +75,7 @@ public class OrderService {
     this.sellerOrderService = sellerOrderService;
     this.sellerTransferRepository = sellerTransferRepository;
     this.notificationService = notificationService;
+    this.shippingQuoteService = shippingQuoteService;
   }
 
   @Transactional(readOnly = true)
@@ -93,6 +100,8 @@ public class OrderService {
             .findByUserId(buyer.getId())
             .orElseThrow(() -> new ConflictException("Your cart is empty"));
     if (cart.getItems().isEmpty()) throw new ConflictException("Your cart is empty");
+    ShippingQuoteResponse shippingQuote =
+        shippingQuoteService.quote(cart, shippingQuoteRequest(request));
     BigDecimal subtotal = BigDecimal.ZERO;
     for (CartItem cartItem : cart.getItems())
       subtotal = subtotal.add(cartItem.getBook().getPrice());
@@ -103,8 +112,8 @@ public class OrderService {
             .buyer(buyer)
             .status(OrderStatus.PENDING)
             .subtotal(subtotal)
-            .shippingCost(BigDecimal.ZERO)
-            .totalAmount(subtotal)
+            .shippingCost(shippingQuote.shippingCost())
+            .totalAmount(subtotal.add(shippingQuote.shippingCost()))
             .currency(CURRENCY)
             .recipientName(request.recipientName().trim())
             .recipientEmail(request.recipientEmail().trim().toLowerCase())
@@ -134,7 +143,7 @@ public class OrderService {
               .build();
       order.addItem(item);
     }
-    createSellerOrders(order, request, now);
+    createSellerOrders(order, request, shippingQuote, now);
     Order savedOrder = orderRepository.save(order);
     Payment payment =
         paymentRepository.save(
@@ -197,11 +206,19 @@ public class OrderService {
         sellerOrderService.listForOrder(order.getId()));
   }
 
-  private void createSellerOrders(Order order, CheckoutRequest request, Instant now) {
+  private void createSellerOrders(
+      Order order, CheckoutRequest request, ShippingQuoteResponse shippingQuote, Instant now) {
+    Map<Long, SellerShippingQuoteResponse> quotesBySeller =
+        shippingQuote.packages().stream()
+            .collect(Collectors.toMap(SellerShippingQuoteResponse::sellerId, quote -> quote));
     Map<User, List<OrderItem>> itemsBySeller =
         order.getItems().stream().collect(Collectors.groupingBy(OrderItem::getSeller));
     itemsBySeller.forEach(
         (seller, items) -> {
+          SellerShippingQuoteResponse sellerQuote = quotesBySeller.get(seller.getId());
+          if (sellerQuote == null) {
+            throw new ConflictException("Missing Sameday quote for seller " + seller.getId());
+          }
           BigDecimal itemSubtotal =
               items.stream()
                   .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -219,7 +236,7 @@ public class OrderService {
                   .commissionRate(SellerOrder.COMMISSION_RATE)
                   .commissionAmount(commissionAmount)
                   .sellerProceeds(itemSubtotal.subtract(commissionAmount))
-                  .shippingCost(BigDecimal.ZERO)
+                  .shippingCost(sellerQuote.cost())
                   .acceptBy(now.plus(SellerOrder.ACCEPTANCE_WINDOW))
                   .createdAt(now)
                   .updatedAt(now)
@@ -236,6 +253,11 @@ public class OrderService {
                       request.easyboxPostalCode() == null
                           ? null
                           : request.easyboxPostalCode().trim())
+                  .packageSize(sellerQuote.packageSize())
+                  .packageWeightGrams(sellerQuote.weightGrams())
+                  .packageLengthMm(sellerQuote.lengthMm())
+                  .packageWidthMm(sellerQuote.widthMm())
+                  .packageHeightMm(sellerQuote.heightMm())
                   .status(ShipmentStatus.NOT_CREATED)
                   .statusUpdatedAt(now)
                   .createdAt(now)
@@ -245,6 +267,19 @@ public class OrderService {
           items.forEach(sellerOrder::addItem);
           order.addSellerOrder(sellerOrder);
         });
+  }
+
+  private ShippingQuoteRequest shippingQuoteRequest(CheckoutRequest request) {
+    return new ShippingQuoteRequest(
+        request.easyboxId(),
+        request.easyboxName(),
+        request.easyboxAddress(),
+        request.easyboxCity(),
+        request.easyboxCounty(),
+        request.easyboxPostalCode(),
+        request.recipientName(),
+        request.recipientEmail(),
+        request.recipientPhone());
   }
 
   private User user(String email) {

@@ -176,6 +176,10 @@ class BookServiceTest {
         "English",
         "Prentice Hall",
         (short) 2008,
+        650,
+        230,
+        160,
+        35,
         4L);
   }
 

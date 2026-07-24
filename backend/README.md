@@ -58,3 +58,55 @@ La următoarea pornire, backend-ul creează sau actualizează idempotent:
 Parola poate fi suprascrisă din configurația IntelliJ prin `APP_SEED_PASSWORD`. Seed-ul poate fi oprit fără dezactivarea profilului cu `APP_SEED_ENABLED=false`.
 
 Datele standard din coș și wishlist sunt readăugate la fiecare pornire în profilul `dev` dacă lipsesc. Astfel, scenariul principal de test rămâne repetabil după un checkout.
+
+## Configurare Sameday eAWB
+
+Integrarea este dezactivată implicit, astfel încât lipsa credențialelor Sameday nu oprește
+backend-ul. Pentru activare sunt necesare un contract Sameday business, acces eAWB/API și
+serviciul de livrare Easybox activ în cont.
+
+Contul business se solicită la `https://newcustomers.sameday.ro/register`. La ofertare trebuie
+cerute explicit accesul API/eAWB, livrarea la easybox și predarea coletului de către vânzător la
+easybox (first-mile), plus credențiale separate pentru mediul demo. Dacă serviciile nu apar
+active în eAWB, activarea se cere responsabilului de cont sau suportului Sameday; nu poate fi
+realizată din BookNest.
+
+Variabile pentru mediul demo:
+
+```text
+SAMEDAY_ENABLED=true
+SAMEDAY_BASE_URL=https://sameday-api.demo.zitec.com
+SAMEDAY_USERNAME=...
+SAMEDAY_PASSWORD=...
+SAMEDAY_SERVICE_ID=...
+SAMEDAY_PICKUP_POINT_ID=...
+```
+
+Pentru producție, `SAMEDAY_BASE_URL` devine `https://api.sameday.ro`, iar toate
+credențialele și identificatoarele trebuie înlocuite cu valorile de producție. ID-urile
+serviciilor și punctelor de ridicare sunt diferite între demo și producție.
+
+După obținerea credențialelor, identificatorii se pot afla din API:
+
+1. `POST /api/authenticate`, cu headerele `X-Auth-Username` și `X-Auth-Password`;
+2. `GET /api/client/services`, cu tokenul în `X-AUTH-TOKEN`;
+3. `GET /api/client/pickup-points`, cu același token.
+
+Din lista serviciilor se alege serviciul contractual Sameday Basic/Easybox, iar din lista
+punctelor de ridicare se alege punctul BookNest folosit pentru generarea AWB-urilor.
+Nu salva credențialele în Git și nu le introduce în variabile `VITE_*`.
+
+Fluxul aplicației folosește apoi:
+
+- `GET /api/client/lockers` pentru alegerea Easybox-ului;
+- `POST /api/awb/estimate-cost` pentru tariful contractual înainte de plată;
+- `POST /api/awb` pentru AWB, prin procesarea evenimentului de integrare;
+- `GET /api/client/status-sync` pentru livrare și eligibilitatea payout-ului Stripe la 24 de ore.
+
+După înlocuirea sau ștergerea unei migrări încă neaplicate, rulează o dată:
+
+```text
+mvnw.cmd clean spring-boot:run
+```
+
+Comanda `clean` elimină migrările vechi rămase în `target/classes`.

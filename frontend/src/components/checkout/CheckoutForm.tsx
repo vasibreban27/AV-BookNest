@@ -1,17 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useCheckout } from '../../features/orders/hooks/useOrders'
 import { checkoutSchema } from '../../features/orders/schemas/checkout.schema'
 import type { CheckoutFormValues } from '../../features/orders/types/orders-form.types'
-import type { Easybox } from '../../features/orders/types/orders.types'
+import type { CheckoutPayload, Easybox } from '../../features/orders/types/orders.types'
 import { getOrderErrorMessage } from '../../features/orders/utils/orderErrors'
 import { useEasyboxes } from '../../features/shipping/hooks/useEasyboxes'
+import { useShippingQuote } from '../../features/shipping/hooks/useShippingQuote'
 import { PackageIcon, PinIcon } from '../common/icons/AppIcons'
 import type { CheckoutFormProps } from './types/checkout-component.types'
 
-export function CheckoutForm({ onCompleted }: CheckoutFormProps) {
+export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) {
   const { user } = useAuth()
   const checkout = useCheckout()
   const [search, setSearch] = useState('')
@@ -20,6 +21,7 @@ export function CheckoutForm({ onCompleted }: CheckoutFormProps) {
   const easyboxesQuery = useEasyboxes(search)
   const {
     register,
+    control,
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
@@ -37,6 +39,29 @@ export function CheckoutForm({ onCompleted }: CheckoutFormProps) {
       recipientPhone: '',
     },
   })
+  const formValues = useWatch({ control })
+  const quotePayload: CheckoutPayload | null =
+    selectedEasybox &&
+    (formValues.recipientName?.trim().length ?? 0) >= 3 &&
+    Boolean(formValues.recipientEmail?.includes('@')) &&
+    /^\+?[0-9 ]{9,20}$/.test(formValues.recipientPhone?.trim() ?? '')
+      ? {
+          easyboxId: selectedEasybox.id,
+          easyboxName: selectedEasybox.name,
+          easyboxAddress: selectedEasybox.address,
+          easyboxCity: selectedEasybox.city,
+          easyboxCounty: selectedEasybox.county,
+          easyboxPostalCode: selectedEasybox.postalCode,
+          recipientName: formValues.recipientName!.trim(),
+          recipientEmail: formValues.recipientEmail!.trim(),
+          recipientPhone: formValues.recipientPhone!.trim(),
+        }
+      : null
+  const shippingQuote = useShippingQuote(quotePayload)
+
+  useEffect(() => {
+    onQuoteChange(shippingQuote.data ?? null)
+  }, [onQuoteChange, shippingQuote.data])
 
   const selectEasybox = (easybox: Easybox) => {
     setSelectedEasybox(easybox)
@@ -50,6 +75,10 @@ export function CheckoutForm({ onCompleted }: CheckoutFormProps) {
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null)
+    if (!shippingQuote.data) {
+      setSubmitError('Așteaptă calcularea tarifului Sameday înainte de plată.')
+      return
+    }
     try {
       const order = await checkout.mutateAsync(values)
       onCompleted(order)
@@ -141,7 +170,29 @@ export function CheckoutForm({ onCompleted }: CheckoutFormProps) {
         </div>
       </div>
 
-      <button className="checkout-submit" type="submit" disabled={isSubmitting || checkout.isPending}>
+      {shippingQuote.isFetching && (
+        <p className="checkout-easybox-note">Calculăm tariful contractual Sameday Basic...</p>
+      )}
+      {shippingQuote.isError && (
+        <p className="checkout-form__error">
+          Tariful Sameday nu poate fi calculat. Verifică serviciul Basic și punctul de ridicare configurat.
+        </p>
+      )}
+      {shippingQuote.data && (
+        <div className="checkout-shipping-quote">
+          <strong>Transport: {shippingQuote.data.shippingCost.toFixed(2)} RON</strong>
+          <span>
+            {shippingQuote.data.packages.length} {shippingQuote.data.packages.length === 1 ? 'colet' : 'colete'} ·{' '}
+            {shippingQuote.data.packages.map((parcel) => parcel.packageSize).join(', ')}
+          </span>
+        </div>
+      )}
+
+      <button
+        className="checkout-submit"
+        type="submit"
+        disabled={isSubmitting || checkout.isPending || shippingQuote.isFetching || !shippingQuote.data}
+      >
         {isSubmitting || checkout.isPending ? 'Pregătim plata...' : 'Continuă către plată'}
       </button>
       <small className="checkout-form__legal">Transportul se calculează din oferta Sameday Basic pentru fiecare vânzător.</small>

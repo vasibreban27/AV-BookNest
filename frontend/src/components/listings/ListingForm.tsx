@@ -40,6 +40,10 @@ export function ListingForm({
       language: initialBook?.language ?? 'Română',
       publisher: initialBook?.publisher ?? '',
       publishedYear: initialBook?.publishedYear ?? undefined,
+      weightGrams: initialBook?.weightGrams ?? 500,
+      lengthMm: initialBook?.lengthMm ?? 210,
+      widthMm: initialBook?.widthMm ?? 140,
+      heightMm: initialBook?.heightMm ?? 30,
       categoryId: initialBook?.category.id ?? categories[0]?.id,
     },
   })
@@ -89,6 +93,10 @@ export function ListingForm({
         language: values.language.trim(),
         publisher: values.publisher.trim() || null,
         publishedYear: values.publishedYear ?? null,
+        weightGrams: values.weightGrams,
+        lengthMm: values.lengthMm,
+        widthMm: values.widthMm,
+        heightMm: values.heightMm,
         categoryId: values.categoryId,
       },
       coverFile,
@@ -180,6 +188,33 @@ export function ListingForm({
         </fieldset>
 
         <fieldset className="listing-form__section">
+          <legend>Dimensiuni pentru livrare</legend>
+          <p>Introdu dimensiunile reale ale cartii. Marja pentru ambalaj este adaugata automat la calculul Sameday.</p>
+          <div className="listing-form__grid">
+            <label className="listing-field">
+              <span>Greutate (g) *</span>
+              <input type="number" min="1" max="19850" step="1" aria-invalid={Boolean(errors.weightGrams)} {...register('weightGrams', { valueAsNumber: true })} />
+              {errors.weightGrams && <small>{errors.weightGrams.message}</small>}
+            </label>
+            <label className="listing-field">
+              <span>Lungime (mm) *</span>
+              <input type="number" min="10" max="450" step="1" aria-invalid={Boolean(errors.lengthMm)} {...register('lengthMm', { valueAsNumber: true })} />
+              {errors.lengthMm && <small>{errors.lengthMm.message}</small>}
+            </label>
+            <label className="listing-field">
+              <span>Latime (mm) *</span>
+              <input type="number" min="10" max="425" step="1" aria-invalid={Boolean(errors.widthMm)} {...register('widthMm', { valueAsNumber: true })} />
+              {errors.widthMm && <small>{errors.widthMm.message}</small>}
+            </label>
+            <label className="listing-field">
+              <span>Grosime (mm) *</span>
+              <input type="number" min="1" max="370" step="1" aria-invalid={Boolean(errors.heightMm)} {...register('heightMm', { valueAsNumber: true })} />
+              {errors.heightMm && <small>{errors.heightMm.message}</small>}
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset className="listing-form__section">
           <legend>Coperta</legend>
           <label className="listing-cover-upload">
             <UploadIcon />
@@ -211,6 +246,9 @@ export function ListingForm({
           <small>{formatBookCondition(previewValues.bookCondition ?? 'GOOD')}</small>
           <strong>{formatBookPrice(Number.isFinite(previewValues.price) ? previewValues.price ?? 0 : 0)}</strong>
         </div>
+        <small>
+          {previewValues.weightGrams ?? 0} g · {previewValues.lengthMm ?? 0} × {previewValues.widthMm ?? 0} × {previewValues.heightMm ?? 0} mm
+        </small>
       </aside>
     </form>
   )

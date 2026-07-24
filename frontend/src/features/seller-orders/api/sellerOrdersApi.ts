@@ -1,9 +1,8 @@
 import { api } from '../../../api/client'
-import type { PackageSize, SellerOrder } from '../../orders/types/orders.types'
+import type { SellerOrder } from '../../orders/types/orders.types'
 
 export type AcceptSellerOrderInput = {
   sellerOrderId: number
-  packageSize: PackageSize
 }
 
 export const sellerOrdersApi = {
@@ -12,10 +11,9 @@ export const sellerOrdersApi = {
     return data
   },
 
-  async accept({ sellerOrderId, packageSize }: AcceptSellerOrderInput) {
+  async accept({ sellerOrderId }: AcceptSellerOrderInput) {
     const { data } = await api.patch<SellerOrder>(
       `/seller-orders/${sellerOrderId}/accept`,
-      { packageSize },
     )
     return data
   },

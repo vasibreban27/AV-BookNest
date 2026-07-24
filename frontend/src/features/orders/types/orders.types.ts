@@ -58,6 +58,10 @@ export type Shipment = {
   trackingNumber: string | null
   status: ShipmentStatus
   packageSize: PackageSize | null
+  packageWeightGrams: number | null
+  packageLengthMm: number | null
+  packageWidthMm: number | null
+  packageHeightMm: number | null
   providerStatus: string | null
   statusUpdatedAt: string | null
   labelUrl: string | null
@@ -120,6 +124,22 @@ export type Easybox = {
   postalCode: string
   latitude: number
   longitude: number
+}
+
+export type SellerShippingQuote = {
+  sellerId: number
+  cost: number
+  packageSize: PackageSize
+  weightGrams: number
+  lengthMm: number
+  widthMm: number
+  heightMm: number
+}
+
+export type ShippingQuote = {
+  shippingCost: number
+  currency: string
+  packages: SellerShippingQuote[]
 }
 
 export type OrderDetailsLocationState = {

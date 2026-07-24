@@ -3,7 +3,7 @@ import { formatOrderPrice } from '../../features/orders/utils/orderFormatters'
 import { BookOutlineIcon } from '../common/icons/AppIcons'
 import type { CheckoutSummaryProps } from './types/checkout-component.types'
 
-export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
+export function CheckoutSummary({ cart, quote }: CheckoutSummaryProps) {
   return (
     <aside className="checkout-summary" aria-label="Sumarul comenzii">
       <div className="checkout-summary__heading">
@@ -33,11 +33,11 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
       </div>
       <div className="checkout-summary__line">
         <span>Livrare</span>
-        <strong>Tarif Sameday Basic</strong>
+        <strong>{quote ? formatOrderPrice(quote.shippingCost) : 'Se calculează'}</strong>
       </div>
       <div className="checkout-summary__total">
         <span>Total</span>
-        <strong>{formatOrderPrice(cart.total)} + transport</strong>
+        <strong>{formatOrderPrice(cart.total + (quote?.shippingCost ?? 0))}</strong>
       </div>
       <p>Comanda poate genera colete separate dacă volumele provin de la vânzători diferiți.</p>
     </aside>

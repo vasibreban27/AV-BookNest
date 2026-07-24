@@ -10,6 +10,10 @@ export type ListingPayload = {
   language: string
   publisher: string | null
   publishedYear: number | null
+  weightGrams: number
+  lengthMm: number
+  widthMm: number
+  heightMm: number
   categoryId: number
 }
 

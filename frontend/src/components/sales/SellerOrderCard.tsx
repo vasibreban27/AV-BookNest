@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { PackageSize, SellerOrder } from '../../features/orders/types/orders.types'
+import type { SellerOrder } from '../../features/orders/types/orders.types'
 import {
   formatOrderDate,
   formatOrderPrice,
@@ -14,7 +14,6 @@ import { getSellerOrderErrorMessage } from '../../features/seller-orders/utils/s
 import { BookOutlineIcon, PackageIcon, PinIcon } from '../common/icons/AppIcons'
 
 export function SellerOrderCard({ sellerOrder }: { sellerOrder: SellerOrder }) {
-  const [packageSize, setPackageSize] = useState<PackageSize>('S')
   const [errorMessage, setErrorMessage] = useState('')
   const acceptMutation = useAcceptSellerOrder()
   const cancelMutation = useCancelSellerOrder()
@@ -24,7 +23,7 @@ export function SellerOrderCard({ sellerOrder }: { sellerOrder: SellerOrder }) {
   const accept = async () => {
     setErrorMessage('')
     try {
-      await acceptMutation.mutateAsync({ sellerOrderId: sellerOrder.id, packageSize })
+      await acceptMutation.mutateAsync({ sellerOrderId: sellerOrder.id })
     } catch (error) {
       setErrorMessage(getSellerOrderErrorMessage(error))
     }
@@ -86,14 +85,10 @@ export function SellerOrderCard({ sellerOrder }: { sellerOrder: SellerOrder }) {
       <footer className="seller-shipment-card__actions">
         {sellerOrder.status === 'AWAITING_SELLER' && (
           <>
-            <label className="seller-package-size">
-              Mărime colet
-              <select value={packageSize} onChange={(event) => setPackageSize(event.target.value as PackageSize)}>
-                <option value="S">S · până la 445 × 100 × 470 mm</option>
-                <option value="M">M · până la 445 × 200 × 470 mm</option>
-                <option value="L">L · până la 445 × 390 × 470 mm</option>
-              </select>
-            </label>
+            <p className="seller-package-size">
+              Colet {shipment.packageSize} · {shipment.packageWeightGrams} g ·{' '}
+              {shipment.packageLengthMm} × {shipment.packageWidthMm} × {shipment.packageHeightMm} mm
+            </p>
             <button className="seller-action seller-action--primary" type="button" disabled={isPending} onClick={() => void accept()}>
               Acceptă și generează AWB
             </button>

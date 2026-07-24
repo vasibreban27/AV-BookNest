@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { CheckoutForm } from '../../components/checkout/CheckoutForm'
 import { CheckoutErrorState, CheckoutEmptyState, CheckoutLoadingState } from '../../components/checkout/CheckoutStates'
 import { CheckoutSummary } from '../../components/checkout/CheckoutSummary'
 import { PackageIcon } from '../../components/common/icons/AppIcons'
 import { useCart } from '../../features/cart/hooks/useCart'
-import type { Order } from '../../features/orders/types/orders.types'
+import type { Order, ShippingQuote } from '../../features/orders/types/orders.types'
 
 export function CheckoutPage() {
   const cartQuery = useCart()
   const navigate = useNavigate()
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null)
 
   const handleCompleted = (order: Order) => {
     navigate(`/orders/${order.id}`, { replace: true, state: { placed: true } })
@@ -36,8 +38,8 @@ export function CheckoutPage() {
           )}
           {!cartQuery.isLoading && !cartQuery.isError && cartQuery.data && cartQuery.data.items.length > 0 && (
             <div className="checkout-layout">
-              <CheckoutForm onCompleted={handleCompleted} />
-              <CheckoutSummary cart={cartQuery.data} />
+              <CheckoutForm onCompleted={handleCompleted} onQuoteChange={setShippingQuote} />
+              <CheckoutSummary cart={cartQuery.data} quote={shippingQuote} />
             </div>
           )}
         </div>

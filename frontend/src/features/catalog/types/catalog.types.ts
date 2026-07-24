@@ -30,6 +30,10 @@ export type Book = {
   language: string
   publisher: string | null
   publishedYear: number | null
+  weightGrams: number
+  lengthMm: number
+  widthMm: number
+  heightMm: number
   coverImageUrl: string | null
   sellerId: number
   sellerName: string

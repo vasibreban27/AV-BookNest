@@ -10,11 +10,11 @@ import com.avbooknest.cart.model.CartItem;
 import com.avbooknest.cart.repository.CartRepository;
 import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.NotFoundException;
-import com.avbooknest.notification.model.NotificationType;
 import com.avbooknest.notification.service.NotificationService;
 import com.avbooknest.order.dto.CheckoutRequest;
 import com.avbooknest.order.dto.OrderResponse;
 import com.avbooknest.order.dto.PaymentResponse;
+import com.avbooknest.order.dto.StripeCheckoutResponse;
 import com.avbooknest.order.model.Order;
 import com.avbooknest.order.model.OrderItem;
 import com.avbooknest.order.model.OrderStatus;
@@ -27,6 +27,9 @@ import com.avbooknest.order.repository.OrderRepository;
 import com.avbooknest.order.repository.PaymentRepository;
 import com.avbooknest.payment.model.SellerTransfer;
 import com.avbooknest.payment.repository.SellerTransferRepository;
+import com.avbooknest.payment.stripe.StripeGateway;
+import com.avbooknest.payment.stripe.StripePaymentIntentResult;
+import com.avbooknest.payment.stripe.StripeProperties;
 import com.avbooknest.shipment.model.Shipment;
 import com.avbooknest.shipment.model.ShipmentStatus;
 import com.avbooknest.shipping.dto.SellerShippingQuoteResponse;
@@ -36,6 +39,7 @@ import com.avbooknest.shipping.service.ShippingQuoteService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -56,6 +60,8 @@ public class OrderService {
   private final SellerTransferRepository sellerTransferRepository;
   private final NotificationService notificationService;
   private final ShippingQuoteService shippingQuoteService;
+  private final StripeGateway stripeGateway;
+  private final StripeProperties stripeProperties;
 
   public OrderService(
       OrderRepository orderRepository,
@@ -66,7 +72,9 @@ public class OrderService {
       SellerOrderService sellerOrderService,
       SellerTransferRepository sellerTransferRepository,
       NotificationService notificationService,
-      ShippingQuoteService shippingQuoteService) {
+      ShippingQuoteService shippingQuoteService,
+      StripeGateway stripeGateway,
+      StripeProperties stripeProperties) {
     this.orderRepository = orderRepository;
     this.paymentRepository = paymentRepository;
     this.cartRepository = cartRepository;
@@ -76,6 +84,8 @@ public class OrderService {
     this.sellerTransferRepository = sellerTransferRepository;
     this.notificationService = notificationService;
     this.shippingQuoteService = shippingQuoteService;
+    this.stripeGateway = stripeGateway;
+    this.stripeProperties = stripeProperties;
   }
 
   @Transactional(readOnly = true)
@@ -93,13 +103,26 @@ public class OrderService {
             .orElseThrow(() -> new NotFoundException("Order not found")));
   }
 
-  public OrderResponse checkout(CheckoutRequest request, String email) {
+  public StripeCheckoutResponse checkout(CheckoutRequest request, String email) {
+    if (!stripeProperties.sandboxConfigured()) {
+      throw new com.avbooknest.common.exception.ExternalServiceException(
+          "Stripe sandbox is not configured");
+    }
     User buyer = user(email);
     Cart cart =
         cartRepository
             .findByUserId(buyer.getId())
             .orElseThrow(() -> new ConflictException("Your cart is empty"));
     if (cart.getItems().isEmpty()) throw new ConflictException("Your cart is empty");
+    boolean sellerWithoutStripe =
+        cart.getItems().stream()
+            .map(item -> item.getBook().getSeller())
+            .anyMatch(
+                seller -> seller.getStripeAccountId() == null || !seller.isStripePayoutsEnabled());
+    if (sellerWithoutStripe) {
+      throw new ConflictException(
+          "Every seller must complete Stripe sandbox onboarding before checkout");
+    }
     ShippingQuoteResponse shippingQuote =
         shippingQuoteService.quote(cart, shippingQuoteRequest(request));
     BigDecimal subtotal = BigDecimal.ZERO;
@@ -153,9 +176,20 @@ public class OrderService {
                 .amount(savedOrder.getTotalAmount())
                 .currency(CURRENCY)
                 .status(PaymentStatus.PENDING)
+                .refundedAmount(BigDecimal.ZERO)
                 .createdAt(now)
                 .updatedAt(now)
                 .build());
+    Instant expiresAt =
+        now.plus(Math.max(stripeProperties.paymentExpirationMinutes(), 5), ChronoUnit.MINUTES);
+    StripePaymentIntentResult paymentIntent =
+        stripeGateway.createPaymentIntent(
+            savedOrder.getId(),
+            savedOrder.getOrderNumber(),
+            savedOrder.getTotalAmount(),
+            CURRENCY,
+            savedOrder.getRecipientEmail());
+    payment.bindPaymentIntent(paymentIntent.paymentIntentId(), expiresAt);
     cart.clearItems();
     savedOrder
         .getSellerOrders()
@@ -164,27 +198,19 @@ public class OrderService {
                 sellerTransferRepository.save(
                     SellerTransfer.blocked(
                         sellerOrder, sellerOrder.getSellerProceeds(), CURRENCY, now)));
-    notificationService.create(
-        buyer,
-        NotificationType.ORDER_PLACED,
-        "Order placed",
-        "Your order " + savedOrder.getOrderNumber() + " has been placed.");
-    for (OrderItem item : savedOrder.getItems())
-      notificationService.create(
-          item.getSeller(),
-          NotificationType.BOOK_RESERVED,
-          "Book reserved",
-          "Your book '"
-              + item.getTitle()
-              + "' was reserved by order "
-              + savedOrder.getOrderNumber()
-              + ".");
-    return OrderResponse.from(
-        savedOrder,
-        PaymentResponse.from(payment),
-        savedOrder.getSellerOrders().stream()
-            .map(com.avbooknest.order.dto.SellerOrderResponse::from)
-            .toList());
+    OrderResponse orderResponse =
+        OrderResponse.from(
+            savedOrder,
+            PaymentResponse.from(payment),
+            savedOrder.getSellerOrders().stream()
+                .map(com.avbooknest.order.dto.SellerOrderResponse::from)
+                .toList());
+    return new StripeCheckoutResponse(
+        orderResponse,
+        paymentIntent.clientSecret(),
+        stripeProperties.publishableKey(),
+        stripeProperties.paymentReturnUrl(),
+        expiresAt);
   }
 
   public OrderResponse cancel(Long orderId, String email) {
@@ -231,13 +257,13 @@ public class OrderService {
               SellerOrder.builder()
                   .order(order)
                   .seller(seller)
-                  .status(SellerOrderStatus.AWAITING_SELLER)
+                  .status(SellerOrderStatus.PAYMENT_PENDING)
                   .itemSubtotal(itemSubtotal)
                   .commissionRate(SellerOrder.COMMISSION_RATE)
                   .commissionAmount(commissionAmount)
                   .sellerProceeds(itemSubtotal.subtract(commissionAmount))
                   .shippingCost(sellerQuote.cost())
-                  .acceptBy(now.plus(SellerOrder.ACCEPTANCE_WINDOW))
+                  .acceptBy(null)
                   .createdAt(now)
                   .updatedAt(now)
                   .build();

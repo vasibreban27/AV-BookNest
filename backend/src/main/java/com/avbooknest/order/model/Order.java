@@ -164,6 +164,13 @@ public class Order {
     updatedAt = Instant.now();
   }
 
+  public void markPaid(Instant now) {
+    if (status == OrderStatus.PENDING) {
+      status = OrderStatus.PAID;
+      updatedAt = now;
+    }
+  }
+
   public static Builder builder() {
     return new Builder();
   }

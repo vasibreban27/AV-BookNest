@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SellerTransferRepository extends JpaRepository<SellerTransfer, Long> {
   Optional<SellerTransfer> findBySellerOrderId(Long sellerOrderId);
+
+  Optional<SellerTransfer> findByProviderTransferId(String providerTransferId);
 }

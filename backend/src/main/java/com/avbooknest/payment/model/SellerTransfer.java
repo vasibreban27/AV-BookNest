@@ -72,12 +72,56 @@ public class SellerTransfer {
     return eligibleAt;
   }
 
+  public Long getId() {
+    return id;
+  }
+
+  public SellerOrder getSellerOrder() {
+    return sellerOrder;
+  }
+
+  public String getProviderTransferId() {
+    return providerTransferId;
+  }
+
+  public BigDecimal getAmount() {
+    return amount;
+  }
+
+  public String getCurrency() {
+    return currency;
+  }
+
   public SellerTransferStatus getStatus() {
     return status;
   }
 
   public void scheduleEligibility(Instant value, Instant now) {
     eligibleAt = value;
+    updatedAt = now;
+  }
+
+  public void markReady(Instant now) {
+    status = SellerTransferStatus.READY;
+    failureReason = null;
+    updatedAt = now;
+  }
+
+  public void markCreated(String transferId, Instant now) {
+    providerTransferId = transferId;
+    status = SellerTransferStatus.CREATED;
+    failureReason = null;
+    updatedAt = now;
+  }
+
+  public void markFailed(String reason, Instant now) {
+    status = SellerTransferStatus.FAILED;
+    failureReason = reason;
+    updatedAt = now;
+  }
+
+  public void markReversed(Instant now) {
+    status = SellerTransferStatus.REVERSED;
     updatedAt = now;
   }
 }

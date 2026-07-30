@@ -8,5 +8,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
 
+  Optional<User> findByStripeAccountId(String stripeAccountId);
+
   boolean existsByEmail(String email);
 }

@@ -152,6 +152,21 @@ public class SellerOrderService {
     syncOrder(order, sellerOrders);
   }
 
+  public void cancelUnpaidOrder(Order order) {
+    List<SellerOrder> sellerOrders = sellerOrderRepository.findAllByOrderIdForUpdate(order.getId());
+    Instant now = Instant.now();
+    sellerOrders.stream()
+        .filter(sellerOrder -> sellerOrder.getStatus() != SellerOrderStatus.CANCELLED)
+        .forEach(sellerOrder -> cancelSellerOrder(sellerOrder, now));
+    syncOrder(order, sellerOrders);
+  }
+
+  public void activateAfterPayment(Order order, Instant paidAt) {
+    List<SellerOrder> sellerOrders = sellerOrderRepository.findAllByOrderIdForUpdate(order.getId());
+    sellerOrders.forEach(sellerOrder -> sellerOrder.activateAfterPayment(paidAt));
+    order.markPaid(paidAt);
+  }
+
   private SellerOrder lockForSeller(Long sellerOrderId, String email) {
     return sellerOrderRepository
         .findByIdAndSellerIdForUpdate(sellerOrderId, currentUser(email).getId())
@@ -183,13 +198,19 @@ public class SellerOrderService {
         active.isEmpty()
             ? OrderStatus.CANCELLED
             : active.stream()
-                    .allMatch(sellerOrder -> sellerOrder.getStatus() == SellerOrderStatus.FULFILLED)
-                ? OrderStatus.DELIVERED
+                    .anyMatch(
+                        sellerOrder -> sellerOrder.getStatus() == SellerOrderStatus.PAYMENT_PENDING)
+                ? OrderStatus.PENDING
                 : active.stream()
-                        .anyMatch(
-                            sellerOrder -> sellerOrder.getStatus() == SellerOrderStatus.ACCEPTED)
-                    ? OrderStatus.PROCESSING
-                    : OrderStatus.PENDING;
+                        .allMatch(
+                            sellerOrder -> sellerOrder.getStatus() == SellerOrderStatus.FULFILLED)
+                    ? OrderStatus.DELIVERED
+                    : active.stream()
+                            .anyMatch(
+                                sellerOrder ->
+                                    sellerOrder.getStatus() == SellerOrderStatus.ACCEPTED)
+                        ? OrderStatus.PROCESSING
+                        : OrderStatus.PAID;
     order.updateProgress(status, subtotal, subtotal.add(shipping));
   }
 

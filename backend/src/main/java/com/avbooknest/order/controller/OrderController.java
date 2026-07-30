@@ -2,6 +2,7 @@ package com.avbooknest.order.controller;
 
 import com.avbooknest.order.dto.CheckoutRequest;
 import com.avbooknest.order.dto.OrderResponse;
+import com.avbooknest.order.dto.StripeCheckoutResponse;
 import com.avbooknest.order.service.OrderService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -36,7 +37,7 @@ public class OrderController {
   }
 
   @PostMapping("/checkout")
-  public ResponseEntity<OrderResponse> checkout(
+  public ResponseEntity<StripeCheckoutResponse> checkout(
       @Valid @RequestBody CheckoutRequest request, Authentication auth) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(orderService.checkout(request, auth.getName()));

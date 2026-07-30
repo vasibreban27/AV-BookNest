@@ -19,14 +19,19 @@ import com.avbooknest.cart.repository.CartRepository;
 import com.avbooknest.notification.service.NotificationService;
 import com.avbooknest.order.dto.CheckoutRequest;
 import com.avbooknest.order.dto.OrderResponse;
+import com.avbooknest.order.dto.StripeCheckoutResponse;
 import com.avbooknest.order.model.Order;
 import com.avbooknest.order.model.OrderStatus;
 import com.avbooknest.order.model.Payment;
 import com.avbooknest.order.model.PaymentProvider;
+import com.avbooknest.order.model.SellerOrderStatus;
 import com.avbooknest.order.repository.OrderRepository;
 import com.avbooknest.order.repository.PaymentRepository;
 import com.avbooknest.payment.model.SellerTransfer;
 import com.avbooknest.payment.repository.SellerTransferRepository;
+import com.avbooknest.payment.stripe.StripeGateway;
+import com.avbooknest.payment.stripe.StripePaymentIntentResult;
+import com.avbooknest.payment.stripe.StripeProperties;
 import com.avbooknest.shipment.model.PackageSize;
 import com.avbooknest.shipping.dto.SellerShippingQuoteResponse;
 import com.avbooknest.shipping.dto.ShippingQuoteResponse;
@@ -52,6 +57,7 @@ class OrderServiceTest {
   @Mock private SellerTransferRepository sellerTransferRepository;
   @Mock private NotificationService notificationService;
   @Mock private ShippingQuoteService shippingQuoteService;
+  @Mock private StripeGateway stripeGateway;
   private OrderService orderService;
 
   @BeforeEach
@@ -66,7 +72,17 @@ class OrderServiceTest {
             sellerOrderService,
             sellerTransferRepository,
             notificationService,
-            shippingQuoteService);
+            shippingQuoteService,
+            stripeGateway,
+            new StripeProperties(
+                true,
+                "sk_test_booknest",
+                "pk_test_booknest",
+                "whsec_booknest",
+                "http://localhost:5173/account",
+                "http://localhost:5173/account",
+                "http://localhost:5173/orders",
+                30));
   }
 
   @Test
@@ -94,8 +110,10 @@ class OrderServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
     when(sellerTransferRepository.save(any(SellerTransfer.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
+    when(stripeGateway.createPaymentIntent(any(), any(), any(), any(), any()))
+        .thenReturn(new StripePaymentIntentResult("pi_test_1", "pi_test_1_secret_test"));
 
-    OrderResponse response =
+    StripeCheckoutResponse checkout =
         orderService.checkout(
             new CheckoutRequest(
                 "locker-1",
@@ -108,8 +126,11 @@ class OrderServiceTest {
                 "buyer@example.com",
                 "+40700111222"),
             "buyer@example.com");
+    OrderResponse response = checkout.order();
 
     assertEquals(PaymentProvider.STRIPE, response.payment().provider());
+    assertEquals("pi_test_1_secret_test", checkout.clientSecret());
+    assertEquals(SellerOrderStatus.PAYMENT_PENDING, response.sellerOrders().getFirst().status());
     assertEquals(new BigDecimal("1.50"), response.sellerOrders().getFirst().commissionAmount());
     assertEquals(new BigDecimal("28.50"), response.sellerOrders().getFirst().sellerProceeds());
     assertEquals(new BigDecimal("47.99"), response.totalAmount());
@@ -184,6 +205,9 @@ class OrderServiceTest {
         .role(Role.builder().id(1L).name("USER").build())
         .enabled(true)
         .emailVerified(true)
+        .stripeAccountId("acct_test_" + id)
+        .stripeDetailsSubmitted(true)
+        .stripePayoutsEnabled(true)
         .createdAt(now)
         .updatedAt(now)
         .build();

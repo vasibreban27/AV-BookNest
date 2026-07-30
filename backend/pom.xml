@@ -79,6 +79,13 @@
             <version>2.0.0</version>
         </dependency>
 
+        <!-- Stripe sandbox payments and Connect marketplace transfers -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>33.1.0</version>
+        </dependency>
+
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

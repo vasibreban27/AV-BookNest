@@ -9,4 +9,5 @@ public record SamedayProperties(
     String username,
     String password,
     Integer serviceId,
-    Integer pickupPointId) {}
+    Integer pickupPointId,
+    boolean mockEnabled) {}

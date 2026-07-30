@@ -110,3 +110,61 @@ mvnw.cmd clean spring-boot:run
 ```
 
 Comanda `clean` elimină migrările vechi rămase în `target/classes`.
+
+### Sameday mock pentru dezvoltare
+
+Checkout-ul poate fi testat fără contract sau credențiale Sameday:
+
+```text
+SAMEDAY_ENABLED=true
+SAMEDAY_MOCK_ENABLED=true
+```
+
+În acest mod, backend-ul furnizează lockere de test, calculează un tarif fictiv și generează
+AWB-uri cu prefixul `TEST-SD-`. Nu se face nicio cerere către Sameday și niciun colet real nu
+este creat.
+
+## Stripe sandbox și Connect
+
+Implementarea acceptă exclusiv chei Stripe de test cât timp aplicația este în această etapă.
+Backend-ul refuză cheile live pentru a preveni plățile reale accidentale.
+Pentru acest flux tehnic nu ai nevoie acum de firmă și nu sunt mutați bani reali; verificarea
+juridică și datele comerciale reale vor fi necesare abia înainte de activarea modului live.
+
+1. Creează un cont Stripe și activează sandbox-ul din Dashboard.
+2. Activează Connect pentru modelul marketplace.
+3. Adaugă în configurația backend:
+
+```text
+STRIPE_ENABLED=true
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_CONNECT_RETURN_URL=http://localhost:5173/account?stripe=return
+STRIPE_CONNECT_REFRESH_URL=http://localhost:5173/account?stripe=refresh
+STRIPE_PAYMENT_RETURN_URL=http://localhost:5173/orders
+```
+
+Cheia `sk_test_` și secretul `whsec_` rămân exclusiv în backend. Nu le salva în Git și nu le
+expune prin variabile `VITE_*`.
+
+Pentru webhook local, instalează Stripe CLI, autentifică-te și rulează:
+
+```text
+stripe listen --forward-to localhost:8085/api/stripe/webhook
+```
+
+Valoarea `whsec_...` afișată de comandă devine `STRIPE_WEBHOOK_SECRET`. Evenimentele folosite
+sunt `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`,
+`account.updated` și `transfer.reversed`.
+
+Fluxul de test:
+
+1. vânzătorul deschide pagina **Contul meu** și finalizează onboarding-ul Stripe sandbox;
+2. cumpărătorul alege un Easybox mock și primește tariful de test;
+3. checkout-ul creează comanda rezervată și un `PaymentIntent`;
+4. Payment Element acceptă cardul Stripe `4242 4242 4242 4242`, o dată viitoare și orice CVC;
+5. numai webhook-ul de succes activează comanda și termenul de acceptare de 24 de ore;
+6. o plată nefinalizată expiră după 30 de minute și eliberează cărțile;
+7. după livrare și încă 24 de ore, suma de 95% este transferată în soldul Stripe sandbox al
+   vânzătorului.

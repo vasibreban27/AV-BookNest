@@ -41,6 +41,18 @@ public class User {
   @Column(nullable = false)
   private boolean enabled;
 
+  @Column(name = "stripe_account_id", unique = true, length = 255)
+  private String stripeAccountId;
+
+  @Column(name = "stripe_details_submitted", nullable = false)
+  private boolean stripeDetailsSubmitted;
+
+  @Column(name = "stripe_charges_enabled", nullable = false)
+  private boolean stripeChargesEnabled;
+
+  @Column(name = "stripe_payouts_enabled", nullable = false)
+  private boolean stripePayoutsEnabled;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -58,6 +70,10 @@ public class User {
     this.role = builder.role;
     this.emailVerified = builder.emailVerified;
     this.enabled = builder.enabled;
+    this.stripeAccountId = builder.stripeAccountId;
+    this.stripeDetailsSubmitted = builder.stripeDetailsSubmitted;
+    this.stripeChargesEnabled = builder.stripeChargesEnabled;
+    this.stripePayoutsEnabled = builder.stripePayoutsEnabled;
     this.createdAt = builder.createdAt;
     this.updatedAt = builder.updatedAt;
   }
@@ -94,6 +110,35 @@ public class User {
     return enabled;
   }
 
+  public String getStripeAccountId() {
+    return stripeAccountId;
+  }
+
+  public boolean isStripeDetailsSubmitted() {
+    return stripeDetailsSubmitted;
+  }
+
+  public boolean isStripeChargesEnabled() {
+    return stripeChargesEnabled;
+  }
+
+  public boolean isStripePayoutsEnabled() {
+    return stripePayoutsEnabled;
+  }
+
+  public void connectStripeAccount(String accountId) {
+    stripeAccountId = accountId;
+    updatedAt = Instant.now();
+  }
+
+  public void updateStripeStatus(
+      boolean detailsSubmitted, boolean chargesEnabled, boolean payoutsEnabled) {
+    stripeDetailsSubmitted = detailsSubmitted;
+    stripeChargesEnabled = chargesEnabled;
+    stripePayoutsEnabled = payoutsEnabled;
+    updatedAt = Instant.now();
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -115,6 +160,10 @@ public class User {
     private Role role;
     private boolean emailVerified;
     private boolean enabled;
+    private String stripeAccountId;
+    private boolean stripeDetailsSubmitted;
+    private boolean stripeChargesEnabled;
+    private boolean stripePayoutsEnabled;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -155,6 +204,26 @@ public class User {
 
     public Builder enabled(boolean enabled) {
       this.enabled = enabled;
+      return this;
+    }
+
+    public Builder stripeAccountId(String value) {
+      stripeAccountId = value;
+      return this;
+    }
+
+    public Builder stripeDetailsSubmitted(boolean value) {
+      stripeDetailsSubmitted = value;
+      return this;
+    }
+
+    public Builder stripeChargesEnabled(boolean value) {
+      stripeChargesEnabled = value;
+      return this;
+    }
+
+    public Builder stripePayoutsEnabled(boolean value) {
+      stripePayoutsEnabled = value;
       return this;
     }
 

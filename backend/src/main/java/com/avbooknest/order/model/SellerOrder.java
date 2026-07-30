@@ -60,7 +60,7 @@ public class SellerOrder {
   @Column(name = "shipping_cost", nullable = false, precision = 12, scale = 2)
   private BigDecimal shippingCost;
 
-  @Column(name = "accept_by", nullable = false)
+  @Column(name = "accept_by")
   private Instant acceptBy;
 
   @Column(name = "dropoff_by")
@@ -197,6 +197,15 @@ public class SellerOrder {
     shipment.queueAwb(now);
   }
 
+  public void activateAfterPayment(Instant now) {
+    if (status != SellerOrderStatus.PAYMENT_PENDING) {
+      return;
+    }
+    status = SellerOrderStatus.AWAITING_SELLER;
+    acceptBy = now.plus(ACCEPTANCE_WINDOW);
+    updatedAt = now;
+  }
+
   public void cancel(Instant now) {
     status = SellerOrderStatus.CANCELLED;
     cancelledAt = now;
@@ -211,7 +220,7 @@ public class SellerOrder {
   }
 
   public boolean acceptanceExpired(Instant now) {
-    return !now.isBefore(acceptBy);
+    return acceptBy != null && !now.isBefore(acceptBy);
   }
 
   public static Builder builder() {

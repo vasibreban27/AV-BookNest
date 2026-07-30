@@ -9,6 +9,7 @@ import com.avbooknest.shipping.dto.ShippingQuoteRequest;
 import com.avbooknest.shipping.model.ParcelMetrics;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,6 +38,9 @@ public class SamedayClient {
   }
 
   public List<EasyboxResponse> lockers(String search) {
+    if (properties.mockEnabled()) {
+      return mockLockers(search);
+    }
     requireCredentials();
     try {
       JsonNode response =
@@ -55,15 +59,20 @@ public class SamedayClient {
       if (response == null || !response.path("data").isArray()) {
         throw new ExternalServiceException("Sameday returned an invalid locker response");
       }
-      String normalizedSearch = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
+      String normalizedSearch = normalizeSearch(search);
       List<EasyboxResponse> lockers = new ArrayList<>();
       for (JsonNode locker : response.path("data")) {
         EasyboxResponse mapped = mapLocker(locker);
         String searchable =
-            (mapped.name() + " " + mapped.address() + " " + mapped.city() + " " + mapped.county())
-                .toLowerCase(Locale.ROOT);
-        if ((normalizedSearch.isBlank() || searchable.contains(normalizedSearch))
-            && lockers.size() < 50) {
+            normalizeSearch(
+                mapped.name()
+                    + " "
+                    + mapped.address()
+                    + " "
+                    + mapped.city()
+                    + " "
+                    + mapped.county());
+        if (matchesSearch(searchable, normalizedSearch) && lockers.size() < 50) {
           lockers.add(mapped);
         }
       }
@@ -77,6 +86,16 @@ public class SamedayClient {
   }
 
   public SamedayEstimate estimateCost(ParcelMetrics parcel, ShippingQuoteRequest destination) {
+    if (properties.mockEnabled()) {
+      BigDecimal extraKilograms =
+          parcel
+              .weightKg()
+              .subtract(BigDecimal.ONE)
+              .max(BigDecimal.ZERO)
+              .setScale(0, java.math.RoundingMode.UP);
+      return new SamedayEstimate(
+          new BigDecimal("13.99").add(extraKilograms.multiply(new BigDecimal("1.50"))), "RON");
+    }
     requireAwbConfiguration();
     try {
       MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
@@ -128,6 +147,10 @@ public class SamedayClient {
   }
 
   public SamedayAwb createAwb(SellerOrder sellerOrder) {
+    if (properties.mockEnabled()) {
+      String awb = "TEST-SD-" + sellerOrder.getId();
+      return new SamedayAwb(awb, awb + "-P1");
+    }
     requireAwbConfiguration();
     Shipment shipment = sellerOrder.getShipment();
     Order order = sellerOrder.getOrder();
@@ -179,6 +202,9 @@ public class SamedayClient {
   }
 
   public List<SamedayStatusUpdate> statusUpdates(Instant start, Instant end) {
+    if (properties.mockEnabled()) {
+      return List.of();
+    }
     requireCredentials();
     try {
       JsonNode response =
@@ -260,6 +286,84 @@ public class SamedayClient {
     return value.isNumber() ? value.decimalValue() : new BigDecimal(value.asText("0"));
   }
 
+  private List<EasyboxResponse> mockLockers(String search) {
+    List<EasyboxResponse> lockers =
+        List.of(
+            new EasyboxResponse(
+                "TEST-CLJ-001",
+                "easybox BookNest Cluj Centru",
+                "Strada Memorandumului 10",
+                "Cluj-Napoca",
+                "Cluj",
+                "400114",
+                new BigDecimal("46.7705"),
+                new BigDecimal("23.5899")),
+            new EasyboxResponse(
+                "TEST-CLJ-002",
+                "easybox BookNest Cluj Mărăști",
+                "Strada Fabricii 12",
+                "Cluj-Napoca",
+                "Cluj",
+                "400620",
+                new BigDecimal("46.7834"),
+                new BigDecimal("23.6138")),
+            new EasyboxResponse(
+                "TEST-BUC-001",
+                "easybox BookNest București Unirii",
+                "Bulevardul Unirii 20",
+                "București",
+                "București",
+                "030823",
+                new BigDecimal("44.4268"),
+                new BigDecimal("26.1025")),
+            new EasyboxResponse(
+                "TEST-TM-001",
+                "easybox BookNest Timișoara Centru",
+                "Strada Alba Iulia 2",
+                "Timișoara",
+                "Timiș",
+                "300077",
+                new BigDecimal("45.7537"),
+                new BigDecimal("21.2257")));
+    String normalized = normalizeSearch(search);
+    return lockers.stream()
+        .filter(
+            locker ->
+                matchesSearch(
+                    normalizeSearch(
+                        locker.name()
+                            + " "
+                            + locker.address()
+                            + " "
+                            + locker.city()
+                            + " "
+                            + locker.county()),
+                    normalized))
+        .toList();
+  }
+
+  private boolean matchesSearch(String searchable, String normalizedSearch) {
+    if (normalizedSearch.isBlank()) {
+      return true;
+    }
+    for (String term : normalizedSearch.split("\\s+")) {
+      if (!searchable.contains(term)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private String normalizeSearch(String value) {
+    if (value == null) {
+      return "";
+    }
+    return Normalizer.normalize(value, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}+", "")
+        .trim()
+        .toLowerCase(Locale.ROOT);
+  }
+
   private void addParcelConfiguration(
       MultiValueMap<String, String> body, ParcelMetrics parcel, String easyboxId) {
     body.add("pickupPoint", properties.pickupPointId().toString());
@@ -302,6 +406,9 @@ public class SamedayClient {
   }
 
   private void requireCredentials() {
+    if (properties.mockEnabled()) {
+      return;
+    }
     if (!properties.enabled()
         || properties.username() == null
         || properties.username().isBlank()
@@ -312,6 +419,9 @@ public class SamedayClient {
   }
 
   private void requireAwbConfiguration() {
+    if (properties.mockEnabled()) {
+      return;
+    }
     requireCredentials();
     if (properties.serviceId() == null || properties.pickupPointId() == null) {
       throw new ExternalServiceException(

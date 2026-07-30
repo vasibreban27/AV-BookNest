@@ -35,6 +35,9 @@ public class Payment {
   @Column(name = "provider_checkout_session_id", unique = true, length = 255)
   private String providerCheckoutSessionId;
 
+  @Column(name = "provider_charge_id", unique = true, length = 255)
+  private String providerChargeId;
+
   @Column(nullable = false, precision = 12, scale = 2)
   private BigDecimal amount;
 
@@ -51,6 +54,12 @@ public class Payment {
   @Column(name = "paid_at")
   private Instant paidAt;
 
+  @Column(name = "expires_at")
+  private Instant expiresAt;
+
+  @Column(name = "refunded_amount", nullable = false, precision = 12, scale = 2)
+  private BigDecimal refundedAmount;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -65,11 +74,14 @@ public class Payment {
     provider = b.provider;
     providerPaymentId = b.providerPaymentId;
     providerCheckoutSessionId = b.providerCheckoutSessionId;
+    providerChargeId = b.providerChargeId;
     amount = b.amount;
     currency = b.currency;
     status = b.status;
     failureReason = b.failureReason;
     paidAt = b.paidAt;
+    expiresAt = b.expiresAt;
+    refundedAmount = b.refundedAmount == null ? BigDecimal.ZERO : b.refundedAmount;
     createdAt = b.createdAt;
     updatedAt = b.updatedAt;
   }
@@ -94,6 +106,10 @@ public class Payment {
     return providerCheckoutSessionId;
   }
 
+  public String getProviderChargeId() {
+    return providerChargeId;
+  }
+
   public BigDecimal getAmount() {
     return amount;
   }
@@ -112,6 +128,14 @@ public class Payment {
 
   public Instant getPaidAt() {
     return paidAt;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public BigDecimal getRefundedAmount() {
+    return refundedAmount;
   }
 
   public Instant getCreatedAt() {
@@ -135,10 +159,45 @@ public class Payment {
     updatedAt = Instant.now();
   }
 
-  public void succeed() {
+  public void bindPaymentIntent(String paymentIntentId, Instant expiration) {
+    providerPaymentId = paymentIntentId;
+    expiresAt = expiration;
+    status = PaymentStatus.PENDING;
+    updatedAt = Instant.now();
+  }
+
+  public void stopExpirationTracking() {
+    expiresAt = null;
+    updatedAt = Instant.now();
+  }
+
+  public void fail(String reason) {
+    status = PaymentStatus.FAILED;
+    failureReason = reason;
+    updatedAt = Instant.now();
+  }
+
+  public void succeed(String chargeId, Instant now) {
+    providerChargeId = chargeId;
     status = PaymentStatus.SUCCEEDED;
-    paidAt = Instant.now();
+    failureReason = null;
+    paidAt = now;
     updatedAt = paidAt;
+  }
+
+  public void refund(BigDecimal value, Instant now) {
+    refundedAmount = refundedAmount.add(value);
+    status =
+        refundedAmount.compareTo(amount) >= 0
+            ? PaymentStatus.REFUNDED
+            : PaymentStatus.PARTIALLY_REFUNDED;
+    updatedAt = now;
+  }
+
+  public boolean canExpire(Instant now) {
+    return (status == PaymentStatus.PENDING || status == PaymentStatus.FAILED)
+        && expiresAt != null
+        && !now.isBefore(expiresAt);
   }
 
   public static Builder builder() {
@@ -151,11 +210,14 @@ public class Payment {
     private PaymentProvider provider;
     private String providerPaymentId;
     private String providerCheckoutSessionId;
+    private String providerChargeId;
     private BigDecimal amount;
     private String currency;
     private PaymentStatus status;
     private String failureReason;
     private Instant paidAt;
+    private Instant expiresAt;
+    private BigDecimal refundedAmount;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -184,6 +246,11 @@ public class Payment {
       return this;
     }
 
+    public Builder providerChargeId(String value) {
+      providerChargeId = value;
+      return this;
+    }
+
     public Builder amount(BigDecimal v) {
       amount = v;
       return this;
@@ -206,6 +273,16 @@ public class Payment {
 
     public Builder paidAt(Instant v) {
       paidAt = v;
+      return this;
+    }
+
+    public Builder expiresAt(Instant value) {
+      expiresAt = value;
+      return this;
+    }
+
+    public Builder refundedAmount(BigDecimal value) {
+      refundedAmount = value;
       return this;
     }
 

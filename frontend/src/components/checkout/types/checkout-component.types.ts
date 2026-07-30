@@ -1,8 +1,11 @@
 import type { Cart } from '../../../features/cart/types/cart.types'
-import type { Order, ShippingQuote } from '../../../features/orders/types/orders.types'
+import type {
+  ShippingQuote,
+  StripeCheckoutSession,
+} from '../../../features/orders/types/orders.types'
 
 export type CheckoutFormProps = {
-  onCompleted: (order: Order) => void
+  onPrepared: (session: StripeCheckoutSession) => void
   onQuoteChange: (quote: ShippingQuote | null) => void
 }
 
@@ -13,4 +16,9 @@ export type CheckoutSummaryProps = {
 
 export type CheckoutErrorStateProps = {
   onRetry: () => void
+}
+
+export type StripePaymentFormProps = {
+  session: StripeCheckoutSession
+  onCompleted: () => void
 }

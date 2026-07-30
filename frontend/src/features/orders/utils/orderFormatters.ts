@@ -26,6 +26,7 @@ const paymentStatusLabels: Record<PaymentStatus, string> = {
 }
 
 const sellerOrderStatusLabels: Record<SellerOrderStatus, string> = {
+  PAYMENT_PENDING: 'Așteaptă plata Stripe',
   AWAITING_SELLER: 'Așteaptă acceptarea',
   ACCEPTED: 'Acceptată',
   FULFILLED: 'Finalizată',

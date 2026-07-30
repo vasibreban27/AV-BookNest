@@ -1,5 +1,5 @@
 import { api } from '../../../api/client'
-import type { CheckoutPayload, Order } from '../types/orders.types'
+import type { CheckoutPayload, Order, StripeCheckoutSession } from '../types/orders.types'
 
 export const ordersApi = {
   async list() {
@@ -13,7 +13,7 @@ export const ordersApi = {
   },
 
   async checkout(payload: CheckoutPayload) {
-    const { data } = await api.post<Order>('/orders/checkout', payload)
+    const { data } = await api.post<StripeCheckoutSession>('/orders/checkout', payload)
     return data
   },
 

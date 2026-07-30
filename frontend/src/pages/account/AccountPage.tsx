@@ -1,4 +1,5 @@
 import { CheckIcon, MailIcon, UserIcon } from '../../components/common/Icons'
+import { StripeConnectCard } from '../../components/account/StripeConnectCard'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 
 export function AccountPage() {
@@ -40,6 +41,7 @@ export function AccountPage() {
             </div>
           </div>
         </div>
+        <StripeConnectCard />
       </section>
     </main>
   )

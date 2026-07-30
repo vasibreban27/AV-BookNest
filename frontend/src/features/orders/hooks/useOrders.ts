@@ -28,6 +28,8 @@ export function useOrder(orderId: number) {
     queryKey: orderQueryKeys.detail(user?.id, orderId),
     queryFn: () => ordersApi.get(orderId),
     enabled: Boolean(user) && Number.isInteger(orderId) && orderId > 0,
+    refetchInterval: (query) =>
+      query.state.data?.payment?.status === 'PENDING' ? 2_000 : false,
   })
 }
 
@@ -43,7 +45,8 @@ export function useCheckout() {
       void queryClient.invalidateQueries({ queryKey: cartQueryKey(user?.id) })
       void queryClient.invalidateQueries({ queryKey: ['catalog', 'books'] })
     },
-    onSuccess: (order) => {
+    onSuccess: (session) => {
+      const order = session.order
       queryClient.setQueryData(orderQueryKeys.detail(user?.id, order.id), order)
       queryClient.setQueryData<Order[]>(orderQueryKeys.list(user?.id), (orders = []) => [
         order,

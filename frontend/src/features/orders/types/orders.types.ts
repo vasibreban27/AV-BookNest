@@ -15,7 +15,12 @@ export type PaymentStatus =
   | 'CANCELLED'
   | 'PARTIALLY_REFUNDED'
   | 'REFUNDED'
-export type SellerOrderStatus = 'AWAITING_SELLER' | 'ACCEPTED' | 'FULFILLED' | 'CANCELLED'
+export type SellerOrderStatus =
+  | 'PAYMENT_PENDING'
+  | 'AWAITING_SELLER'
+  | 'ACCEPTED'
+  | 'FULFILLED'
+  | 'CANCELLED'
 export type ShipmentStatus =
   | 'NOT_CREATED'
   | 'AWB_PENDING'
@@ -81,7 +86,7 @@ export type SellerOrder = {
   commissionAmount: number
   sellerProceeds: number
   shippingCost: number
-  acceptBy: string
+  acceptBy: string | null
   dropoffBy: string | null
   acceptedAt: string | null
   createdAt: string
@@ -140,6 +145,14 @@ export type ShippingQuote = {
   shippingCost: number
   currency: string
   packages: SellerShippingQuote[]
+}
+
+export type StripeCheckoutSession = {
+  order: Order
+  clientSecret: string
+  publishableKey: string
+  returnUrl: string
+  expiresAt: string
 }
 
 export type OrderDetailsLocationState = {

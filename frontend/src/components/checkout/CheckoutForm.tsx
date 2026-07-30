@@ -12,13 +12,14 @@ import { useShippingQuote } from '../../features/shipping/hooks/useShippingQuote
 import { PackageIcon, PinIcon } from '../common/icons/AppIcons'
 import type { CheckoutFormProps } from './types/checkout-component.types'
 
-export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) {
+export function CheckoutForm({ onPrepared, onQuoteChange }: CheckoutFormProps) {
   const { user } = useAuth()
   const checkout = useCheckout()
   const [search, setSearch] = useState('')
   const [selectedEasybox, setSelectedEasybox] = useState<Easybox | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const easyboxesQuery = useEasyboxes(search)
+  const hasEasyboxSearch = search.trim().length >= 3
   const {
     register,
     control,
@@ -58,6 +59,8 @@ export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) 
         }
       : null
   const shippingQuote = useShippingQuote(quotePayload)
+  const isPreparingPayment = isSubmitting || checkout.isPending
+  const isCalculatingShipping = shippingQuote.isFetching
 
   useEffect(() => {
     onQuoteChange(shippingQuote.data ?? null)
@@ -80,8 +83,8 @@ export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) 
       return
     }
     try {
-      const order = await checkout.mutateAsync(values)
-      onCompleted(order)
+      const session = await checkout.mutateAsync(values)
+      onPrepared(session)
     } catch (error) {
       setSubmitError(getOrderErrorMessage(error))
     }
@@ -122,15 +125,28 @@ export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) 
         <p className="checkout-form__error">Lista Easybox nu este disponibilă. Verifică configurarea Sameday.</p>
       )}
       {easyboxesQuery.data && easyboxesQuery.data.length > 0 && !selectedEasybox && (
-        <div className="checkout-easybox-results">
-          {easyboxesQuery.data.map((easybox) => (
-            <button type="button" key={easybox.id} onClick={() => selectEasybox(easybox)}>
-              <strong>{easybox.name}</strong>
-              <span>{easybox.address}, {easybox.city}, {easybox.county}</span>
-            </button>
-          ))}
-        </div>
+        <>
+          <p className="checkout-easybox-note checkout-easybox-note--results">
+            Selectează un Easybox din rezultate:
+          </p>
+          <div className="checkout-easybox-results">
+            {easyboxesQuery.data.map((easybox) => (
+              <button type="button" key={easybox.id} onClick={() => selectEasybox(easybox)}>
+                <strong>{easybox.name}</strong>
+                <span>{easybox.address}, {easybox.city}, {easybox.county}</span>
+              </button>
+            ))}
+          </div>
+        </>
       )}
+      {hasEasyboxSearch &&
+        !easyboxesQuery.isFetching &&
+        !easyboxesQuery.isError &&
+        easyboxesQuery.data?.length === 0 && (
+          <p className="checkout-easybox-empty">
+            Nu am găsit niciun Easybox. Încearcă doar orașul sau o parte din adresă.
+          </p>
+        )}
       {selectedEasybox && (
         <div className="checkout-easybox-selected">
           <PinIcon />
@@ -174,9 +190,15 @@ export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) 
         <p className="checkout-easybox-note">Calculăm tariful contractual Sameday Basic...</p>
       )}
       {shippingQuote.isError && (
-        <p className="checkout-form__error">
-          Tariful Sameday nu poate fi calculat. Verifică serviciul Basic și punctul de ridicare configurat.
-        </p>
+        <div className="checkout-form__error">
+          <span>
+            Tariful Sameday nu poate fi calculat. Verifică serviciul Basic și punctul de ridicare
+            configurat.
+          </span>
+          <button type="button" onClick={() => void shippingQuote.refetch()}>
+            Reîncearcă
+          </button>
+        </div>
       )}
       {shippingQuote.data && (
         <div className="checkout-shipping-quote">
@@ -187,13 +209,24 @@ export function CheckoutForm({ onCompleted, onQuoteChange }: CheckoutFormProps) 
           </span>
         </div>
       )}
+      {!shippingQuote.data && !shippingQuote.isFetching && !shippingQuote.isError && (
+        <p className="checkout-easybox-note checkout-easybox-note--action">
+          {selectedEasybox
+            ? 'Completează datele destinatarului pentru a calcula transportul.'
+            : 'Caută și selectează un Easybox din lista de mai sus.'}
+        </p>
+      )}
 
       <button
-        className="checkout-submit"
+        className={`checkout-submit${isPreparingPayment || isCalculatingShipping ? ' checkout-submit--loading' : ''}`}
         type="submit"
-        disabled={isSubmitting || checkout.isPending || shippingQuote.isFetching || !shippingQuote.data}
+        disabled={isPreparingPayment || isCalculatingShipping}
       >
-        {isSubmitting || checkout.isPending ? 'Pregătim plata...' : 'Continuă către plată'}
+        {isPreparingPayment
+          ? 'Pregătim plata...'
+          : isCalculatingShipping
+            ? 'Calculăm transportul...'
+            : 'Continuă către plată'}
       </button>
       <small className="checkout-form__legal">Transportul se calculează din oferta Sameday Basic pentru fiecare vânzător.</small>
     </form>

@@ -92,6 +92,16 @@
 .orders-state a,
 .orders-state button { display: grid; min-width: 150px; min-height: 43px; margin-top: 22px; padding: 0 18px; place-items: center; border: 0; border-radius: 11px; color: white; background: var(--forest); cursor: pointer; font-size: 10px; font-weight: 700; text-decoration: none; }
 .orders-state--error > span { color: var(--terracotta); background: #faeae4; }
+.order-issue { display: grid; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid #ead7a8; border-radius: 11px; color: #775816; background: #fff9e9; }
+.order-issue p { margin: 0; font-size: 11px; line-height: 1.5; }
+.order-issue button { justify-self: start; min-height: 36px; padding: 0 13px; border: 0; border-radius: 9px; color: white; background: var(--terracotta); cursor: pointer; font-size: 10px; font-weight: 700; }
+.order-issue button:disabled { cursor: wait; opacity: .6; }
+.order-issue--open { border-color: #efb3a5; color: #8e3e31; background: #fff0ec; }
+.order-issue--form label { font-size: 11px; font-weight: 700; }
+.order-issue--form textarea { width: 100%; padding: 11px; resize: vertical; border: 1px solid #d8d4ca; border-radius: 9px; font: inherit; }
+.order-issue--form > div { display: flex; gap: 8px; }
+.order-issue--form > div button:first-child { color: var(--ink); background: #eeeae1; }
+.order-issue small { color: #a54f3f; }
 @keyframes orderPulse { to { opacity: .5; } }
 
 @media (max-width: 900px) { .order-details-summary { position: static; } }

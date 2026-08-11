@@ -32,6 +32,7 @@ export type ShipmentStatus =
   | 'LOST'
   | 'CANCELLED'
 export type PackageSize = 'S' | 'M' | 'L'
+export type OrderIssueStatus = 'NONE' | 'OPEN' | 'RESOLVED'
 
 export type OrderItem = {
   id: number
@@ -89,6 +90,13 @@ export type SellerOrder = {
   acceptBy: string | null
   dropoffBy: string | null
   acceptedAt: string | null
+  fulfilledAt: string | null
+  issueStatus: OrderIssueStatus
+  issueReason: string | null
+  issueOpenedAt: string | null
+  issueResolvedAt: string | null
+  issueDeadline: string | null
+  canReportIssue: boolean
   createdAt: string
   items: OrderItem[]
   shipment: Shipment

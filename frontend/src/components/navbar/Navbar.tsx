@@ -5,6 +5,7 @@ import { CloseIcon, MenuIcon } from '../common/icons/AppIcons'
 import { Logo } from '../common/Logo'
 import { NavbarWishlist } from '../wishlist/NavbarWishlist'
 import { UserMenu } from './UserMenu'
+import { NavbarNotifications } from '../notifications/NavbarNotifications'
 
 const navigationItems = [
   { label: 'Descoperă', to: '/#catalog' },
@@ -73,6 +74,7 @@ export function Navbar() {
           <div className="app-navbar__account">
             <span className="app-navbar__section-label">Colecția ta</span>
             <div className="app-navbar__quick-actions">
+              <NavbarNotifications onNavigate={closeMenu} />
               <NavbarWishlist onNavigate={closeMenu} />
               <NavbarCart onNavigate={closeMenu} />
             </div>

@@ -80,3 +80,44 @@ export function useCancelOrder() {
     },
   })
 }
+
+export function useReportOrderIssue(orderId: number) {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ sellerOrderId, reason }: { sellerOrderId: number; reason: string }) =>
+      ordersApi.reportIssue(orderId, sellerOrderId, reason),
+    onSuccess: (sellerOrder) => {
+      queryClient.setQueryData<Order>(
+        orderQueryKeys.detail(user?.id, orderId),
+        (order) => order ? {
+          ...order,
+          sellerOrders: order.sellerOrders.map((item) =>
+            item.id === sellerOrder.id ? sellerOrder : item,
+          ),
+        } : order,
+      )
+    },
+  })
+}
+
+export function useResolveOrderIssue(orderId: number) {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (sellerOrderId: number) => ordersApi.resolveIssue(orderId, sellerOrderId),
+    onSuccess: (sellerOrder) => {
+      queryClient.setQueryData<Order>(
+        orderQueryKeys.detail(user?.id, orderId),
+        (order) => order ? {
+          ...order,
+          sellerOrders: order.sellerOrders.map((item) =>
+            item.id === sellerOrder.id ? sellerOrder : item,
+          ),
+        } : order,
+      )
+    },
+  })
+}

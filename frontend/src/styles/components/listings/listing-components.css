@@ -87,6 +87,8 @@
 .listing-preview > div:last-child { display: flex; align-items: flex-end; justify-content: space-between; gap: 15px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--home-line); }
 .listing-preview > div:last-child small { color: var(--muted); }
 .listing-preview > div:last-child strong { color: var(--forest); }
+.listing-state-action { display: inline-grid; min-height: 42px; margin-top: 16px; padding: 0 18px; place-items: center; border-radius: 11px; color: white; background: var(--forest); font-size: 12px; font-weight: 700; text-decoration: none; }
+.listing-state-action:hover { background: var(--forest-dark); }
 
 .listings-grid { display: grid; gap: 16px; }
 .listing-card { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 20px; padding: 18px; border-radius: 18px; }

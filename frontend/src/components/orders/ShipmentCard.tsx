@@ -1,6 +1,7 @@
 import { formatOrderPrice, formatShipmentStatus } from '../../features/orders/utils/orderFormatters'
 import { PackageIcon, PinIcon } from '../common/icons/AppIcons'
 import type { ShipmentCardProps } from './types/order-component.types'
+import { OrderIssueActions } from './OrderIssueActions'
 
 export function ShipmentCard({ sellerOrder, currency }: ShipmentCardProps) {
   const { shipment } = sellerOrder
@@ -31,6 +32,7 @@ export function ShipmentCard({ sellerOrder, currency }: ShipmentCardProps) {
       {shipment.trackingNumber && (
         <p className="shipment-card__tracking">AWB Sameday: <strong>{shipment.trackingNumber}</strong></p>
       )}
+      <OrderIssueActions orderId={sellerOrder.orderId} sellerOrder={sellerOrder} />
     </article>
   )
 }

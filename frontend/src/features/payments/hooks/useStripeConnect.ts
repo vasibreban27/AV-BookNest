@@ -26,3 +26,10 @@ export function useStripeOnboarding() {
     },
   })
 }
+
+export function useStripeDashboard() {
+  return useMutation({
+    mutationFn: stripeApi.dashboardLink,
+    onSuccess: ({ url }) => window.location.assign(url),
+  })
+}

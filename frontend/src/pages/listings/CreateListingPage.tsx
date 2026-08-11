@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ListingForm } from '../../components/listings/ListingForm'
 import { ListingFormLoadingState, ListingsErrorState } from '../../components/listings/ListingStates'
 import { useCreateListing, useListingCategories } from '../../features/listings/hooks/useListings'
 import { getListingErrorMessage, ListingCreatedWithoutCoverError } from '../../features/listings/utils/listingErrors'
 import type { ListingFormSubmission } from '../../components/listings/types/listing-component.types'
+import { useStripeConnectStatus } from '../../features/payments/hooks/useStripeConnect'
 
 export function CreateListingPage() {
   const navigate = useNavigate()
   const categoriesQuery = useListingCategories()
   const createListing = useCreateListing()
+  const stripeStatus = useStripeConnectStatus()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleSubmit = async ({ payload, coverFile }: ListingFormSubmission) => {
@@ -33,9 +35,16 @@ export function CreateListingPage() {
     <main className="listing-editor-page">
       <section className="listing-editor-content">
         <div className="listings-page__container">
-          {categoriesQuery.isLoading && <ListingFormLoadingState />}
+          {(categoriesQuery.isLoading || stripeStatus.isLoading) && <ListingFormLoadingState />}
           {categoriesQuery.isError && <ListingsErrorState onRetry={() => void categoriesQuery.refetch()} />}
-          {categoriesQuery.data && categoriesQuery.data.length > 0 && (
+          {!stripeStatus.isLoading && !stripeStatus.data?.payoutsEnabled && (
+            <div className="listings-state">
+              <h2>Conectează Stripe înainte să publici</h2>
+              <p>Finalizează onboardingul sandbox pentru ca viitorii cumpărători să poată plăti fără blocaje la checkout.</p>
+              <Link className="listing-state-action" to="/account">Configurează Stripe în Contul meu</Link>
+            </div>
+          )}
+          {stripeStatus.data?.payoutsEnabled && categoriesQuery.data && categoriesQuery.data.length > 0 && (
             <ListingForm
               categories={categoriesQuery.data}
               mode="create"

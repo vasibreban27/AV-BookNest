@@ -9,3 +9,7 @@ export type StripeConnectStatus = {
 export type StripeOnboardingLink = {
   url: string
 }
+
+export type StripeDashboardLink = {
+  url: string
+}

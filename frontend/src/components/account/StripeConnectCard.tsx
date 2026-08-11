@@ -1,5 +1,6 @@
 import {
   useStripeConnectStatus,
+  useStripeDashboard,
   useStripeOnboarding,
 } from '../../features/payments/hooks/useStripeConnect'
 import { LockIcon } from '../common/Icons'
@@ -7,6 +8,7 @@ import { LockIcon } from '../common/Icons'
 export function StripeConnectCard() {
   const status = useStripeConnectStatus()
   const onboarding = useStripeOnboarding()
+  const dashboard = useStripeDashboard()
 
   const content = () => {
     if (status.isLoading) {
@@ -26,6 +28,14 @@ export function StripeConnectCard() {
           <strong>Cont Stripe sandbox pregătit</strong>
           <p>Poți primi transferurile de test pentru cărțile vândute.</p>
           <span className="stripe-connect-card__status">Payouts active · fără bani reali</span>
+          <button
+            type="button"
+            onClick={() => dashboard.mutate()}
+            disabled={dashboard.isPending}
+          >
+            {dashboard.isPending ? 'Deschidem Stripe...' : 'Deschide Express Dashboard'}
+          </button>
+          {dashboard.isError && <small>Dashboardul Stripe nu a putut fi deschis.</small>}
         </>
       )
     }

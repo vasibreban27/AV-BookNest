@@ -7,8 +7,10 @@ import static org.mockito.Mockito.when;
 
 import com.avbooknest.integration.model.IntegrationEvent;
 import com.avbooknest.integration.repository.IntegrationEventRepository;
+import com.avbooknest.notification.service.NotificationService;
 import com.avbooknest.order.model.SellerOrder;
 import com.avbooknest.order.model.SellerOrderStatus;
+import com.avbooknest.order.service.SellerOrderService;
 import com.avbooknest.payment.model.SellerTransfer;
 import com.avbooknest.payment.repository.SellerTransferRepository;
 import com.avbooknest.shipment.model.Shipment;
@@ -28,6 +30,8 @@ class ShipmentServiceTest {
   @Mock private ShipmentRepository shipmentRepository;
   @Mock private SellerTransferRepository sellerTransferRepository;
   @Mock private IntegrationEventRepository integrationEventRepository;
+  @Mock private SellerOrderService sellerOrderService;
+  @Mock private NotificationService notificationService;
 
   @Test
   void samedayOwnsAwbAndTrackingTransitions() {
@@ -46,7 +50,11 @@ class ShipmentServiceTest {
         .thenReturn(Optional.of(shipment));
     ShipmentService service =
         new ShipmentService(
-            shipmentRepository, sellerTransferRepository, integrationEventRepository);
+            shipmentRepository,
+            sellerTransferRepository,
+            integrationEventRepository,
+            sellerOrderService,
+            notificationService);
 
     service.registerSamedayAwb(5L, "AWB-1", "parcel-1", "https://label");
     assertEquals(ShipmentStatus.AWB_CREATED, shipment.getStatus());
@@ -86,7 +94,11 @@ class ShipmentServiceTest {
         .thenAnswer(invocation -> invocation.getArgument(0));
     ShipmentService service =
         new ShipmentService(
-            shipmentRepository, sellerTransferRepository, integrationEventRepository);
+            shipmentRepository,
+            sellerTransferRepository,
+            integrationEventRepository,
+            sellerOrderService,
+            notificationService);
 
     service.updateFromSameday("AWB-1", ShipmentStatus.DELIVERED, "delivered", deliveredAt);
 

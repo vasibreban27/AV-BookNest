@@ -28,6 +28,7 @@ public class SellerOrder {
   public static final BigDecimal COMMISSION_RATE = new BigDecimal("5.00");
   public static final Duration ACCEPTANCE_WINDOW = Duration.ofHours(24);
   public static final Duration DROPOFF_WINDOW = Duration.ofHours(48);
+  public static final Duration ISSUE_WINDOW = Duration.ofHours(24);
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,6 +76,19 @@ public class SellerOrder {
   @Column(name = "fulfilled_at")
   private Instant fulfilledAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "issue_status", nullable = false, length = 20)
+  private OrderIssueStatus issueStatus = OrderIssueStatus.NONE;
+
+  @Column(name = "issue_reason", length = 500)
+  private String issueReason;
+
+  @Column(name = "issue_opened_at")
+  private Instant issueOpenedAt;
+
+  @Column(name = "issue_resolved_at")
+  private Instant issueResolvedAt;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -104,6 +118,10 @@ public class SellerOrder {
     acceptedAt = builder.acceptedAt;
     cancelledAt = builder.cancelledAt;
     fulfilledAt = builder.fulfilledAt;
+    issueStatus = builder.issueStatus;
+    issueReason = builder.issueReason;
+    issueOpenedAt = builder.issueOpenedAt;
+    issueResolvedAt = builder.issueResolvedAt;
     createdAt = builder.createdAt;
     updatedAt = builder.updatedAt;
   }
@@ -164,6 +182,26 @@ public class SellerOrder {
     return fulfilledAt;
   }
 
+  public OrderIssueStatus getIssueStatus() {
+    return issueStatus;
+  }
+
+  public String getIssueReason() {
+    return issueReason;
+  }
+
+  public Instant getIssueOpenedAt() {
+    return issueOpenedAt;
+  }
+
+  public Instant getIssueResolvedAt() {
+    return issueResolvedAt;
+  }
+
+  public Instant getIssueDeadline() {
+    return fulfilledAt == null ? null : fulfilledAt.plus(ISSUE_WINDOW);
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -213,6 +251,12 @@ public class SellerOrder {
     shipment.cancel(now);
   }
 
+  public void cancelPreservingShipment(Instant now) {
+    status = SellerOrderStatus.CANCELLED;
+    cancelledAt = now;
+    updatedAt = now;
+  }
+
   public void fulfill(Instant now) {
     status = SellerOrderStatus.FULFILLED;
     fulfilledAt = now;
@@ -221,6 +265,35 @@ public class SellerOrder {
 
   public boolean acceptanceExpired(Instant now) {
     return acceptBy != null && !now.isBefore(acceptBy);
+  }
+
+  public boolean dropoffExpired(Instant now) {
+    return dropoffBy != null && !now.isBefore(dropoffBy);
+  }
+
+  public boolean canReportIssue(Instant now) {
+    return status == SellerOrderStatus.FULFILLED
+        && fulfilledAt != null
+        && now.isBefore(fulfilledAt.plus(ISSUE_WINDOW))
+        && issueStatus == OrderIssueStatus.NONE;
+  }
+
+  public boolean hasOpenIssue() {
+    return issueStatus == OrderIssueStatus.OPEN;
+  }
+
+  public void openIssue(String reason, Instant now) {
+    issueStatus = OrderIssueStatus.OPEN;
+    issueReason = reason;
+    issueOpenedAt = now;
+    issueResolvedAt = null;
+    updatedAt = now;
+  }
+
+  public void resolveIssue(Instant now) {
+    issueStatus = OrderIssueStatus.RESOLVED;
+    issueResolvedAt = now;
+    updatedAt = now;
   }
 
   public static Builder builder() {
@@ -242,6 +315,10 @@ public class SellerOrder {
     private Instant acceptedAt;
     private Instant cancelledAt;
     private Instant fulfilledAt;
+    private OrderIssueStatus issueStatus = OrderIssueStatus.NONE;
+    private String issueReason;
+    private Instant issueOpenedAt;
+    private Instant issueResolvedAt;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -312,6 +389,26 @@ public class SellerOrder {
 
     public Builder fulfilledAt(Instant value) {
       fulfilledAt = value;
+      return this;
+    }
+
+    public Builder issueStatus(OrderIssueStatus value) {
+      issueStatus = value;
+      return this;
+    }
+
+    public Builder issueReason(String value) {
+      issueReason = value;
+      return this;
+    }
+
+    public Builder issueOpenedAt(Instant value) {
+      issueOpenedAt = value;
+      return this;
+    }
+
+    public Builder issueResolvedAt(Instant value) {
+      issueResolvedAt = value;
       return this;
     }
 

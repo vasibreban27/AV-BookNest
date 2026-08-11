@@ -66,6 +66,8 @@ public class BookService {
   }
 
   public BookResponse create(BookRequest request, String email) {
+    User seller = currentUser(email);
+    requireStripeReady(seller);
     Instant now = Instant.now();
     Book book =
         Book.builder()
@@ -82,7 +84,7 @@ public class BookService {
             .lengthMm(request.lengthMm())
             .widthMm(request.widthMm())
             .heightMm(request.heightMm())
-            .seller(currentUser(email))
+            .seller(seller)
             .category(findCategory(request.categoryId()))
             .status(BookStatus.AVAILABLE)
             .createdAt(now)
@@ -153,7 +155,9 @@ public class BookService {
 
   public BookResponse publish(Long bookId, String email) {
     Book book = findBookForUpdate(bookId);
-    requireOwner(book, currentUser(email));
+    User seller = currentUser(email);
+    requireOwner(book, seller);
+    requireStripeReady(seller);
     if (book.getStatus() != BookStatus.ARCHIVED && book.getStatus() != BookStatus.DRAFT) {
       throw new ConflictException("Only draft or archived books can be published");
     }
@@ -210,6 +214,12 @@ public class BookService {
   private void requireEditable(Book book) {
     if (book.getStatus() == BookStatus.RESERVED || book.getStatus() == BookStatus.SOLD) {
       throw new ConflictException("Reserved or sold books cannot be modified");
+    }
+  }
+
+  private void requireStripeReady(User seller) {
+    if (seller.getStripeAccountId() == null || !seller.isStripePayoutsEnabled()) {
+      throw new ConflictException("Complete Stripe sandbox onboarding before publishing a book");
     }
   }
 

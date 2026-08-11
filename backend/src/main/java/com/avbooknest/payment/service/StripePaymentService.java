@@ -105,7 +105,8 @@ public class StripePaymentService {
         "Payment expired",
         "The reserved books were released because Stripe payment for "
             + payment.getOrder().getOrderNumber()
-            + " was not completed.");
+            + " was not completed.",
+        "/orders/" + payment.getOrder().getId());
   }
 
   private void paymentSucceeded(StripeWebhookEvent event) {
@@ -134,7 +135,8 @@ public class StripePaymentService {
         order.getBuyer(),
         NotificationType.PAYMENT_SUCCEEDED,
         "Payment confirmed",
-        "Stripe confirmed payment for order " + order.getOrderNumber() + ".");
+        "Stripe confirmed payment for order " + order.getOrderNumber() + ".",
+        "/orders/" + order.getId());
     for (OrderItem item : order.getItems()) {
       notificationService.create(
           item.getSeller(),
@@ -142,7 +144,8 @@ public class StripePaymentService {
           "Book sold",
           "Stripe confirmed payment for '"
               + item.getTitle()
-              + "'. You have 24 hours to accept the sale.");
+              + "'. You have 24 hours to accept the sale.",
+          "/sales");
     }
   }
 

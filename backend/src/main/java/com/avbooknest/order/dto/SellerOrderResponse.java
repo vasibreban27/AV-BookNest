@@ -1,5 +1,6 @@
 package com.avbooknest.order.dto;
 
+import com.avbooknest.order.model.OrderIssueStatus;
 import com.avbooknest.order.model.SellerOrder;
 import com.avbooknest.order.model.SellerOrderStatus;
 import com.avbooknest.shipment.dto.ShipmentResponse;
@@ -23,6 +24,13 @@ public record SellerOrderResponse(
     Instant acceptBy,
     Instant dropoffBy,
     Instant acceptedAt,
+    Instant fulfilledAt,
+    OrderIssueStatus issueStatus,
+    String issueReason,
+    Instant issueOpenedAt,
+    Instant issueResolvedAt,
+    Instant issueDeadline,
+    boolean canReportIssue,
     Instant createdAt,
     List<OrderItemResponse> items,
     ShipmentResponse shipment) {
@@ -44,6 +52,13 @@ public record SellerOrderResponse(
         sellerOrder.getAcceptBy(),
         sellerOrder.getDropoffBy(),
         sellerOrder.getAcceptedAt(),
+        sellerOrder.getFulfilledAt(),
+        sellerOrder.getIssueStatus(),
+        sellerOrder.getIssueReason(),
+        sellerOrder.getIssueOpenedAt(),
+        sellerOrder.getIssueResolvedAt(),
+        sellerOrder.getIssueDeadline(),
+        sellerOrder.canReportIssue(Instant.now()),
         sellerOrder.getCreatedAt(),
         sellerOrder.getItems().stream().map(OrderItemResponse::from).toList(),
         ShipmentResponse.from(sellerOrder.getShipment()));

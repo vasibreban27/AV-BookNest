@@ -36,6 +36,30 @@ public interface SellerOrderRepository extends JpaRepository<SellerOrder, Long> 
       @Param("id") Long id, @Param("sellerId") Long sellerId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      select so from SellerOrder so
+      join fetch so.order o
+      join fetch o.buyer
+      join fetch so.seller
+      left join fetch so.shipment
+      where so.id = :id and o.id = :orderId and o.buyer.id = :buyerId
+      """)
+  Optional<SellerOrder> findForBuyerIssue(
+      @Param("id") Long id, @Param("orderId") Long orderId, @Param("buyerId") Long buyerId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      select so from SellerOrder so
+      join fetch so.order
+      join fetch so.seller
+      left join fetch so.shipment
+      where so.id = :id
+      """)
+  Optional<SellerOrder> findByIdForUpdate(@Param("id") Long id);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select so from SellerOrder so where so.order.id = :orderId")
   List<SellerOrder> findAllByOrderIdForUpdate(@Param("orderId") Long orderId);
 
@@ -46,4 +70,19 @@ public interface SellerOrderRepository extends JpaRepository<SellerOrder, Long> 
       and so.acceptBy <= :now
       """)
   List<Long> findExpiredAcceptanceIds(@Param("now") Instant now);
+
+  @Query(
+      """
+      select so.id from SellerOrder so
+      join so.shipment shipment
+      where so.status = com.avbooknest.order.model.SellerOrderStatus.ACCEPTED
+      and so.dropoffBy <= :now
+      and shipment.status in (
+        com.avbooknest.shipment.model.ShipmentStatus.NOT_CREATED,
+        com.avbooknest.shipment.model.ShipmentStatus.AWB_PENDING,
+        com.avbooknest.shipment.model.ShipmentStatus.AWB_CREATED,
+        com.avbooknest.shipment.model.ShipmentStatus.AWAITING_DROPOFF
+      )
+      """)
+  List<Long> findExpiredDropoffIds(@Param("now") Instant now);
 }

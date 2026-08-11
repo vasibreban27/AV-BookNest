@@ -9,6 +9,7 @@ import com.avbooknest.notification.service.NotificationService;
 import com.avbooknest.order.model.Payment;
 import com.avbooknest.order.model.PaymentStatus;
 import com.avbooknest.order.model.SellerOrder;
+import com.avbooknest.order.model.SellerOrderStatus;
 import com.avbooknest.order.repository.PaymentRepository;
 import com.avbooknest.order.repository.SellerOrderRepository;
 import com.avbooknest.payment.model.SellerTransfer;
@@ -16,6 +17,7 @@ import com.avbooknest.payment.model.SellerTransferStatus;
 import com.avbooknest.payment.repository.SellerTransferRepository;
 import com.avbooknest.payment.stripe.StripeAccountStatus;
 import com.avbooknest.payment.stripe.StripeGateway;
+import java.time.Duration;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,12 +65,20 @@ public class StripeTransferEventHandler {
     try {
       SellerOrder sellerOrder =
           sellerOrderRepository
-              .findDetailedById(event.getAggregateId())
+              .findByIdForUpdate(event.getAggregateId())
               .orElseThrow(() -> new IllegalStateException("Seller order not found"));
       SellerTransfer transfer =
           transferRepository
               .findBySellerOrderId(sellerOrder.getId())
               .orElseThrow(() -> new IllegalStateException("Seller transfer not found"));
+      if (sellerOrder.getStatus() == SellerOrderStatus.CANCELLED) {
+        event.markProcessed(Instant.now());
+        return true;
+      }
+      if (sellerOrder.hasOpenIssue()) {
+        event.deferUntil(Instant.now().plus(Duration.ofHours(1)));
+        return true;
+      }
       if (transfer.getStatus() == SellerTransferStatus.CREATED
           || transfer.getStatus() == SellerTransferStatus.PAID) {
         event.markProcessed(Instant.now());

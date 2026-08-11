@@ -35,6 +35,9 @@ public class Notification {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String message;
 
+  @Column(name = "action_url", length = 500)
+  private String actionUrl;
+
   @Column(name = "read_at")
   private Instant readAt;
 
@@ -49,6 +52,7 @@ public class Notification {
     type = b.type;
     title = b.title;
     message = b.message;
+    actionUrl = b.actionUrl;
     readAt = b.readAt;
     createdAt = b.createdAt;
   }
@@ -73,6 +77,10 @@ public class Notification {
     return message;
   }
 
+  public String getActionUrl() {
+    return actionUrl;
+  }
+
   public Instant getReadAt() {
     return readAt;
   }
@@ -95,6 +103,7 @@ public class Notification {
     private NotificationType type;
     private String title;
     private String message;
+    private String actionUrl;
     private Instant readAt;
     private Instant createdAt;
 
@@ -120,6 +129,11 @@ public class Notification {
 
     public Builder message(String v) {
       message = v;
+      return this;
+    }
+
+    public Builder actionUrl(String v) {
+      actionUrl = v;
       return this;
     }
 

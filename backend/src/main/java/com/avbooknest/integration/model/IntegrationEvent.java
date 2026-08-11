@@ -116,6 +116,11 @@ public class IntegrationEvent {
     lastError = null;
   }
 
+  public void deferUntil(Instant value) {
+    status = IntegrationEventStatus.PENDING;
+    nextAttemptAt = value;
+  }
+
   public void scheduleRetry(String error, Instant now) {
     attempts++;
     lastError =

@@ -13,4 +13,8 @@ public interface IntegrationEventRepository extends JpaRepository<IntegrationEve
   Optional<IntegrationEvent>
       findFirstByEventTypeAndStatusAndNextAttemptAtLessThanEqualOrderByCreatedAtAsc(
           String eventType, IntegrationEventStatus status, Instant now);
+
+  Optional<IntegrationEvent>
+      findFirstByAggregateTypeAndAggregateIdAndEventTypeAndStatusOrderByCreatedAtDesc(
+          String aggregateType, Long aggregateId, String eventType, IntegrationEventStatus status);
 }

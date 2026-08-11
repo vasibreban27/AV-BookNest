@@ -1,6 +1,7 @@
 package com.avbooknest.payment.controller;
 
 import com.avbooknest.payment.dto.StripeConnectStatusResponse;
+import com.avbooknest.payment.dto.StripeDashboardLinkResponse;
 import com.avbooknest.payment.dto.StripeOnboardingLinkResponse;
 import com.avbooknest.payment.service.StripeConnectService;
 import org.springframework.security.core.Authentication;
@@ -26,5 +27,10 @@ public class StripeConnectController {
   @PostMapping("/onboarding-link")
   public StripeOnboardingLinkResponse onboardingLink(Authentication authentication) {
     return stripeConnectService.onboardingLink(authentication.getName());
+  }
+
+  @PostMapping("/dashboard-link")
+  public StripeDashboardLinkResponse dashboardLink(Authentication authentication) {
+    return stripeConnectService.dashboardLink(authentication.getName());
   }
 }

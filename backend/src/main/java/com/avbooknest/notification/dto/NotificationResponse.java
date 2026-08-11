@@ -9,6 +9,7 @@ public record NotificationResponse(
     NotificationType type,
     String title,
     String message,
+    String actionUrl,
     Instant readAt,
     Instant createdAt) {
   public static NotificationResponse from(Notification notification) {
@@ -17,6 +18,7 @@ public record NotificationResponse(
         notification.getType(),
         notification.getTitle(),
         notification.getMessage(),
+        notification.getActionUrl(),
         notification.getReadAt(),
         notification.getCreatedAt());
   }

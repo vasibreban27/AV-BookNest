@@ -6,6 +6,7 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Account;
 import com.stripe.model.Event;
+import com.stripe.model.LoginLink;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
 import com.stripe.model.StripeObject;
@@ -127,6 +128,16 @@ public class StripeSdkGateway implements StripeGateway {
           .getUrl();
     } catch (StripeException exception) {
       throw stripeFailure("Stripe could not create the seller onboarding link", exception);
+    }
+  }
+
+  @Override
+  public String createDashboardLoginLink(String accountId) {
+    requireSandbox();
+    try {
+      return LoginLink.createOnAccount(accountId, requestOptions(null)).getUrl();
+    } catch (StripeException exception) {
+      throw stripeFailure("Stripe could not create the Express Dashboard link", exception);
     }
   }
 

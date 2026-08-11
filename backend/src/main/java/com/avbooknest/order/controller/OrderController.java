@@ -1,9 +1,12 @@
 package com.avbooknest.order.controller;
 
 import com.avbooknest.order.dto.CheckoutRequest;
+import com.avbooknest.order.dto.OrderIssueRequest;
 import com.avbooknest.order.dto.OrderResponse;
+import com.avbooknest.order.dto.SellerOrderResponse;
 import com.avbooknest.order.dto.StripeCheckoutResponse;
 import com.avbooknest.order.service.OrderService;
+import com.avbooknest.order.service.SellerOrderService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -21,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/orders")
 public class OrderController {
   private final OrderService orderService;
+  private final SellerOrderService sellerOrderService;
 
-  public OrderController(OrderService orderService) {
+  public OrderController(OrderService orderService, SellerOrderService sellerOrderService) {
     this.orderService = orderService;
+    this.sellerOrderService = sellerOrderService;
   }
 
   @GetMapping
@@ -46,5 +51,20 @@ public class OrderController {
   @PatchMapping("/{orderId}/cancel")
   public OrderResponse cancel(@PathVariable Long orderId, Authentication auth) {
     return orderService.cancel(orderId, auth.getName());
+  }
+
+  @PostMapping("/{orderId}/seller-orders/{sellerOrderId}/issue")
+  public SellerOrderResponse reportIssue(
+      @PathVariable Long orderId,
+      @PathVariable Long sellerOrderId,
+      @Valid @RequestBody OrderIssueRequest request,
+      Authentication auth) {
+    return sellerOrderService.reportIssue(orderId, sellerOrderId, auth.getName(), request.reason());
+  }
+
+  @PatchMapping("/{orderId}/seller-orders/{sellerOrderId}/issue/resolve")
+  public SellerOrderResponse resolveIssue(
+      @PathVariable Long orderId, @PathVariable Long sellerOrderId, Authentication auth) {
+    return sellerOrderService.resolveIssue(orderId, sellerOrderId, auth.getName());
   }
 }

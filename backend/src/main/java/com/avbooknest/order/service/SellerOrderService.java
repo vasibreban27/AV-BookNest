@@ -6,6 +6,7 @@ import com.avbooknest.book.model.Book;
 import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.NotFoundException;
 import com.avbooknest.integration.model.IntegrationEvent;
+import com.avbooknest.integration.model.IntegrationEventStatus;
 import com.avbooknest.integration.repository.IntegrationEventRepository;
 import com.avbooknest.notification.model.NotificationType;
 import com.avbooknest.notification.service.NotificationService;
@@ -85,7 +86,8 @@ public class SellerOrderService {
         "Sale accepted",
         "The seller accepted shipment for order "
             + sellerOrder.getOrder().getOrderNumber()
-            + ". Sameday AWB generation is pending.");
+            + ". Sameday AWB generation is pending.",
+        "/orders/" + sellerOrder.getOrder().getId());
     syncOrder(sellerOrder.getOrder());
     return SellerOrderResponse.from(sellerOrder);
   }
@@ -112,9 +114,128 @@ public class SellerOrderService {
           sellerOrder.getOrder().getBuyer(),
           NotificationType.ORDER_CANCELLED,
           "Sale cancelled",
-          "A seller cancelled part of order " + sellerOrder.getOrder().getOrderNumber() + ".");
+          "A seller cancelled part of order " + sellerOrder.getOrder().getOrderNumber() + ".",
+          "/orders/" + sellerOrder.getOrder().getId());
       syncOrder(sellerOrder.getOrder());
     }
+    return SellerOrderResponse.from(sellerOrder);
+  }
+
+  @Transactional(readOnly = true)
+  public List<Long> expiredAcceptanceIds(Instant now) {
+    return sellerOrderRepository.findExpiredAcceptanceIds(now);
+  }
+
+  @Transactional(readOnly = true)
+  public List<Long> expiredDropoffIds(Instant now) {
+    return sellerOrderRepository.findExpiredDropoffIds(now);
+  }
+
+  public void expireAcceptance(Long sellerOrderId, Instant now) {
+    SellerOrder sellerOrder = sellerOrderRepository.findByIdForUpdate(sellerOrderId).orElse(null);
+    if (sellerOrder == null
+        || sellerOrder.getStatus() != SellerOrderStatus.AWAITING_SELLER
+        || !sellerOrder.acceptanceExpired(now)) {
+      return;
+    }
+    cancelForDeadline(
+        sellerOrder, now, "Sale expired", "The seller did not accept this sale within 24 hours.");
+  }
+
+  public void expireDropoff(Long sellerOrderId, Instant now) {
+    SellerOrder sellerOrder = sellerOrderRepository.findByIdForUpdate(sellerOrderId).orElse(null);
+    if (sellerOrder == null
+        || sellerOrder.getStatus() != SellerOrderStatus.ACCEPTED
+        || !sellerOrder.dropoffExpired(now)
+        || sellerOrder.getShipment().getStatus() == ShipmentStatus.IN_TRANSIT
+        || sellerOrder.getShipment().getStatus() == ShipmentStatus.DELIVERED) {
+      return;
+    }
+    cancelForDeadline(
+        sellerOrder,
+        now,
+        "Drop-off deadline expired",
+        "The seller did not hand the parcel to Sameday before the deadline.");
+  }
+
+  public void handleShipmentFailure(Long sellerOrderId, ShipmentStatus status, Instant now) {
+    SellerOrder sellerOrder = sellerOrderRepository.findByIdForUpdate(sellerOrderId).orElse(null);
+    if (sellerOrder == null || sellerOrder.getStatus() == SellerOrderStatus.CANCELLED) {
+      return;
+    }
+    sellerOrder.getItems().stream()
+        .map(OrderItem::getBook)
+        .filter(java.util.Objects::nonNull)
+        .forEach(Book::releaseReservation);
+    sellerOrder.cancelPreservingShipment(now);
+    queueSellerRefund(sellerOrder, now);
+    String label = status == ShipmentStatus.LOST ? "lost" : status.name().toLowerCase();
+    notificationService.create(
+        sellerOrder.getOrder().getBuyer(),
+        NotificationType.SHIPMENT_PROBLEM,
+        "Shipment problem",
+        "The parcel for "
+            + sellerOrder.getOrder().getOrderNumber()
+            + " was marked "
+            + label
+            + ". A Stripe refund was requested.",
+        "/orders/" + sellerOrder.getOrder().getId());
+    notificationService.create(
+        sellerOrder.getSeller(),
+        NotificationType.SHIPMENT_PROBLEM,
+        "Shipment problem",
+        "The parcel for " + sellerOrder.getOrder().getOrderNumber() + " was marked " + label + ".",
+        "/sales");
+    syncOrder(sellerOrder.getOrder());
+  }
+
+  public SellerOrderResponse reportIssue(
+      Long orderId, Long sellerOrderId, String email, String reason) {
+    User buyer = currentUser(email);
+    SellerOrder sellerOrder =
+        sellerOrderRepository
+            .findForBuyerIssue(sellerOrderId, orderId, buyer.getId())
+            .orElseThrow(() -> new NotFoundException("Sale not found"));
+    Instant now = Instant.now();
+    if (!sellerOrder.canReportIssue(now)) {
+      throw new ConflictException("The 24 hour issue reporting window is closed");
+    }
+    sellerOrder.openIssue(reason.trim(), now);
+    notificationService.create(
+        sellerOrder.getSeller(),
+        NotificationType.ORDER_ISSUE_OPENED,
+        "Buyer reported a problem",
+        "A problem was reported for "
+            + sellerOrder.getOrder().getOrderNumber()
+            + ". The Stripe payout is on hold.",
+        "/sales");
+    return SellerOrderResponse.from(sellerOrder);
+  }
+
+  public SellerOrderResponse resolveIssue(Long orderId, Long sellerOrderId, String email) {
+    User buyer = currentUser(email);
+    SellerOrder sellerOrder =
+        sellerOrderRepository
+            .findForBuyerIssue(sellerOrderId, orderId, buyer.getId())
+            .orElseThrow(() -> new NotFoundException("Sale not found"));
+    if (!sellerOrder.hasOpenIssue()) {
+      throw new ConflictException("This sale has no open issue");
+    }
+    Instant now = Instant.now();
+    sellerOrder.resolveIssue(now);
+    integrationEventRepository
+        .findFirstByAggregateTypeAndAggregateIdAndEventTypeAndStatusOrderByCreatedAtDesc(
+            "SELLER_TRANSFER",
+            sellerOrder.getId(),
+            "STRIPE_CREATE_TRANSFER",
+            IntegrationEventStatus.PENDING)
+        .ifPresent(event -> event.deferUntil(now));
+    notificationService.create(
+        sellerOrder.getSeller(),
+        NotificationType.ORDER_ISSUE_RESOLVED,
+        "Buyer resolved the problem",
+        "The payout hold for " + sellerOrder.getOrder().getOrderNumber() + " was removed.",
+        "/sales");
     return SellerOrderResponse.from(sellerOrder);
   }
 
@@ -140,7 +261,8 @@ public class SellerOrderService {
                   sellerOrder.getSeller(),
                   NotificationType.ORDER_CANCELLED,
                   "Order cancelled",
-                  "Order " + order.getOrderNumber() + " was cancelled by the buyer.");
+                  "Order " + order.getOrderNumber() + " was cancelled by the buyer.",
+                  "/sales");
             });
     integrationEventRepository.save(
         IntegrationEvent.pending(
@@ -179,6 +301,31 @@ public class SellerOrderService {
         .filter(java.util.Objects::nonNull)
         .forEach(Book::releaseReservation);
     sellerOrder.cancel(now);
+  }
+
+  private void cancelForDeadline(
+      SellerOrder sellerOrder, Instant now, String title, String message) {
+    cancelSellerOrder(sellerOrder, now);
+    queueSellerRefund(sellerOrder, now);
+    notificationService.create(
+        sellerOrder.getOrder().getBuyer(),
+        NotificationType.ORDER_CANCELLED,
+        title,
+        message + " A Stripe refund was requested.",
+        "/orders/" + sellerOrder.getOrder().getId());
+    notificationService.create(
+        sellerOrder.getSeller(), NotificationType.SELLER_ACTION_REQUIRED, title, message, "/sales");
+    syncOrder(sellerOrder.getOrder());
+  }
+
+  private void queueSellerRefund(SellerOrder sellerOrder, Instant now) {
+    integrationEventRepository.save(
+        IntegrationEvent.pending(
+            "SELLER_ORDER",
+            sellerOrder.getId(),
+            "STRIPE_REFUND_SELLER_ORDER",
+            "{\"sellerOrderId\":" + sellerOrder.getId() + "}",
+            now));
   }
 
   private void syncOrder(Order order) {

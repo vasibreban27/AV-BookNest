@@ -2,8 +2,10 @@ package com.avbooknest.payment.service;
 
 import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.UserRepository;
+import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.NotFoundException;
 import com.avbooknest.payment.dto.StripeConnectStatusResponse;
+import com.avbooknest.payment.dto.StripeDashboardLinkResponse;
 import com.avbooknest.payment.dto.StripeOnboardingLinkResponse;
 import com.avbooknest.payment.stripe.StripeAccountStatus;
 import com.avbooknest.payment.stripe.StripeGateway;
@@ -48,6 +50,17 @@ public class StripeConnectService {
     user.updateStripeStatus(
         status.detailsSubmitted(), status.chargesEnabled(), status.payoutsEnabled());
     return response(user);
+  }
+
+  public StripeDashboardLinkResponse dashboardLink(String email) {
+    User user = user(email);
+    if (!stripeProperties.sandboxConfigured()
+        || user.getStripeAccountId() == null
+        || !user.isStripePayoutsEnabled()) {
+      throw new ConflictException("Stripe Express account is not ready");
+    }
+    return new StripeDashboardLinkResponse(
+        stripeGateway.createDashboardLoginLink(user.getStripeAccountId()));
   }
 
   private StripeConnectStatusResponse response(User user) {

@@ -34,12 +34,18 @@ public class NotificationService {
   }
 
   public Notification create(User user, NotificationType type, String title, String message) {
+    return create(user, type, title, message, null);
+  }
+
+  public Notification create(
+      User user, NotificationType type, String title, String message, String actionUrl) {
     return notificationRepository.save(
         Notification.builder()
             .user(user)
             .type(type)
             .title(title)
             .message(message)
+            .actionUrl(actionUrl)
             .createdAt(Instant.now())
             .build());
   }

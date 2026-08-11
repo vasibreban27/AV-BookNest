@@ -14,6 +14,8 @@ public interface StripeGateway {
 
   String createOnboardingLink(String accountId);
 
+  String createDashboardLoginLink(String accountId);
+
   StripeAccountStatus accountStatus(String accountId);
 
   String createTransfer(

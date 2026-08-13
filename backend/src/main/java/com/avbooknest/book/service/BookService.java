@@ -5,19 +5,26 @@ import com.avbooknest.auth.repository.UserRepository;
 import com.avbooknest.book.dto.BookRequest;
 import com.avbooknest.book.dto.BookResponse;
 import com.avbooknest.book.model.Book;
+import com.avbooknest.book.model.BookCondition;
 import com.avbooknest.book.model.BookStatus;
 import com.avbooknest.book.model.Category;
 import com.avbooknest.book.repository.BookRepository;
 import com.avbooknest.book.repository.CategoryRepository;
 import com.avbooknest.book.storage.BookCoverStorage;
 import com.avbooknest.book.storage.StoredBookCover;
+import com.avbooknest.common.dto.PageResponse;
+import com.avbooknest.common.exception.BadRequestException;
 import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.ForbiddenException;
 import com.avbooknest.common.exception.NotFoundException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,10 +50,33 @@ public class BookService {
   }
 
   @Transactional(readOnly = true)
-  public List<BookResponse> list() {
-    return bookRepository.findAllByStatusOrderByCreatedAtDesc(BookStatus.AVAILABLE).stream()
-        .map(BookResponse::from)
-        .toList();
+  public PageResponse<BookResponse> list(
+      String query,
+      String categorySlug,
+      BookCondition condition,
+      BigDecimal minimumPrice,
+      BigDecimal maximumPrice,
+      String sort,
+      int page,
+      int size) {
+    if (page < 0) throw new BadRequestException("Page must be zero or greater");
+    if (size < 1 || size > 20) throw new BadRequestException("Page size must be between 1 and 20");
+    if ((minimumPrice != null && minimumPrice.signum() < 0)
+        || (maximumPrice != null && maximumPrice.signum() < 0)) {
+      throw new BadRequestException("Price filters cannot be negative");
+    }
+    if (minimumPrice != null && maximumPrice != null && minimumPrice.compareTo(maximumPrice) > 0) {
+      throw new BadRequestException("Minimum price cannot be greater than maximum price");
+    }
+    return PageResponse.from(
+        bookRepository.searchAvailable(
+            normalizeSearch(query),
+            normalizeFilter(categorySlug),
+            condition,
+            minimumPrice,
+            maximumPrice,
+            PageRequest.of(page, size, catalogSort(sort))),
+        BookResponse::from);
   }
 
   @Transactional(readOnly = true)
@@ -59,7 +89,8 @@ public class BookService {
   @Transactional(readOnly = true)
   public BookResponse get(Long bookId, String email) {
     Book book = findBook(bookId);
-    if (book.getStatus() != BookStatus.AVAILABLE && !isOwner(book, currentUser(email))) {
+    if (book.getStatus() != BookStatus.AVAILABLE
+        && (email == null || !isOwner(book, currentUser(email)))) {
       throw new NotFoundException("Book not found");
     }
     return BookResponse.from(book);
@@ -234,5 +265,24 @@ public class BookService {
 
   private String trimToNull(String value) {
     return value == null || value.isBlank() ? null : value.trim();
+  }
+
+  private String normalizeFilter(String value) {
+    return value == null || value.isBlank() ? null : value.trim().toLowerCase(Locale.ROOT);
+  }
+
+  private String normalizeSearch(String value) {
+    return value == null || value.isBlank() ? "" : value.trim().toLowerCase(Locale.ROOT);
+  }
+
+  private Sort catalogSort(String value) {
+    return switch (value == null ? "newest" : value) {
+      case "newest" -> Sort.by(Sort.Direction.DESC, "createdAt");
+      case "price_asc" -> Sort.by(Sort.Direction.ASC, "price").and(Sort.by("id"));
+      case "price_desc" ->
+          Sort.by(Sort.Direction.DESC, "price").and(Sort.by(Sort.Direction.DESC, "id"));
+      case "title_asc" -> Sort.by(Sort.Direction.ASC, "title").and(Sort.by("id"));
+      default -> throw new BadRequestException("Unsupported catalog sort");
+    };
   }
 }

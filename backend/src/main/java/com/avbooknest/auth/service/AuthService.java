@@ -5,17 +5,17 @@ import com.avbooknest.auth.dto.ChangePasswordRequest;
 import com.avbooknest.auth.dto.LoginRequest;
 import com.avbooknest.auth.dto.MessageResponse;
 import com.avbooknest.auth.dto.RegisterRequest;
-import com.avbooknest.auth.dto.UserResponse;
 import com.avbooknest.auth.dto.UpdateProfileRequest;
+import com.avbooknest.auth.dto.UserResponse;
 import com.avbooknest.auth.model.RefreshToken;
 import com.avbooknest.auth.model.Role;
 import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.RefreshTokenRepository;
 import com.avbooknest.auth.repository.RoleRepository;
 import com.avbooknest.auth.repository.UserRepository;
+import com.avbooknest.common.exception.BadRequestException;
 import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.ForbiddenException;
-import com.avbooknest.common.exception.BadRequestException;
 import com.avbooknest.common.exception.UnauthorizedException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -151,7 +151,7 @@ public class AuthService {
     user.updateProfile(
         request.firstName().trim(),
         request.lastName().trim(),
-        trimToNull(request.phoneNumber()),
+        normalizePhone(request.phoneNumber()),
         Instant.now());
     return UserResponse.from(user);
   }
@@ -205,8 +205,9 @@ public class AuthService {
         .orElseThrow(() -> new UnauthorizedException("User not found"));
   }
 
-  private String trimToNull(String value) {
-    return value == null || value.isBlank() ? null : value.trim();
+  private String normalizePhone(String value) {
+    if (value == null || value.isBlank()) return null;
+    return value.trim().replaceAll("[ ()-]", "");
   }
 
   private String normalizeEmail(String email) {

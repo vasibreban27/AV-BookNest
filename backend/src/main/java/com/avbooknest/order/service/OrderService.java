@@ -41,6 +41,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -89,8 +90,10 @@ public class OrderService {
   }
 
   @Transactional(readOnly = true)
-  public List<OrderResponse> list(String email) {
-    return orderRepository.findAllByBuyerIdOrderByPlacedAtDesc(user(email).getId()).stream()
+  public List<OrderResponse> list(String email, OrderStatus status, String query) {
+    return orderRepository
+        .searchForBuyer(user(email).getId(), status, normalizeFilter(query))
+        .stream()
         .map(this::response)
         .toList();
   }
@@ -312,5 +315,9 @@ public class OrderService {
     return userRepository
         .findByEmail(email)
         .orElseThrow(() -> new NotFoundException("User not found"));
+  }
+
+  private String normalizeFilter(String value) {
+    return value == null || value.isBlank() ? "" : value.trim().toLowerCase(Locale.ROOT);
   }
 }

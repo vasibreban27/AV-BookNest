@@ -2,8 +2,11 @@ package com.avbooknest.book.controller;
 
 import com.avbooknest.book.dto.BookRequest;
 import com.avbooknest.book.dto.BookResponse;
+import com.avbooknest.book.model.BookCondition;
 import com.avbooknest.book.service.BookService;
+import com.avbooknest.common.dto.PageResponse;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,8 +34,16 @@ public class BookController {
   }
 
   @GetMapping
-  public List<BookResponse> list() {
-    return bookService.list();
+  public PageResponse<BookResponse> list(
+      @RequestParam(required = false, name = "q") String query,
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) BookCondition condition,
+      @RequestParam(required = false) BigDecimal minPrice,
+      @RequestParam(required = false) BigDecimal maxPrice,
+      @RequestParam(defaultValue = "newest") String sort,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "5") int size) {
+    return bookService.list(query, category, condition, minPrice, maxPrice, sort, page, size);
   }
 
   @GetMapping("/mine")
@@ -42,7 +53,7 @@ public class BookController {
 
   @GetMapping("/{bookId}")
   public BookResponse get(@PathVariable Long bookId, Authentication authentication) {
-    return bookService.get(bookId, authentication.getName());
+    return bookService.get(bookId, authentication == null ? null : authentication.getName());
   }
 
   @PostMapping(path = "/{bookId}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -157,7 +157,8 @@ public class User {
     updatedAt = now;
   }
 
-  public void updateProfile(String newFirstName, String newLastName, String newPhoneNumber, Instant now) {
+  public void updateProfile(
+      String newFirstName, String newLastName, String newPhoneNumber, Instant now) {
     firstName = newFirstName;
     lastName = newLastName;
     phoneNumber = newPhoneNumber;

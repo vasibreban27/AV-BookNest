@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +23,7 @@ import com.avbooknest.book.repository.BookRepository;
 import com.avbooknest.book.repository.CategoryRepository;
 import com.avbooknest.book.storage.BookCoverStorage;
 import com.avbooknest.book.storage.StoredBookCover;
+import com.avbooknest.common.dto.PageResponse;
 import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.ForbiddenException;
 import com.avbooknest.common.exception.NotFoundException;
@@ -34,6 +37,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,13 +58,15 @@ class BookServiceTest {
   @Test
   void listReturnsOnlyAvailableBooks() {
     User seller = user(10L, "seller@example.com");
-    when(bookRepository.findAllByStatusOrderByCreatedAtDesc(BookStatus.AVAILABLE))
-        .thenReturn(List.of(book(1L, seller, BookStatus.AVAILABLE)));
+    when(bookRepository.searchAvailable(
+            eq(""), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(List.of(book(1L, seller, BookStatus.AVAILABLE))));
 
-    List<BookResponse> response = bookService.list();
+    PageResponse<BookResponse> response =
+        bookService.list(null, null, null, null, null, "newest", 0, 5);
 
-    assertEquals(1, response.size());
-    assertEquals(BookStatus.AVAILABLE, response.getFirst().status());
+    assertEquals(1, response.content().size());
+    assertEquals(BookStatus.AVAILABLE, response.content().getFirst().status());
   }
 
   @Test

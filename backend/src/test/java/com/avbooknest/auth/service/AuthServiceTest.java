@@ -6,18 +6,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.avbooknest.auth.dto.AuthResponse;
+import com.avbooknest.auth.dto.ChangePasswordRequest;
 import com.avbooknest.auth.dto.LoginRequest;
 import com.avbooknest.auth.dto.MessageResponse;
 import com.avbooknest.auth.dto.RegisterRequest;
+import com.avbooknest.auth.dto.UpdateProfileRequest;
+import com.avbooknest.auth.dto.UserResponse;
 import com.avbooknest.auth.model.RefreshToken;
 import com.avbooknest.auth.model.Role;
 import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.RefreshTokenRepository;
 import com.avbooknest.auth.repository.RoleRepository;
 import com.avbooknest.auth.repository.UserRepository;
+import com.avbooknest.common.exception.BadRequestException;
 import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.ForbiddenException;
 import java.nio.charset.StandardCharsets;
@@ -137,6 +142,59 @@ class AuthServiceTest {
     assertEquals("refresh-token", response.refreshToken());
     assertEquals(true, stored.isRevoked());
     verify(refreshTokenRepository).save(any(RefreshToken.class));
+  }
+
+  @Test
+  void updateProfileTrimsPersonalDetailsAndClearsBlankPhone() {
+    User user = user(7L, true);
+    when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+
+    UserResponse response =
+        authService.updateProfile(
+            "ana@example.com", new UpdateProfileRequest(" Maria ", " Popescu ", "   "));
+
+    assertEquals("Maria", response.firstName());
+    assertEquals("Popescu", response.lastName());
+    assertEquals(null, response.phoneNumber());
+  }
+
+  @Test
+  void changePasswordRequiresCurrentPassword() {
+    User user = user(7L, true);
+    when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("wrong", "encoded-password")).thenReturn(false);
+
+    assertThrows(
+        BadRequestException.class,
+        () ->
+            authService.changePassword(
+                "ana@example.com", new ChangePasswordRequest("wrong", "NewSecret123")));
+
+    verifyNoInteractions(refreshTokenRepository);
+  }
+
+  @Test
+  void changePasswordEncodesNewPasswordAndRevokesRefreshTokens() {
+    User user = user(7L, true);
+    RefreshToken token =
+        RefreshToken.builder()
+            .user(user)
+            .token("refresh-token-hash")
+            .expiresAt(Instant.now().plusSeconds(300))
+            .createdAt(Instant.now())
+            .build();
+    when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches("Secret123", "encoded-password")).thenReturn(true);
+    when(passwordEncoder.matches("NewSecret123", "encoded-password")).thenReturn(false);
+    when(passwordEncoder.encode("NewSecret123")).thenReturn("new-encoded-password");
+    when(refreshTokenRepository.findAllByUserIdAndRevokedFalse(7L))
+        .thenReturn(java.util.List.of(token));
+
+    authService.changePassword(
+        "ana@example.com", new ChangePasswordRequest("Secret123", "NewSecret123"));
+
+    assertEquals("new-encoded-password", user.getPasswordHash());
+    assertEquals(true, token.isRevoked());
   }
 
   private User user(Long id, boolean emailVerified) {

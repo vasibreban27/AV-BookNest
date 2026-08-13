@@ -36,13 +36,13 @@ export function AppRoutes() {
         <Route path="/verify-email-sent" element={<VerifyEmailSentPage />} />
       </Route>
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/books/:bookId" element={<BookDetailsPage />} />
+        <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/books/:bookId" element={<BookDetailsPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />

@@ -48,10 +48,10 @@ The project uses a monorepo structure:
 
 | 🔐 Accounts & security | 📚 Book marketplace | 🛒 Shopping experience |
 | --- | --- | --- |
-| Registration and login | Searchable book catalog | Shopping cart |
+| Registration, email verification and login | Searchable book catalog | Shopping cart |
 | JWT access and refresh tokens | Category filtering | Wishlist |
 | Protected frontend routes | Book details and condition | Easybox selection |
-| Automatic session refresh | Create and edit listings | Shipping estimates |
+| Password reset and auth rate limiting | Create and edit listings | Shipping estimates |
 
 | 📦 Seller tools | 💳 Orders & payments | 🔌 Integrations |
 | --- | --- | --- |

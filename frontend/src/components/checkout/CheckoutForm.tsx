@@ -37,7 +37,7 @@ export function CheckoutForm({ onPrepared, onQuoteChange }: CheckoutFormProps) {
       easyboxPostalCode: '',
       recipientName: user ? `${user.firstName} ${user.lastName}` : '',
       recipientEmail: user?.email ?? '',
-      recipientPhone: '',
+      recipientPhone: user?.phoneNumber ?? '',
     },
   })
   const formValues = useWatch({ control })

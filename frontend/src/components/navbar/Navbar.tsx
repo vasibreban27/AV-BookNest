@@ -6,6 +6,7 @@ import { Logo } from '../common/Logo'
 import { NavbarWishlist } from '../wishlist/NavbarWishlist'
 import { UserMenu } from './UserMenu'
 import { NavbarNotifications } from '../notifications/NavbarNotifications'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 
 const navigationItems = [
   { label: 'Descoperă', to: '/#catalog' },
@@ -14,6 +15,7 @@ const navigationItems = [
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user } = useAuth()
 
   const closeMenu = () => setMenuOpen(false)
 
@@ -72,13 +74,22 @@ export function Navbar() {
           </div>
 
           <div className="app-navbar__account">
-            <span className="app-navbar__section-label">Colecția ta</span>
-            <div className="app-navbar__quick-actions">
-              <NavbarNotifications onNavigate={closeMenu} />
-              <NavbarWishlist onNavigate={closeMenu} />
-              <NavbarCart onNavigate={closeMenu} />
-            </div>
-            <UserMenu onNavigate={closeMenu} />
+            <span className="app-navbar__section-label">Contul tău</span>
+            {user ? (
+              <>
+                <div className="app-navbar__quick-actions">
+                  <NavbarNotifications onNavigate={closeMenu} />
+                  <NavbarWishlist onNavigate={closeMenu} />
+                  <NavbarCart onNavigate={closeMenu} />
+                </div>
+                <UserMenu onNavigate={closeMenu} />
+              </>
+            ) : (
+              <div className="app-navbar__auth-links">
+                <Link to="/login" onClick={closeMenu}>Autentificare</Link>
+                <Link to="/register" onClick={closeMenu}>Creează cont</Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>

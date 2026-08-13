@@ -46,6 +46,10 @@ export const resetPasswordSchema = z
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirmă parola.'),
   })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'Parolele nu coincid.',
+  })
 
 export const profileSchema = z.object({
   firstName: z.string().trim().min(1, 'Prenumele este obligatoriu.').max(100),
@@ -72,8 +76,4 @@ export const changePasswordSchema = z
   .refine((data) => data.currentPassword !== data.newPassword, {
     path: ['newPassword'],
     message: 'Parola nouă trebuie să fie diferită.',
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ['confirmPassword'],
-    message: 'Parolele nu coincid.',
   })

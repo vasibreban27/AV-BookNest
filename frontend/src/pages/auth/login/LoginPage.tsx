@@ -17,6 +17,9 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const passwordChanged = Boolean(
+    (location.state as { passwordChanged?: boolean } | null)?.passwordChanged,
+  )
   const {
     register,
     handleSubmit,
@@ -56,6 +59,12 @@ export function LoginPage() {
         </div>
       )}
 
+      {passwordChanged && (
+        <div className="form-success" role="status">
+          Parola a fost schimbată. Autentifică-te folosind parola nouă.
+        </div>
+      )}
+
       <form className="auth-form" onSubmit={onSubmit} noValidate>
         <div className="field-group">
           <label htmlFor="email">Adresă de email</label>
@@ -86,6 +95,11 @@ export function LoginPage() {
           error={errors.password?.message}
           registration={register('password')}
         />
+
+        <div className="auth-form__meta">
+          <Link to="/forgot-password">Ai uitat parola?</Link>
+          <Link to="/verify-email-sent">Retrimite verificarea</Link>
+        </div>
 
         <button className="primary-button" type="submit" disabled={isSubmitting}>
           <span>{isSubmitting ? 'Se autentifică...' : 'Intră în cont'}</span>

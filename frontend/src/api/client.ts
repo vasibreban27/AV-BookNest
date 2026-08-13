@@ -39,9 +39,15 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiErrorResponse>) => {
     const request = error.config as RetryableRequest | undefined
-    const isCredentialRequest = ['/auth/login', '/auth/register', '/auth/refresh'].includes(
-      request?.url ?? '',
-    )
+    const isCredentialRequest = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/refresh',
+      '/auth/verification-email',
+      '/auth/verify-email',
+      '/auth/forgot-password',
+      '/auth/reset-password',
+    ].includes(request?.url ?? '')
     const session = getStoredSession()
 
     if (

@@ -4,6 +4,10 @@ import { AppLayout } from '../layout/AppLayout'
 import { AccountPage } from '../pages/account/AccountPage'
 import { LoginPage } from '../pages/auth/login/LoginPage'
 import { RegisterPage } from '../pages/auth/register/RegisterPage'
+import { ForgotPasswordPage } from '../pages/auth/password/ForgotPasswordPage'
+import { ResetPasswordPage } from '../pages/auth/password/ResetPasswordPage'
+import { VerifyEmailPage } from '../pages/auth/verify/VerifyEmailPage'
+import { VerifyEmailSentPage } from '../pages/auth/verify/VerifyEmailSentPage'
 import { CartPage } from '../pages/cart/CartPage'
 import { BookDetailsPage } from '../pages/books/details/BookDetailsPage'
 import { CheckoutPage } from '../pages/checkout/CheckoutPage'
@@ -21,11 +25,15 @@ import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<PublicOnlyRoute />}>
-        <Route element={<AuthLayout />}>
+      <Route element={<AuthLayout />}>
+        <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/verify-email-sent" element={<VerifyEmailSentPage />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>

@@ -5,6 +5,17 @@ const messageTranslations: Record<string, string> = {
   'Invalid email or password': 'Adresa de email sau parola este incorectă.',
   'An account already exists for this email address':
     'Există deja un cont asociat acestei adrese de email.',
+  'Email address is not verified':
+    'Adresa de email nu este încă verificată. Verifică mesajul primit sau cere unul nou.',
+  'Too many attempts. Please try again later':
+    'Ai făcut prea multe încercări. Așteaptă puțin înainte să încerci din nou.',
+  'The verification link is invalid or has expired':
+    'Linkul de verificare este invalid sau a expirat.',
+  'The password reset link is invalid or has expired':
+    'Linkul de resetare este invalid sau a expirat.',
+  'Current password is incorrect': 'Parola curentă este incorectă.',
+  'New password must be different from the current password':
+    'Parola nouă trebuie să fie diferită de parola curentă.',
   'Validation failed': 'Verifică datele introduse și încearcă din nou.',
 }
 

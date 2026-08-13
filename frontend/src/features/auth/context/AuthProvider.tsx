@@ -67,8 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const register = useCallback(async (payload: RegisterPayload) => {
-    const session = await authApi.register(payload)
-    storeSession(session)
+    return authApi.register(payload)
   }, [])
 
   const logout = useCallback(async () => {
@@ -84,6 +83,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
+  const updateUser = useCallback((nextUser: User) => {
+    const session = getStoredSession()
+    if (session) storeSession({ ...session, user: nextUser })
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -91,9 +95,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isInitializing,
       login,
       register,
+      updateUser,
       logout,
     }),
-    [isInitializing, login, logout, register, user],
+    [isInitializing, login, logout, register, updateUser, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

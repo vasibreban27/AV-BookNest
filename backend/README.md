@@ -1,5 +1,38 @@
 # BookNest backend
 
+## Email verification and password reset
+
+Account registration now requires email verification before login. Verification links expire after
+24 hours, password-reset links after 30 minutes, and both can be used only once. Password reset also
+revokes all existing refresh-token sessions.
+
+For local development, email delivery is disabled by default. The backend writes the complete link
+to its log, prefixed with `DEV verification link` or `DEV password reset link`.
+
+To send real messages through Gmail SMTP, enable 2-Step Verification on the Google account, create
+an App Password, and add these environment variables to the backend run configuration:
+
+```text
+MAIL_ENABLED=true
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-address@gmail.com
+MAIL_PASSWORD=your-16-character-app-password
+MAIL_FROM=your-address@gmail.com
+MAIL_SMTP_AUTH=true
+MAIL_STARTTLS=true
+APP_FRONTEND_URL=http://localhost:5173
+```
+
+Use the App Password, not the regular Google password. Keep it outside Git. For a deployed frontend,
+`APP_FRONTEND_URL` must be its public HTTPS origin so links point to the correct application.
+
+Login is limited to 5 attempts per account and 20 attempts per IP in 15 minutes. Registration is
+limited to 5 attempts per IP per hour. Verification and password-reset emails are limited to 3 per
+account/IP per hour. These values can be overridden through the variables documented in
+`application.properties`. The current limiter is in-memory and intended for one backend instance;
+before horizontal scaling it should be moved to Redis or another shared store.
+
 ## Configurare Cloudinary
 
 Upload-ul coperților este făcut server-side, astfel încât secretul Cloudinary nu ajunge în

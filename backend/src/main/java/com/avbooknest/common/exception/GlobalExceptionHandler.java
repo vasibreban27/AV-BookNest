@@ -62,6 +62,22 @@ public class GlobalExceptionHandler {
     return response(HttpStatus.UNAUTHORIZED, exception.getMessage(), request, Map.of());
   }
 
+  @ExceptionHandler(RateLimitExceededException.class)
+  public ResponseEntity<ApiError> handleRateLimit(
+      RateLimitExceededException exception, HttpServletRequest request) {
+    ApiError body =
+        new ApiError(
+            Instant.now(),
+            HttpStatus.TOO_MANY_REQUESTS.value(),
+            HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+            exception.getMessage(),
+            request.getRequestURI(),
+            Map.of());
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header("Retry-After", Long.toString(exception.getRetryAfterSeconds()))
+        .body(body);
+  }
+
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<ApiError> handleNotFound(
       NotFoundException exception, HttpServletRequest request) {

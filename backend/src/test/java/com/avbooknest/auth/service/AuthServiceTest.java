@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.avbooknest.auth.dto.AuthResponse;
+import com.avbooknest.auth.dto.LoginRequest;
+import com.avbooknest.auth.dto.MessageResponse;
 import com.avbooknest.auth.dto.RegisterRequest;
 import com.avbooknest.auth.model.RefreshToken;
 import com.avbooknest.auth.model.Role;
@@ -17,6 +19,7 @@ import com.avbooknest.auth.repository.RefreshTokenRepository;
 import com.avbooknest.auth.repository.RoleRepository;
 import com.avbooknest.auth.repository.UserRepository;
 import com.avbooknest.common.exception.ConflictException;
+import com.avbooknest.common.exception.ForbiddenException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -41,6 +44,7 @@ class AuthServiceTest {
   @Mock private AuthenticationManager authenticationManager;
   @Mock private UserSecurityService userSecurityService;
   @Mock private JwtService jwtService;
+  @Mock private AccountSecurityService accountSecurityService;
   private AuthService authService;
 
   @BeforeEach
@@ -53,7 +57,8 @@ class AuthServiceTest {
             passwordEncoder,
             authenticationManager,
             userSecurityService,
-            jwtService);
+            jwtService,
+            accountSecurityService);
   }
 
   private void stubTokenIssuance() {
@@ -66,15 +71,14 @@ class AuthServiceTest {
   }
 
   @Test
-  void registerNormalizesEmailPersistsUserAndIssuesTokens() {
-    stubTokenIssuance();
+  void registerNormalizesEmailPersistsUserAndSendsVerification() {
     Role role = Role.builder().id(1L).name("USER").build();
     when(userRepository.existsByEmail("ana@example.com")).thenReturn(false);
     when(roleRepository.findByName("USER")).thenReturn(Optional.of(role));
     when(passwordEncoder.encode("Secret123")).thenReturn("encoded-password");
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    AuthResponse response =
+    MessageResponse response =
         authService.register(
             new RegisterRequest(" Ana ", " Pop ", " ANA@EXAMPLE.COM ", "Secret123"));
 
@@ -83,9 +87,10 @@ class AuthServiceTest {
     assertEquals("ana@example.com", userCaptor.getValue().getEmail());
     assertEquals("Ana", userCaptor.getValue().getFirstName());
     assertEquals("encoded-password", userCaptor.getValue().getPasswordHash());
-    assertEquals("access-token", response.accessToken());
-    assertEquals("refresh-token", response.refreshToken());
-    verify(refreshTokenRepository).save(any(RefreshToken.class));
+    assertEquals(
+        "Account created. Check your email to verify the address before signing in",
+        response.message());
+    verify(accountSecurityService).sendVerification(userCaptor.getValue());
   }
 
   @Test
@@ -100,10 +105,20 @@ class AuthServiceTest {
   }
 
   @Test
+  void loginRejectsCorrectCredentialsUntilEmailIsVerified() {
+    User user = user(7L, false);
+    when(userRepository.findByEmail("ana@example.com")).thenReturn(Optional.of(user));
+
+    assertThrows(
+        ForbiddenException.class,
+        () -> authService.login(new LoginRequest("ana@example.com", "Secret123")));
+  }
+
+  @Test
   void refreshRevokesOldTokenAndIssuesNewPair() throws Exception {
     stubTokenIssuance();
     String rawToken = "old-refresh-token";
-    User user = user(7L);
+    User user = user(7L, true);
     RefreshToken stored =
         RefreshToken.builder()
             .user(user)
@@ -124,7 +139,7 @@ class AuthServiceTest {
     verify(refreshTokenRepository).save(any(RefreshToken.class));
   }
 
-  private User user(Long id) {
+  private User user(Long id, boolean emailVerified) {
     return User.builder()
         .id(id)
         .firstName("Ana")
@@ -133,7 +148,7 @@ class AuthServiceTest {
         .passwordHash("encoded-password")
         .role(Role.builder().id(1L).name("USER").build())
         .enabled(true)
-        .emailVerified(false)
+        .emailVerified(emailVerified)
         .createdAt(Instant.now())
         .updatedAt(Instant.now())
         .build();

@@ -28,6 +28,9 @@ public class User {
   @Column(nullable = false, unique = true, length = 255)
   private String email;
 
+  @Column(name = "phone_number", length = 30)
+  private String phoneNumber;
+
   @Column(name = "password_hash", nullable = false, length = 255)
   private String passwordHash;
 
@@ -66,6 +69,7 @@ public class User {
     this.firstName = builder.firstName;
     this.lastName = builder.lastName;
     this.email = builder.email;
+    this.phoneNumber = builder.phoneNumber;
     this.passwordHash = builder.passwordHash;
     this.role = builder.role;
     this.emailVerified = builder.emailVerified;
@@ -92,6 +96,10 @@ public class User {
 
   public String getEmail() {
     return email;
+  }
+
+  public String getPhoneNumber() {
+    return phoneNumber;
   }
 
   public String getPasswordHash() {
@@ -139,6 +147,23 @@ public class User {
     updatedAt = Instant.now();
   }
 
+  public void verifyEmail(Instant now) {
+    emailVerified = true;
+    updatedAt = now;
+  }
+
+  public void changePassword(String encodedPassword, Instant now) {
+    passwordHash = encodedPassword;
+    updatedAt = now;
+  }
+
+  public void updateProfile(String newFirstName, String newLastName, String newPhoneNumber, Instant now) {
+    firstName = newFirstName;
+    lastName = newLastName;
+    phoneNumber = newPhoneNumber;
+    updatedAt = now;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -156,6 +181,7 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
+    private String phoneNumber;
     private String passwordHash;
     private Role role;
     private boolean emailVerified;
@@ -184,6 +210,11 @@ public class User {
 
     public Builder email(String email) {
       this.email = email;
+      return this;
+    }
+
+    public Builder phoneNumber(String value) {
+      phoneNumber = value;
       return this;
     }
 

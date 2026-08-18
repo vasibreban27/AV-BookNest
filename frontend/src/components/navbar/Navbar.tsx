@@ -9,7 +9,7 @@ import { NavbarNotifications } from '../notifications/NavbarNotifications'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 
 const navigationItems = [
-  { label: 'Descoperă', to: '/#catalog' },
+  { label: 'Descoperă', to: '/' },
   { label: 'Vinde o carte', to: '/sell' },
 ] as const
 

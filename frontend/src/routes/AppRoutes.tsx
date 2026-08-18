@@ -10,6 +10,7 @@ import { VerifyEmailPage } from '../pages/auth/verify/VerifyEmailPage'
 import { VerifyEmailSentPage } from '../pages/auth/verify/VerifyEmailSentPage'
 import { CartPage } from '../pages/cart/CartPage'
 import { BookDetailsPage } from '../pages/books/details/BookDetailsPage'
+import { CatalogPage } from '../pages/catalog/CatalogPage'
 import { CheckoutPage } from '../pages/checkout/CheckoutPage'
 import { HomePage } from '../pages/home/HomePage'
 import { OrderDetailsPage } from '../pages/orders/details/OrderDetailsPage'
@@ -39,6 +40,7 @@ export function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/books/:bookId" element={<BookDetailsPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />

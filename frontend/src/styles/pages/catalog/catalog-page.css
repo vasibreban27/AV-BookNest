@@ -1,0 +1,58 @@
+.catalog-page { min-height: 100vh; color: var(--ink); background: #f3f5ef; }
+.catalog-page__container { width: min(1240px, calc(100% - 48px)); margin: 0 auto; }
+.catalog-page__hero { padding: 64px 0 54px; border-bottom: 1px solid var(--home-line); background: linear-gradient(120deg,#edf2ea,#fbf7ed 65%,#eadcca); }
+.catalog-page__hero h1 { margin: 12px 0 10px; font-family: 'Playfair Display',Georgia,serif; font-size: clamp(42px,6vw,68px); line-height: 1; letter-spacing: -1.8px; }
+.catalog-page__hero p { max-width: 690px; margin: 0 0 28px; color: #61736e; font-size: 13px; }
+.catalog-page__hero .catalog-search { max-width: 760px; margin: 0; box-shadow: 0 14px 35px rgba(31,65,57,.08); }
+.catalog-page__breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: #7b8985; font-size: 10px; }
+.catalog-page__breadcrumb a { color: var(--forest); font-weight: 750; text-decoration: none; }
+.catalog-page__breadcrumb strong { color: #6a7975; font-weight: 650; }
+.catalog-page__content { padding: 42px 0 90px; }
+.catalog-page__layout { display: grid; grid-template-columns: 265px minmax(0,1fr); gap: 32px; align-items: start; }
+
+.catalog-filters { position: sticky; top: 98px; display: grid; gap: 19px; padding: 22px; border: 1px solid var(--home-line); border-radius: 18px; background: rgba(255,253,248,.92); box-shadow: 0 15px 35px rgba(31,65,57,.06); }
+.catalog-filters__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--home-line); }
+.catalog-filters__heading span,
+.catalog-results__heading > div > span { color: var(--terracotta); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+.catalog-filters__heading h2 { margin: 4px 0 0; font-family: 'Playfair Display',Georgia,serif; font-size: 27px; }
+.catalog-filters__heading button { padding: 0; border: 0; color: #657772; background: transparent; font-size: 9px; font-weight: 750; cursor: pointer; }
+.catalog-filters__heading button:hover { color: var(--terracotta); }
+.catalog-filters label,
+.catalog-results__heading label { display: grid; gap: 7px; color: #65746f; font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+.catalog-filters input,
+.catalog-filters select,
+.catalog-results__heading select { width: 100%; min-height: 45px; padding: 0 12px; border: 1px solid #d8ded7; border-radius: 11px; color: var(--ink); background: white; font: inherit; font-size: 11px; text-transform: none; outline: none; }
+.catalog-filters input:focus,
+.catalog-filters select:focus,
+.catalog-results__heading select:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(31,92,78,.1); }
+.catalog-filters__row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+
+.catalog-results { min-width: 0; }
+.catalog-results__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+.catalog-results__heading h2 { margin: 5px 0 0; font-family: 'Playfair Display',Georgia,serif; font-size: 31px; }
+.catalog-results__heading label { min-width: 190px; }
+.book-grid--catalog-page { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.catalog-filter-error { padding: 16px 18px; border: 1px solid #e3b8a9; border-radius: 13px; color: #884b3d; background: #fff3ee; font-size: 11px; font-weight: 650; }
+
+@media (max-width: 980px) {
+  .catalog-page__layout { grid-template-columns: 1fr; }
+  .catalog-filters { position: static; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .catalog-filters__heading { grid-column: 1 / -1; }
+  .book-grid--catalog-page { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 650px) {
+  .catalog-page__container { width: min(100% - 28px,1240px); }
+  .catalog-page__hero { padding: 45px 0 40px; }
+  .catalog-page__hero h1 { font-size: 44px; }
+  .catalog-page__content { padding: 28px 0 70px; }
+  .catalog-filters { grid-template-columns: 1fr 1fr; padding: 17px; }
+  .catalog-results__heading { align-items: stretch; flex-direction: column; }
+  .catalog-results__heading label { min-width: 0; }
+  .book-grid--catalog-page { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .catalog-filters { grid-template-columns: 1fr; }
+  .catalog-filters__heading { grid-column: auto; }
+}

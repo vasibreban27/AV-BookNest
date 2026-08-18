@@ -50,9 +50,24 @@ export type CatalogFilters = {
   sort: CatalogSort
   minimumPrice: string
   maximumPrice: string
+  language: string
+  minimumYear: string
+  maximumYear: string
 }
 
-export type CatalogSort = 'newest' | 'price_asc' | 'price_desc' | 'title_asc'
+export type CatalogCategory = {
+  id: number
+  name: string
+  slug: string
+  bookCount: number
+}
+
+export type CatalogSort =
+  | 'newest'
+  | 'price_asc'
+  | 'price_desc'
+  | 'title_asc'
+  | 'year_desc'
 
 export type PageResponse<T> = {
   content: T[]
@@ -69,6 +84,9 @@ export type CatalogRequest = {
   condition?: BookCondition
   minPrice?: number
   maxPrice?: number
+  language?: string
+  minYear?: number
+  maxYear?: number
   sort?: CatalogSort
   page?: number
   size?: number

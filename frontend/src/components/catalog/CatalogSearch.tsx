@@ -6,14 +6,14 @@ export function CatalogSearch({ inputId, value, onChange, onSubmit }: CatalogSea
     <form className="catalog-search" role="search" onSubmit={onSubmit}>
       <SearchIcon className="catalog-search__icon" />
       <label className="sr-only" htmlFor={inputId}>
-        Caută după titlu sau autor
+        Caută după titlu, autor, editură sau ISBN
       </label>
       <input
         id={inputId}
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Caută după titlu sau autor..."
+        placeholder="Titlu, autor, editură sau ISBN..."
         autoComplete="off"
       />
       <button type="submit">Caută cărți</button>

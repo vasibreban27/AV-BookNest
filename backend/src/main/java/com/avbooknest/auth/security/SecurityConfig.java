@@ -56,6 +56,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/auth/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/contact")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/books/mine")
                     .authenticated()
                     .requestMatchers(

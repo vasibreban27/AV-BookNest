@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useAddToCart, useCart } from '../../features/cart/hooks/useCart'
 import { getCartErrorMessage } from '../../features/cart/utils/cartErrors'
@@ -8,6 +9,8 @@ import type { AddToCartButtonProps } from './types/cart-component.types'
 
 export function AddToCartButton({ bookId, sellerId }: AddToCartButtonProps) {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { data: cart } = useCart()
   const addToCart = useAddToCart()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -15,6 +18,10 @@ export function AddToCartButton({ bookId, sellerId }: AddToCartButtonProps) {
   const isInCart = cart?.items.some((item) => item.book.id === bookId) ?? false
 
   const handleAdd = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: `${location.pathname}${location.search}` } })
+      return
+    }
     setErrorMessage(null)
     try {
       await addToCart.mutateAsync(bookId)

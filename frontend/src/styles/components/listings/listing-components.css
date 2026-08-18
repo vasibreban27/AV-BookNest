@@ -81,7 +81,7 @@
 .listing-preview__cover > span { display: grid; gap: 10px; place-items: center; opacity: .9; }
 .listing-preview__cover svg { width: 45px; height: 45px; }
 .listing-preview__cover small { font-size: 9px; }
-.listing-preview > span { color: var(--terracotta); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.listing-preview > span { color: #687974; font-size: 11px; font-weight: 650; }
 .listing-preview h2 { overflow-wrap: anywhere; margin: 8px 0 4px; font-family: 'Playfair Display', Georgia, serif; font-size: 24px; }
 .listing-preview > p { margin: 0; color: var(--muted); font-size: 11px; }
 .listing-preview > div:last-child { display: flex; align-items: flex-end; justify-content: space-between; gap: 15px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--home-line); }
@@ -98,13 +98,13 @@
 .listing-card__body { min-width: 0; }
 .listing-card__topline { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
 .listing-card__topline > small { color: #8b9592; font-size: 8px; }
-.listing-status { display: inline-flex; padding: 5px 8px; border-radius: 20px; font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.listing-status { display: inline-flex; padding: 5px 8px; border-radius: 20px; font-size: 9px; font-weight: 750; }
 .listing-status--available { color: #21614f; background: #dff0e5; }
 .listing-status--reserved { color: #8a6430; background: #f7e9c9; }
 .listing-status--sold { color: #6d5368; background: #eee2ec; }
 .listing-status--archived,
 .listing-status--draft { color: #66706d; background: #e8ecea; }
-.listing-card__body > p { margin: 0 0 5px; color: var(--terracotta); font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.listing-card__body > p { margin: 0 0 5px; color: #687974; font-size: 10px; font-weight: 650; }
 .listing-card__body h2 { margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 23px; }
 .listing-card__body > span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
 .listing-card__body > strong { display: block; margin-top: 12px; color: var(--forest); font-size: 14px; }

@@ -8,6 +8,7 @@ export type User = {
   firstName: string
   lastName: string
   email: string
+  phoneNumber: string | null
   role: UserRole
   emailVerified: boolean
 }
@@ -30,6 +31,21 @@ export type AuthResponse = {
   user: User
 }
 
+export type UpdateProfilePayload = {
+  firstName: string
+  lastName: string
+  phoneNumber: string
+}
+
+export type ChangePasswordPayload = {
+  currentPassword: string
+  newPassword: string
+}
+
+export type MessageResponse = {
+  message: string
+}
+
 export type ApiErrorResponse = {
   status: number
   error: string
@@ -47,7 +63,8 @@ export type AuthContextValue = {
   isAuthenticated: boolean
   isInitializing: boolean
   login: (payload: LoginPayload) => Promise<void>
-  register: (payload: RegisterPayload) => Promise<void>
+  register: (payload: RegisterPayload) => Promise<MessageResponse>
+  updateUser: (user: User) => void
   logout: () => Promise<void>
 }
 

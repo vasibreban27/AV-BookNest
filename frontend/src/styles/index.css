@@ -21,6 +21,7 @@
 @import './pages/auth/auth-pages.css';
 @import './pages/account/account-page.css';
 @import './pages/home/home-page.css';
+@import './pages/catalog/catalog-page.css';
 @import './pages/cart/cart-page.css';
 @import './pages/wishlist/wishlist-page.css';
 @import './pages/checkout/checkout-page.css';
@@ -29,3 +30,5 @@
 @import './pages/listings/listing-pages.css';
 @import './pages/books/book-details-page.css';
 @import './pages/notifications/notifications-page.css';
+@import './pages/contact/contact-page.css';
+@import './pages/legal/legal-pages.css';

@@ -1,9 +1,22 @@
 import { api } from '../../../api/client'
-import type { CheckoutPayload, Order, SellerOrder, StripeCheckoutSession } from '../types/orders.types'
+import type {
+  CheckoutPayload,
+  Order,
+  OrderStatus,
+  SellerOrder,
+  StripeCheckoutSession,
+} from '../types/orders.types'
+
+export type OrderFilters = {
+  status?: OrderStatus
+  query?: string
+}
 
 export const ordersApi = {
-  async list() {
-    const { data } = await api.get<Order[]>('/orders')
+  async list(filters: OrderFilters = {}) {
+    const { data } = await api.get<Order[]>('/orders', {
+      params: { status: filters.status, q: filters.query?.trim() || undefined },
+    })
     return data
   },
 

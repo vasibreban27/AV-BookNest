@@ -30,6 +30,33 @@
 
 .auth-switch a:hover { color: var(--terracotta); }
 
+.auth-form__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: -4px;
+  font-size: 12px;
+}
+
+.auth-form__meta a {
+  color: var(--forest);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.form-success {
+  margin: 24px 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(31, 92, 78, .24);
+  border-radius: 12px;
+  color: var(--forest-dark);
+  background: #edf5ee;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-status-page { padding-block: 18px; }
+
 @media (max-width: 760px) {
   .auth-heading h2 { font-size: 38px; }
 }

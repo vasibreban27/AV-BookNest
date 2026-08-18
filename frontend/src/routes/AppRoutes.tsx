@@ -4,8 +4,13 @@ import { AppLayout } from '../layout/AppLayout'
 import { AccountPage } from '../pages/account/AccountPage'
 import { LoginPage } from '../pages/auth/login/LoginPage'
 import { RegisterPage } from '../pages/auth/register/RegisterPage'
+import { ForgotPasswordPage } from '../pages/auth/password/ForgotPasswordPage'
+import { ResetPasswordPage } from '../pages/auth/password/ResetPasswordPage'
+import { VerifyEmailPage } from '../pages/auth/verify/VerifyEmailPage'
+import { VerifyEmailSentPage } from '../pages/auth/verify/VerifyEmailSentPage'
 import { CartPage } from '../pages/cart/CartPage'
 import { BookDetailsPage } from '../pages/books/details/BookDetailsPage'
+import { CatalogPage } from '../pages/catalog/CatalogPage'
 import { CheckoutPage } from '../pages/checkout/CheckoutPage'
 import { HomePage } from '../pages/home/HomePage'
 import { OrderDetailsPage } from '../pages/orders/details/OrderDetailsPage'
@@ -16,25 +21,42 @@ import { MyListingsPage } from '../pages/listings/MyListingsPage'
 import { WishlistPage } from '../pages/wishlist/WishlistPage'
 import { SalesPage } from '../pages/sales/SalesPage'
 import { NotificationsPage } from '../pages/notifications/NotificationsPage'
+import { ContactPage } from '../pages/contact/ContactPage'
+import {
+  ConsumerRightsPage,
+  CookiesPage,
+  PrivacyPage,
+  TermsPage,
+} from '../pages/legal/LegalPages'
 import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<PublicOnlyRoute />}>
-        <Route element={<AuthLayout />}>
+      <Route element={<AuthLayout />}>
+        <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/verify-email-sent" element={<VerifyEmailSentPage />} />
       </Route>
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/catalog" element={<CatalogPage />} />
+        <Route path="/books/:bookId" element={<BookDetailsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
+        <Route path="/consumer-rights" element={<ConsumerRightsPage />} />
+        <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/books/:bookId" element={<BookDetailsPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />

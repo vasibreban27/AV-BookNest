@@ -51,6 +51,11 @@
 .app-navbar__links a.app-navbar__link--active { color: var(--ink); }
 .app-navbar__account { gap: 12px; padding-left: 22px; border-left: 1px solid var(--home-line); }
 .app-navbar__quick-actions { gap: 9px; }
+.app-navbar__auth-links { display: flex; align-items: center; gap: 8px; }
+.app-navbar__auth-links a { padding: 10px 14px; border-radius: 11px; color: var(--forest); font-size: 11px; font-weight: 750; text-decoration: none; }
+.app-navbar__auth-links a:first-child { border: 1px solid rgba(31,92,78,.22); }
+.app-navbar__auth-links a:last-child { color: white; background: var(--forest); }
+.app-navbar__auth-links a:hover { transform: translateY(-1px); }
 .app-navbar__section-label { display: none; }
 
 .app-navbar__menu-button {
@@ -155,13 +160,15 @@
   }
   .app-navbar__menu--open { display: flex; }
   .app-navbar__links { align-items: stretch; flex-direction: column; gap: 7px; width: 100%; }
-  .app-navbar__section-label { display: block; padding: 0 4px 5px; color: #82908b; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .app-navbar__section-label { display: block; padding: 0 4px 5px; color: #82908b; font-size: 11px; font-weight: 700; }
   .app-navbar__links a { display: flex; align-items: center; min-height: 52px; padding: 0 14px; border: 1px solid var(--home-line); border-radius: 13px; background: rgba(255,255,255,.66); font-size: 14px; }
   .app-navbar__links a::after { display: none; }
   .app-navbar__links a:hover,
   .app-navbar__links a.app-navbar__link--active { border-color: rgba(31,92,78,.22); color: var(--forest); background: #edf3ee; }
   .app-navbar__account { align-items: stretch; flex-direction: column; gap: 13px; padding: 20px 0 0; border-top: 1px solid var(--home-line); border-left: 0; }
   .app-navbar__quick-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; width: 100%; }
+  .app-navbar__auth-links { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .app-navbar__auth-links a { display: grid; min-height: 48px; place-items: center; }
   .user-menu { width: 100%; }
   .user-menu__trigger,
   .user-menu__dropdown { display: none; }

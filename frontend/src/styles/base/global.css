@@ -20,12 +20,10 @@ a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
 
 .eyebrow {
-  margin: 0 0 14px;
-  color: var(--terracotta);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
+  margin: 0 0 10px;
+  color: #667872;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .sr-only {

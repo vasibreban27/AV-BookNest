@@ -42,7 +42,10 @@ export function RegisterPage() {
         email: values.email,
         password: values.password,
       })
-      navigate('/', { replace: true })
+      navigate('/verify-email-sent', {
+        replace: true,
+        state: { email: values.email.trim().toLowerCase() },
+      })
     } catch (error) {
       applyApiFieldErrors(error, setError)
       setSubmitError(getFormErrorMessage(error))

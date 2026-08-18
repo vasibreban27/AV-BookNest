@@ -46,4 +46,48 @@ export type Book = {
 export type CatalogFilters = {
   searchTerm: string
   categorySlug: string
+  condition: BookCondition | ''
+  sort: CatalogSort
+  minimumPrice: string
+  maximumPrice: string
+  language: string
+  minimumYear: string
+  maximumYear: string
+}
+
+export type CatalogCategory = {
+  id: number
+  name: string
+  slug: string
+  bookCount: number
+}
+
+export type CatalogSort =
+  | 'newest'
+  | 'price_asc'
+  | 'price_desc'
+  | 'title_asc'
+  | 'year_desc'
+
+export type PageResponse<T> = {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  page: number
+  size: number
+  hasNext: boolean
+}
+
+export type CatalogRequest = {
+  q?: string
+  category?: string
+  condition?: BookCondition
+  minPrice?: number
+  maxPrice?: number
+  language?: string
+  minYear?: number
+  maxYear?: number
+  sort?: CatalogSort
+  page?: number
+  size?: number
 }

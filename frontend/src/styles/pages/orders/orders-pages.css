@@ -9,6 +9,12 @@
 .orders-hero__icon { position: relative; z-index: 2; display: grid; width: 88px; height: 88px; margin-right: 65px; place-items: center; border: 1px solid rgba(31,92,78,.16); border-radius: 27px; color: var(--forest); background: rgba(255,255,255,.66); box-shadow: 0 22px 45px rgba(31,65,57,.1); transform: rotate(5deg); }
 .orders-hero__icon svg { width: 42px; height: 42px; }
 .orders-content { min-height: 500px; padding: 64px 0 90px; }
+.marketplace-filters { display: grid; grid-template-columns: minmax(220px,1fr) minmax(190px,.45fr); gap: 14px; margin-bottom: 30px; padding: 18px; border: 1px solid var(--home-line); border-radius: 16px; background: rgba(255,255,255,.7); }
+.marketplace-filters label { display: grid; gap: 7px; color: #61716c; font-size: 11px; font-weight: 700; }
+.marketplace-filters input,
+.marketplace-filters select { width: 100%; min-height: 46px; padding: 0 13px; border: 1px solid #d8ded7; border-radius: 11px; color: var(--ink); background: #fff; font: inherit; font-size: 11px; text-transform: none; outline: none; }
+.marketplace-filters input:focus,
+.marketplace-filters select:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(31,92,78,.1); }
 .orders-list { display: grid; gap: 15px; }
 .orders-list__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 16px; }
 .orders-list__heading h2 { margin: 8px 0 0; font-family: 'Playfair Display',Georgia,serif; font-size: 34px; }
@@ -37,6 +43,7 @@
   .orders-hero__icon svg { width: 31px; height: 31px; }
   .orders-content { padding: 45px 0 70px; }
   .orders-list__heading { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .marketplace-filters { grid-template-columns: 1fr; padding: 14px; }
   .order-details-content { padding: 30px 0 70px; }
   .order-details-header { align-items: flex-start; flex-direction: column; }
 }

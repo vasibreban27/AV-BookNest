@@ -1,6 +1,7 @@
 package com.avbooknest.order.repository;
 
 import com.avbooknest.order.model.SellerOrder;
+import com.avbooknest.order.model.SellerOrderStatus;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
@@ -14,7 +15,21 @@ import org.springframework.data.repository.query.Param;
 public interface SellerOrderRepository extends JpaRepository<SellerOrder, Long> {
 
   @EntityGraph(attributePaths = {"order", "seller", "items", "items.seller", "shipment"})
-  List<SellerOrder> findAllBySellerIdOrderByCreatedAtDesc(Long sellerId);
+  @Query(
+      """
+      select distinct so from SellerOrder so
+      left join so.items item
+      where so.seller.id = :sellerId
+      and (:status is null or so.status = :status)
+      and (:query = ''
+        or lower(so.order.orderNumber) like concat('%', :query, '%')
+        or lower(item.title) like concat('%', :query, '%'))
+      order by so.createdAt desc
+      """)
+  List<SellerOrder> searchForSeller(
+      @Param("sellerId") Long sellerId,
+      @Param("status") SellerOrderStatus status,
+      @Param("query") String query);
 
   @EntityGraph(attributePaths = {"order", "seller", "items", "items.seller", "shipment"})
   List<SellerOrder> findAllByOrderId(Long orderId);

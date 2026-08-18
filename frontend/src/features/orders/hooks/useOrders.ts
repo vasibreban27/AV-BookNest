@@ -3,20 +3,22 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import { cartQueryKey } from '../../cart/hooks/useCart'
 import type { Cart } from '../../cart/types/cart.types'
 import { ordersApi } from '../api/ordersApi'
+import type { OrderFilters } from '../api/ordersApi'
 import type { CheckoutPayload, Order } from '../types/orders.types'
 
 const orderQueryKeys = {
-  list: (userId: number | undefined) => ['orders', 'list', userId] as const,
+  list: (userId: number | undefined, filters?: OrderFilters) =>
+    ['orders', 'list', userId, filters ?? {}] as const,
   detail: (userId: number | undefined, orderId: number) =>
     ['orders', 'detail', userId, orderId] as const,
 }
 
-export function useOrders() {
+export function useOrders(filters: OrderFilters = {}) {
   const { user } = useAuth()
 
   return useQuery({
-    queryKey: orderQueryKeys.list(user?.id),
-    queryFn: ordersApi.list,
+    queryKey: orderQueryKeys.list(user?.id, filters),
+    queryFn: () => ordersApi.list(filters),
     enabled: Boolean(user),
   })
 }
@@ -48,10 +50,7 @@ export function useCheckout() {
     onSuccess: (session) => {
       const order = session.order
       queryClient.setQueryData(orderQueryKeys.detail(user?.id, order.id), order)
-      queryClient.setQueryData<Order[]>(orderQueryKeys.list(user?.id), (orders = []) => [
-        order,
-        ...orders.filter((currentOrder) => currentOrder.id !== order.id),
-      ])
+      void queryClient.invalidateQueries({ queryKey: ['orders', 'list', user?.id] })
       queryClient.setQueryData<Cart>(cartQueryKey(user?.id), (cart) =>
         cart ? { ...cart, items: [], total: 0 } : cart,
       )
@@ -70,9 +69,7 @@ export function useCancelOrder() {
     mutationFn: ordersApi.cancel,
     onSuccess: (order) => {
       queryClient.setQueryData(orderQueryKeys.detail(user?.id, order.id), order)
-      queryClient.setQueryData<Order[]>(orderQueryKeys.list(user?.id), (orders = []) =>
-        orders.map((currentOrder) => (currentOrder.id === order.id ? order : currentOrder)),
-      )
+      void queryClient.invalidateQueries({ queryKey: ['orders', 'list', user?.id] })
       void queryClient.invalidateQueries({ queryKey: ['seller-orders', 'seller'] })
       void queryClient.invalidateQueries({ queryKey: ['catalog', 'books'] })
       void queryClient.invalidateQueries({ queryKey: ['listings', 'mine', user?.id] })

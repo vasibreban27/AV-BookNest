@@ -5,6 +5,7 @@ import com.avbooknest.order.dto.OrderIssueRequest;
 import com.avbooknest.order.dto.OrderResponse;
 import com.avbooknest.order.dto.SellerOrderResponse;
 import com.avbooknest.order.dto.StripeCheckoutResponse;
+import com.avbooknest.order.model.OrderStatus;
 import com.avbooknest.order.service.OrderService;
 import com.avbooknest.order.service.SellerOrderService;
 import jakarta.validation.Valid;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,8 +34,11 @@ public class OrderController {
   }
 
   @GetMapping
-  public List<OrderResponse> list(Authentication auth) {
-    return orderService.list(auth.getName());
+  public List<OrderResponse> list(
+      @RequestParam(required = false) OrderStatus status,
+      @RequestParam(required = false, name = "q") String query,
+      Authentication auth) {
+    return orderService.list(auth.getName(), status, query);
   }
 
   @GetMapping("/{orderId}")

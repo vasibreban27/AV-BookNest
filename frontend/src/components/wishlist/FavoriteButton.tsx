@@ -1,10 +1,15 @@
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useAddToWishlist, useRemoveFromWishlist, useWishlist } from '../../features/wishlist/hooks/useWishlist'
 import { getWishlistErrorMessage } from '../../features/wishlist/utils/wishlistErrors'
 import { HeartIcon } from '../common/icons/AppIcons'
 import type { FavoriteButtonProps } from './types/wishlist-component.types'
 
 export function FavoriteButton({ bookId }: FavoriteButtonProps) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { data: wishlist } = useWishlist()
   const addToWishlist = useAddToWishlist()
   const removeFromWishlist = useRemoveFromWishlist()
@@ -14,6 +19,10 @@ export function FavoriteButton({ bookId }: FavoriteButtonProps) {
     (removeFromWishlist.isPending && removeFromWishlist.variables === bookId)
 
   const handleToggle = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: `${location.pathname}${location.search}` } })
+      return
+    }
     setErrorMessage(null)
     try {
       if (isFavorite) {

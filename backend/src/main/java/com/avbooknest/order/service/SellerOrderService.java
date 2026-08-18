@@ -21,6 +21,7 @@ import com.avbooknest.shipment.model.ShipmentStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,12 +45,17 @@ public class SellerOrderService {
   }
 
   @Transactional(readOnly = true)
-  public List<SellerOrderResponse> listForSeller(String email) {
+  public List<SellerOrderResponse> listForSeller(
+      String email, SellerOrderStatus status, String query) {
     return sellerOrderRepository
-        .findAllBySellerIdOrderByCreatedAtDesc(currentUser(email).getId())
+        .searchForSeller(currentUser(email).getId(), status, normalizeFilter(query))
         .stream()
         .map(SellerOrderResponse::from)
         .toList();
+  }
+
+  private String normalizeFilter(String value) {
+    return value == null || value.isBlank() ? "" : value.trim().toLowerCase(Locale.ROOT);
   }
 
   @Transactional(readOnly = true)

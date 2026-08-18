@@ -1,8 +1,11 @@
 package com.avbooknest.auth.service;
 
 import com.avbooknest.auth.dto.AuthResponse;
+import com.avbooknest.auth.dto.ChangePasswordRequest;
 import com.avbooknest.auth.dto.LoginRequest;
+import com.avbooknest.auth.dto.MessageResponse;
 import com.avbooknest.auth.dto.RegisterRequest;
+import com.avbooknest.auth.dto.UpdateProfileRequest;
 import com.avbooknest.auth.dto.UserResponse;
 import com.avbooknest.auth.model.RefreshToken;
 import com.avbooknest.auth.model.Role;
@@ -10,7 +13,9 @@ import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.RefreshTokenRepository;
 import com.avbooknest.auth.repository.RoleRepository;
 import com.avbooknest.auth.repository.UserRepository;
+import com.avbooknest.common.exception.BadRequestException;
 import com.avbooknest.common.exception.ConflictException;
+import com.avbooknest.common.exception.ForbiddenException;
 import com.avbooknest.common.exception.UnauthorizedException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -39,6 +44,7 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final UserSecurityService userSecurityService;
   private final JwtService jwtService;
+  private final AccountSecurityService accountSecurityService;
 
   public AuthService(
       UserRepository userRepository,
@@ -47,7 +53,8 @@ public class AuthService {
       PasswordEncoder passwordEncoder,
       AuthenticationManager authenticationManager,
       UserSecurityService userSecurityService,
-      JwtService jwtService) {
+      JwtService jwtService,
+      AccountSecurityService accountSecurityService) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.refreshTokenRepository = refreshTokenRepository;
@@ -55,9 +62,10 @@ public class AuthService {
     this.authenticationManager = authenticationManager;
     this.userSecurityService = userSecurityService;
     this.jwtService = jwtService;
+    this.accountSecurityService = accountSecurityService;
   }
 
-  public AuthResponse register(RegisterRequest request) {
+  public MessageResponse register(RegisterRequest request) {
     String email = normalizeEmail(request.email());
     if (userRepository.existsByEmail(email)) {
       throw new ConflictException("An account already exists for this email address");
@@ -81,7 +89,10 @@ public class AuthService {
             .updatedAt(now)
             .build();
 
-    return issueTokens(userRepository.save(user));
+    User saved = userRepository.save(user);
+    accountSecurityService.sendVerification(saved);
+    return new MessageResponse(
+        "Account created. Check your email to verify the address before signing in");
   }
 
   public AuthResponse login(LoginRequest request) {
@@ -97,6 +108,7 @@ public class AuthService {
         userRepository
             .findByEmail(email)
             .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+    requireVerified(user);
     return issueTokens(user);
   }
 
@@ -107,6 +119,7 @@ public class AuthService {
         userRepository
             .findByEmail(email)
             .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+    requireVerified(user);
 
     RefreshToken storedToken =
         refreshTokenRepository
@@ -133,6 +146,31 @@ public class AuthService {
     return UserResponse.from(user);
   }
 
+  public UserResponse updateProfile(String email, UpdateProfileRequest request) {
+    User user = authenticatedUser(email);
+    user.updateProfile(
+        request.firstName().trim(),
+        request.lastName().trim(),
+        normalizePhone(request.phoneNumber()),
+        Instant.now());
+    return UserResponse.from(user);
+  }
+
+  public MessageResponse changePassword(String email, ChangePasswordRequest request) {
+    User user = authenticatedUser(email);
+    if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+      throw new BadRequestException("Current password is incorrect");
+    }
+    if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+      throw new BadRequestException("New password must be different from the current password");
+    }
+    user.changePassword(passwordEncoder.encode(request.newPassword()), Instant.now());
+    refreshTokenRepository
+        .findAllByUserIdAndRevokedFalse(user.getId())
+        .forEach(RefreshToken::revoke);
+    return new MessageResponse("Password updated. Sign in again with the new password");
+  }
+
   private AuthResponse issueTokens(User user) {
     UserDetails userDetails = userSecurityService.toUserDetails(user);
     String accessToken = jwtService.generateAccessToken(userDetails);
@@ -153,6 +191,23 @@ public class AuthService {
         "Bearer",
         jwtService.extractExpiration(accessToken).getEpochSecond() - Instant.now().getEpochSecond(),
         UserResponse.from(user));
+  }
+
+  private void requireVerified(User user) {
+    if (!user.isEmailVerified()) {
+      throw new ForbiddenException("Email address is not verified");
+    }
+  }
+
+  private User authenticatedUser(String email) {
+    return userRepository
+        .findByEmail(normalizeEmail(email))
+        .orElseThrow(() -> new UnauthorizedException("User not found"));
+  }
+
+  private String normalizePhone(String value) {
+    if (value == null || value.isBlank()) return null;
+    return value.trim().replaceAll("[ ()-]", "");
   }
 
   private String normalizeEmail(String email) {

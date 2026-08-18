@@ -3,7 +3,13 @@ package com.avbooknest.auth.dto;
 import com.avbooknest.auth.model.User;
 
 public record UserResponse(
-    Long id, String firstName, String lastName, String email, String role, boolean emailVerified) {
+    Long id,
+    String firstName,
+    String lastName,
+    String email,
+    String phoneNumber,
+    String role,
+    boolean emailVerified) {
 
   public static UserResponse from(User user) {
     return new UserResponse(
@@ -11,6 +17,7 @@ public record UserResponse(
         user.getFirstName(),
         user.getLastName(),
         user.getEmail(),
+        user.getPhoneNumber(),
         user.getRole().getName(),
         user.isEmailVerified());
   }

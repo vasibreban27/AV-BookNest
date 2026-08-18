@@ -56,6 +56,18 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/auth/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/contact")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/books/mine")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/books",
+                        "/api/books/languages",
+                        "/api/books/catalog-categories",
+                        "/api/books/{bookId}",
+                        "/api/categories")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/stripe/webhook")
                     .permitAll()
                     .anyRequest()

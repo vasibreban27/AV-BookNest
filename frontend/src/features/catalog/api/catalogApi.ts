@@ -1,9 +1,15 @@
 import { api } from '../../../api/client'
-import type { Book, Category } from '../types/catalog.types'
+import type {
+  Book,
+  CatalogCategory,
+  CatalogRequest,
+  Category,
+  PageResponse,
+} from '../types/catalog.types'
 
 export const catalogApi = {
-  async listBooks() {
-    const { data } = await api.get<Book[]>('/books')
+  async listBooks(params: CatalogRequest = {}) {
+    const { data } = await api.get<PageResponse<Book>>('/books', { params })
     return data
   },
 
@@ -14,6 +20,16 @@ export const catalogApi = {
 
   async listCategories() {
     const { data } = await api.get<Category[]>('/categories')
+    return data
+  },
+
+  async listCatalogCategories() {
+    const { data } = await api.get<CatalogCategory[]>('/books/catalog-categories')
+    return data
+  },
+
+  async listLanguages() {
+    const { data } = await api.get<string[]>('/books/languages')
     return data
   },
 }

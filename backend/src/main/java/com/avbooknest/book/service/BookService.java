@@ -4,6 +4,7 @@ import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.UserRepository;
 import com.avbooknest.book.dto.BookRequest;
 import com.avbooknest.book.dto.BookResponse;
+import com.avbooknest.book.dto.CatalogCategoryResponse;
 import com.avbooknest.book.model.Book;
 import com.avbooknest.book.model.BookCondition;
 import com.avbooknest.book.model.BookStatus;
@@ -18,6 +19,7 @@ import com.avbooknest.common.exception.ConflictException;
 import com.avbooknest.common.exception.ForbiddenException;
 import com.avbooknest.common.exception.NotFoundException;
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +58,9 @@ public class BookService {
       BookCondition condition,
       BigDecimal minimumPrice,
       BigDecimal maximumPrice,
+      String language,
+      Integer minimumYear,
+      Integer maximumYear,
       String sort,
       int page,
       int size) {
@@ -68,6 +73,14 @@ public class BookService {
     if (minimumPrice != null && maximumPrice != null && minimumPrice.compareTo(maximumPrice) > 0) {
       throw new BadRequestException("Minimum price cannot be greater than maximum price");
     }
+    int currentYear = java.time.Year.now().getValue();
+    if ((minimumYear != null && (minimumYear < 1 || minimumYear > currentYear))
+        || (maximumYear != null && (maximumYear < 1 || maximumYear > currentYear))) {
+      throw new BadRequestException("Publication year filters must be valid years");
+    }
+    if (minimumYear != null && maximumYear != null && minimumYear > maximumYear) {
+      throw new BadRequestException("Minimum year cannot be greater than maximum year");
+    }
     return PageResponse.from(
         bookRepository.searchAvailable(
             normalizeSearch(query),
@@ -75,8 +88,21 @@ public class BookService {
             condition,
             minimumPrice,
             maximumPrice,
+            normalizeExactFilter(language),
+            minimumYear,
+            maximumYear,
             PageRequest.of(page, size, catalogSort(sort))),
         BookResponse::from);
+  }
+
+  @Transactional(readOnly = true)
+  public List<String> listAvailableLanguages() {
+    return bookRepository.findAvailableLanguages();
+  }
+
+  @Transactional(readOnly = true)
+  public List<CatalogCategoryResponse> listAvailableCategories() {
+    return bookRepository.findAvailableCategories();
   }
 
   @Transactional(readOnly = true)
@@ -272,6 +298,12 @@ public class BookService {
   }
 
   private String normalizeSearch(String value) {
+    if (value == null || value.isBlank()) return "";
+    return Normalizer.normalize(value.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "");
+  }
+
+  private String normalizeExactFilter(String value) {
     return value == null || value.isBlank() ? "" : value.trim().toLowerCase(Locale.ROOT);
   }
 
@@ -282,6 +314,9 @@ public class BookService {
       case "price_desc" ->
           Sort.by(Sort.Direction.DESC, "price").and(Sort.by(Sort.Direction.DESC, "id"));
       case "title_asc" -> Sort.by(Sort.Direction.ASC, "title").and(Sort.by("id"));
+      case "year_desc" ->
+          Sort.by(Sort.Order.desc("publishedYear").nullsLast())
+              .and(Sort.by(Sort.Direction.DESC, "id"));
       default -> throw new BadRequestException("Unsupported catalog sort");
     };
   }

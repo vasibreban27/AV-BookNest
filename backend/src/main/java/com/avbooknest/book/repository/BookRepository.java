@@ -1,5 +1,6 @@
 package com.avbooknest.book.repository;
 
+import com.avbooknest.book.dto.CatalogCategoryResponse;
 import com.avbooknest.book.model.Book;
 import com.avbooknest.book.model.BookCondition;
 import jakarta.persistence.LockModeType;
@@ -20,13 +21,22 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       select book from Book book
       where book.status = com.avbooknest.book.model.BookStatus.AVAILABLE
       and (:query = ''
-        or lower(book.title) like concat('%', :query, '%')
-        or lower(book.author) like concat('%', :query, '%')
-        or lower(coalesce(book.isbn, '')) like concat('%', :query, '%'))
+        or translate(lower(book.title), 'ăâîșşțţáàäãåéèëêíìïóòöôõúùüûçñ', 'aaissttaaaaaeeeeiiiooooouuuucn')
+          like concat('%', :query, '%')
+        or translate(lower(book.author), 'ăâîșşțţáàäãåéèëêíìïóòöôõúùüûçñ', 'aaissttaaaaaeeeeiiiooooouuuucn')
+          like concat('%', :query, '%')
+        or lower(coalesce(book.isbn, '')) like concat('%', :query, '%')
+        or translate(lower(coalesce(book.publisher, '')), 'ăâîșşțţáàäãåéèëêíìïóòöôõúùüûçñ', 'aaissttaaaaaeeeeiiiooooouuuucn')
+          like concat('%', :query, '%')
+        or translate(lower(concat(book.title, ' ', book.author)), 'ăâîșşțţáàäãåéèëêíìïóòöôõúùüûçñ', 'aaissttaaaaaeeeeiiiooooouuuucn')
+          like concat('%', replace(:query, ' ', '%'), '%'))
       and (:categorySlug is null or book.category.slug = :categorySlug)
       and (:condition is null or book.bookCondition = :condition)
       and (:minimumPrice is null or book.price >= :minimumPrice)
       and (:maximumPrice is null or book.price <= :maximumPrice)
+      and (:language = '' or lower(book.language) = :language)
+      and (:minimumYear is null or book.publishedYear >= :minimumYear)
+      and (:maximumYear is null or book.publishedYear <= :maximumYear)
       """)
   Page<Book> searchAvailable(
       @Param("query") String query,
@@ -34,7 +44,33 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       @Param("condition") BookCondition condition,
       @Param("minimumPrice") BigDecimal minimumPrice,
       @Param("maximumPrice") BigDecimal maximumPrice,
+      @Param("language") String language,
+      @Param("minimumYear") Integer minimumYear,
+      @Param("maximumYear") Integer maximumYear,
       Pageable pageable);
+
+  @Query(
+      """
+      select distinct book.language from Book book
+      where book.status = com.avbooknest.book.model.BookStatus.AVAILABLE
+      order by book.language
+      """)
+  List<String> findAvailableLanguages();
+
+  @Query(
+      """
+      select new com.avbooknest.book.dto.CatalogCategoryResponse(
+        book.category.id,
+        book.category.name,
+        book.category.slug,
+        count(book.id)
+      )
+      from Book book
+      where book.status = com.avbooknest.book.model.BookStatus.AVAILABLE
+      group by book.category.id, book.category.name, book.category.slug
+      order by book.category.name
+      """)
+  List<CatalogCategoryResponse> findAvailableCategories();
 
   @EntityGraph(attributePaths = {"seller", "category"})
   List<Book> findAllBySellerIdOrderByCreatedAtDesc(Long sellerId);

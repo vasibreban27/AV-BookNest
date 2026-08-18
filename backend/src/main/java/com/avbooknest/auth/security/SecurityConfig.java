@@ -59,7 +59,12 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/books/mine")
                     .authenticated()
                     .requestMatchers(
-                        HttpMethod.GET, "/api/books", "/api/books/{bookId}", "/api/categories")
+                        HttpMethod.GET,
+                        "/api/books",
+                        "/api/books/languages",
+                        "/api/books/catalog-categories",
+                        "/api/books/{bookId}",
+                        "/api/categories")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/stripe/webhook")
                     .permitAll()

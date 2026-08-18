@@ -59,11 +59,19 @@ class BookServiceTest {
   void listReturnsOnlyAvailableBooks() {
     User seller = user(10L, "seller@example.com");
     when(bookRepository.searchAvailable(
-            eq(""), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+            eq(""),
+            isNull(),
+            isNull(),
+            isNull(),
+            isNull(),
+            eq(""),
+            isNull(),
+            isNull(),
+            any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of(book(1L, seller, BookStatus.AVAILABLE))));
 
     PageResponse<BookResponse> response =
-        bookService.list(null, null, null, null, null, "newest", 0, 5);
+        bookService.list(null, null, null, null, null, null, null, null, "newest", 0, 5);
 
     assertEquals(1, response.content().size());
     assertEquals(BookStatus.AVAILABLE, response.content().getFirst().status());

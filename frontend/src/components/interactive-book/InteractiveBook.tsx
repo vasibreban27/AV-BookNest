@@ -1,27 +1,84 @@
-import { useRef, useState, type PointerEvent } from 'react'
-import { SparkleIcon } from '../common/icons/AppIcons'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import type { InteractiveBookProps } from './types/interactive-book.types'
+
+type MotionState = {
+  tiltX: number
+  tiltY: number
+  lightX: number
+  lightY: number
+}
 
 export function InteractiveBook({ className = '' }: InteractiveBookProps) {
   const [isOpen, setIsOpen] = useState(false)
   const sceneRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<number | null>(null)
+  const reducedMotionRef = useRef(false)
+  const targetRef = useRef<MotionState>({ tiltX: 0, tiltY: 0, lightX: 50, lightY: 35 })
+  const currentRef = useRef<MotionState>({ tiltX: 0, tiltY: 0, lightX: 50, lightY: 35 })
+
+  const animateTowardsPointer = () => {
+    const current = currentRef.current
+    const target = targetRef.current
+    const ease = 0.12
+
+    current.tiltX += (target.tiltX - current.tiltX) * ease
+    current.tiltY += (target.tiltY - current.tiltY) * ease
+    current.lightX += (target.lightX - current.lightX) * ease
+    current.lightY += (target.lightY - current.lightY) * ease
+
+    sceneRef.current?.style.setProperty('--tilt-x', `${current.tiltX.toFixed(3)}deg`)
+    sceneRef.current?.style.setProperty('--tilt-y', `${current.tiltY.toFixed(3)}deg`)
+    sceneRef.current?.style.setProperty('--light-x', `${current.lightX.toFixed(2)}%`)
+    sceneRef.current?.style.setProperty('--light-y', `${current.lightY.toFixed(2)}%`)
+
+    const distance =
+      Math.abs(target.tiltX - current.tiltX) +
+      Math.abs(target.tiltY - current.tiltY) +
+      Math.abs(target.lightX - current.lightX) +
+      Math.abs(target.lightY - current.lightY)
+
+    if (distance > 0.05) frameRef.current = requestAnimationFrame(animateTowardsPointer)
+    else frameRef.current = null
+  }
+
+  const scheduleMotion = () => {
+    if (frameRef.current === null) {
+      frameRef.current = requestAnimationFrame(animateTowardsPointer)
+    }
+  }
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const syncPreference = () => {
+      reducedMotionRef.current = mediaQuery.matches
+    }
+    syncPreference()
+    mediaQuery.addEventListener('change', syncPreference)
+
+    return () => {
+      mediaQuery.removeEventListener('change', syncPreference)
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
+    }
+  }, [])
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'touch' || reducedMotionRef.current) return
     const bounds = event.currentTarget.getBoundingClientRect()
     const horizontal = (event.clientX - bounds.left) / bounds.width - 0.5
     const vertical = (event.clientY - bounds.top) / bounds.height - 0.5
 
-    sceneRef.current?.style.setProperty('--tilt-x', `${vertical * -7}deg`)
-    sceneRef.current?.style.setProperty('--tilt-y', `${horizontal * 10}deg`)
-    sceneRef.current?.style.setProperty('--light-x', `${(horizontal + 0.5) * 100}%`)
-    sceneRef.current?.style.setProperty('--light-y', `${(vertical + 0.5) * 100}%`)
+    targetRef.current = {
+      tiltX: vertical * -5,
+      tiltY: horizontal * 7,
+      lightX: (horizontal + 0.5) * 100,
+      lightY: (vertical + 0.5) * 100,
+    }
+    scheduleMotion()
   }
 
   const resetPointerPosition = () => {
-    sceneRef.current?.style.setProperty('--tilt-x', '0deg')
-    sceneRef.current?.style.setProperty('--tilt-y', '0deg')
-    sceneRef.current?.style.setProperty('--light-x', '50%')
-    sceneRef.current?.style.setProperty('--light-y', '35%')
+    targetRef.current = { tiltX: 0, tiltY: 0, lightX: 50, lightY: 35 }
+    scheduleMotion()
   }
 
   return (
@@ -85,11 +142,6 @@ export function InteractiveBook({ className = '' }: InteractiveBookProps) {
           <span className="story-book__bookmark" aria-hidden="true" />
           <span className="story-book__spine" aria-hidden="true" />
         </button>
-      </div>
-
-      <div className="book-experience__hint" aria-live="polite">
-        <SparkleIcon />
-        <span>{isOpen ? 'Mai apasă o dată pentru a închide' : 'Mișcă mouse-ul și deschide cartea'}</span>
       </div>
     </div>
   )

@@ -160,7 +160,7 @@
   }
   .app-navbar__menu--open { display: flex; }
   .app-navbar__links { align-items: stretch; flex-direction: column; gap: 7px; width: 100%; }
-  .app-navbar__section-label { display: block; padding: 0 4px 5px; color: #82908b; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .app-navbar__section-label { display: block; padding: 0 4px 5px; color: #82908b; font-size: 11px; font-weight: 700; }
   .app-navbar__links a { display: flex; align-items: center; min-height: 52px; padding: 0 14px; border: 1px solid var(--home-line); border-radius: 13px; background: rgba(255,255,255,.66); font-size: 14px; }
   .app-navbar__links a::after { display: none; }
   .app-navbar__links a:hover,

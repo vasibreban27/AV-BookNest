@@ -74,7 +74,7 @@
 .book-details__facts dd { overflow-wrap: anywhere; margin: 4px 0 0; font-size: 11px; font-weight: 700; }
 
 .book-details__purchase { position: sticky; top: 106px; padding: 27px; border: 1px solid rgba(31,92,78,.14); border-radius: 20px; background: rgba(255,253,248,.96); box-shadow: 0 22px 55px rgba(23,43,42,.1); }
-.book-details__purchase-label { display: block; color: #85918d; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.book-details__purchase-label { display: block; color: #73827e; font-size: 11px; font-weight: 650; }
 .book-details__price { display: block; margin-top: 5px; color: var(--forest); font-family: 'Playfair Display',Georgia,serif; font-size: 34px; }
 .book-details__seller { display: flex; align-items: center; gap: 11px; margin: 22px 0; padding: 17px 0; border-top: 1px solid var(--home-line); border-bottom: 1px solid var(--home-line); }
 .book-details__seller > span { display: grid; flex: 0 0 auto; width: 38px; height: 38px; place-items: center; border-radius: 12px; color: white; background: var(--forest); font-size: 12px; font-weight: 800; }

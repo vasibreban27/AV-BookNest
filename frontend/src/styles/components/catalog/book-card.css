@@ -93,7 +93,7 @@
 }
 
 .book-card__content { padding: 17px 17px 18px; }
-.book-card__content > p { margin: 0 0 7px; color: var(--terracotta); font-size: 9px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; }
+.book-card__content > p { margin: 0 0 7px; color: #687974; font-size: 11px; font-weight: 650; }
 .book-card__content h3 { overflow: hidden; margin: 0; color: var(--ink); font-family: 'Playfair Display', Georgia, serif; font-size: 19px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .book-card__content h3 a { text-decoration: none; }
 .book-card__content h3 a:hover { color: var(--forest); }

@@ -19,7 +19,7 @@
 .cart-item__cover img { width: 100%; height: 100%; object-fit: cover; }
 .cart-item__cover svg { width: 32px; height: 32px; }
 .cart-item__content { align-self: center; min-width: 0; }
-.cart-item__category { color: var(--terracotta); font-size: 8px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+.cart-item__category { color: #687974; font-size: 10px; font-weight: 650; }
 .cart-item__content h2 { margin: 7px 0 3px; font-family: 'Playfair Display', Georgia, serif; font-size: 23px; line-height: 1.15; }
 .cart-item__content > p { margin: 0; color: var(--muted); font-size: 12px; }
 .cart-item__details { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 17px; }
@@ -32,7 +32,7 @@
 .cart-item__actions svg { width: 15px; height: 15px; }
 
 .cart-summary { position: sticky; top: 100px; align-self: start; padding: 28px; border: 1px solid rgba(31,92,78,.14); border-radius: 20px; background: #fffdf8; box-shadow: 0 20px 50px rgba(23,43,42,.08); }
-.cart-summary__eyebrow { color: var(--terracotta); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+.cart-summary__eyebrow { color: #687974; font-size: 11px; font-weight: 650; }
 .cart-summary h2 { margin: 8px 0 24px; font-family: 'Playfair Display', Georgia, serif; font-size: 29px; }
 .cart-summary__line { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 0; border-bottom: 1px solid var(--home-line); color: #687872; font-size: 11px; }
 .cart-summary__line strong { color: var(--ink); font-size: 12px; }

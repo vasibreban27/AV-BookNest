@@ -13,12 +13,12 @@
 .catalog-filters { position: sticky; top: 98px; display: grid; gap: 19px; padding: 22px; border: 1px solid var(--home-line); border-radius: 18px; background: rgba(255,253,248,.92); box-shadow: 0 15px 35px rgba(31,65,57,.06); }
 .catalog-filters__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--home-line); }
 .catalog-filters__heading span,
-.catalog-results__heading > div > span { color: var(--terracotta); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+.catalog-results__heading > div > span { color: #667872; font-size: 11px; font-weight: 650; }
 .catalog-filters__heading h2 { margin: 4px 0 0; font-family: 'Playfair Display',Georgia,serif; font-size: 27px; }
 .catalog-filters__heading button { padding: 0; border: 0; color: #657772; background: transparent; font-size: 9px; font-weight: 750; cursor: pointer; }
 .catalog-filters__heading button:hover { color: var(--terracotta); }
 .catalog-filters label,
-.catalog-results__heading label { display: grid; gap: 7px; color: #65746f; font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+.catalog-results__heading label { display: grid; gap: 7px; color: #65746f; font-size: 11px; font-weight: 700; }
 .catalog-filters input,
 .catalog-filters select,
 .catalog-results__heading select { width: 100%; min-height: 45px; padding: 0 12px; border: 1px solid #d8ded7; border-radius: 11px; color: var(--ink); background: white; font: inherit; font-size: 11px; text-transform: none; outline: none; }

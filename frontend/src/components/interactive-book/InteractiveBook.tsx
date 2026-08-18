@@ -9,7 +9,7 @@ type MotionState = {
 }
 
 export function InteractiveBook({ className = '' }: InteractiveBookProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
   const sceneRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<number | null>(null)
   const reducedMotionRef = useRef(false)
@@ -81,6 +81,17 @@ export function InteractiveBook({ className = '' }: InteractiveBookProps) {
     scheduleMotion()
   }
 
+  const lastPage = 4
+  const isOpen = currentPage > 0
+  const goForward = () => setCurrentPage((page) => Math.min(page + 1, lastPage))
+  const goBackward = () => setCurrentPage((page) => Math.max(page - 1, 0))
+
+  const pageLabel = currentPage === 0
+    ? 'Copertă'
+    : currentPage === lastPage
+      ? 'Ultima pagină'
+      : `Pagina ${currentPage} din ${lastPage}`
+
   return (
     <div
       className={`book-experience ${className}`}
@@ -94,12 +105,8 @@ export function InteractiveBook({ className = '' }: InteractiveBookProps) {
       <span className="book-experience__particle book-experience__particle--three" aria-hidden="true">✧</span>
 
       <div className="book-experience__stage">
-        <button
-          className={`story-book${isOpen ? ' story-book--open' : ''}`}
-          type="button"
-          onClick={() => setIsOpen((value) => !value)}
-          aria-pressed={isOpen}
-          aria-label={isOpen ? 'Închide cartea' : 'Deschide cartea'}
+        <div
+          className={`story-book story-book--page-${currentPage}${isOpen ? ' story-book--open' : ''}`}
         >
           <span className="story-book__back-cover" aria-hidden="true" />
           <span className="story-book__paper-stack" aria-hidden="true">
@@ -141,7 +148,32 @@ export function InteractiveBook({ className = '' }: InteractiveBookProps) {
 
           <span className="story-book__bookmark" aria-hidden="true" />
           <span className="story-book__spine" aria-hidden="true" />
-        </button>
+
+          <button
+            className={`story-book__page-action story-book__page-action--back${isOpen ? '' : ' story-book__page-action--hidden'}`}
+            type="button"
+            onClick={goBackward}
+            disabled={!isOpen}
+            aria-label={currentPage === 1 ? 'Închide cartea' : 'Pagina anterioară'}
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button
+            className={`story-book__page-action story-book__page-action--forward${isOpen ? '' : ' story-book__page-action--cover'}`}
+            type="button"
+            onClick={goForward}
+            disabled={currentPage === lastPage}
+            aria-label={isOpen ? 'Pagina următoare' : 'Deschide cartea'}
+          >
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+
+        <div className="story-book__controls" aria-label="Navigare prin carte">
+          <button type="button" onClick={goBackward} disabled={currentPage === 0} aria-label="Pagina anterioară">←</button>
+          <span aria-live="polite">{pageLabel}</span>
+          <button type="button" onClick={goForward} disabled={currentPage === lastPage} aria-label="Pagina următoare">→</button>
+        </div>
       </div>
     </div>
   )

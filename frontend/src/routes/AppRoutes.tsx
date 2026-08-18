@@ -21,6 +21,13 @@ import { MyListingsPage } from '../pages/listings/MyListingsPage'
 import { WishlistPage } from '../pages/wishlist/WishlistPage'
 import { SalesPage } from '../pages/sales/SalesPage'
 import { NotificationsPage } from '../pages/notifications/NotificationsPage'
+import { ContactPage } from '../pages/contact/ContactPage'
+import {
+  ConsumerRightsPage,
+  CookiesPage,
+  PrivacyPage,
+  TermsPage,
+} from '../pages/legal/LegalPages'
 import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
 
 export function AppRoutes() {
@@ -42,6 +49,11 @@ export function AppRoutes() {
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/books/:bookId" element={<BookDetailsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
+        <Route path="/consumer-rights" element={<ConsumerRightsPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />
           <Route path="/cart" element={<CartPage />} />

@@ -3,6 +3,9 @@ package com.avbooknest.book.repository;
 import com.avbooknest.book.dto.CatalogCategoryResponse;
 import com.avbooknest.book.model.Book;
 import com.avbooknest.book.model.BookCondition;
+import com.avbooknest.book.model.BookModerationReason;
+import com.avbooknest.book.model.BookModerationStatus;
+import com.avbooknest.book.model.BookStatus;
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,6 +23,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       """
       select book from Book book
       where book.status = com.avbooknest.book.model.BookStatus.AVAILABLE
+      and book.moderationStatus = com.avbooknest.book.model.BookModerationStatus.VISIBLE
+      and book.category.active = true
       and (:query = ''
         or translate(lower(book.title), 'ăâîșşțţáàäãåéèëêíìïóòöôõúùüûçñ', 'aaissttaaaaaeeeeiiiooooouuuucn')
           like concat('%', :query, '%')
@@ -53,6 +58,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       """
       select distinct book.language from Book book
       where book.status = com.avbooknest.book.model.BookStatus.AVAILABLE
+      and book.moderationStatus = com.avbooknest.book.model.BookModerationStatus.VISIBLE
+      and book.category.active = true
       order by book.language
       """)
   List<String> findAvailableLanguages();
@@ -67,6 +74,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       )
       from Book book
       where book.status = com.avbooknest.book.model.BookStatus.AVAILABLE
+      and book.moderationStatus = com.avbooknest.book.model.BookModerationStatus.VISIBLE
+      and book.category.active = true
       group by book.category.id, book.category.name, book.category.slug
       order by book.category.name
       """)
@@ -74,6 +83,32 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
   @EntityGraph(attributePaths = {"seller", "category"})
   List<Book> findAllBySellerIdOrderByCreatedAtDesc(Long sellerId);
+
+  @EntityGraph(attributePaths = {"seller", "category", "moderatedBy"})
+  @Query(
+      """
+      select book from Book book
+      where (:query = ''
+        or lower(book.title) like concat('%', :query, '%')
+        or lower(book.author) like concat('%', :query, '%')
+        or lower(book.seller.email) like concat('%', :query, '%'))
+      and (:status is null or book.status = :status)
+      and (:moderationStatus is null or book.moderationStatus = :moderationStatus)
+      """)
+  Page<Book> searchForAdmin(
+      @Param("query") String query,
+      @Param("status") BookStatus status,
+      @Param("moderationStatus") BookModerationStatus moderationStatus,
+      Pageable pageable);
+
+  List<Book> findAllBySellerIdAndModerationStatus(Long sellerId, BookModerationStatus status);
+
+  List<Book> findAllBySellerIdAndModerationStatusAndModerationReason(
+      Long sellerId, BookModerationStatus status, BookModerationReason reason);
+
+  long countBySellerId(Long sellerId);
+
+  long countByStatusAndModerationStatus(BookStatus status, BookModerationStatus moderationStatus);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select book from Book book where book.id = :bookId")

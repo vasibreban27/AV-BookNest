@@ -96,6 +96,18 @@ public class SellerTransfer {
     return status;
   }
 
+  public String getFailureReason() {
+    return failureReason;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
   public void scheduleEligibility(Instant value, Instant now) {
     eligibleAt = value;
     updatedAt = now;

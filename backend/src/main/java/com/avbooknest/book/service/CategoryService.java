@@ -1,5 +1,6 @@
 package com.avbooknest.book.service;
 
+import com.avbooknest.admin.service.AdminAuditService;
 import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.UserRepository;
 import com.avbooknest.book.dto.CategoryResponse;
@@ -11,7 +12,6 @@ import com.avbooknest.common.exception.ForbiddenException;
 import com.avbooknest.common.exception.NotFoundException;
 import java.time.Instant;
 import java.util.List;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +20,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
   private final CategoryRepository categoryRepository;
   private final UserRepository userRepository;
+  private final AdminAuditService auditService;
 
-  public CategoryService(CategoryRepository categoryRepository, UserRepository userRepository) {
+  public CategoryService(
+      CategoryRepository categoryRepository,
+      UserRepository userRepository,
+      AdminAuditService auditService) {
     this.categoryRepository = categoryRepository;
     this.userRepository = userRepository;
+    this.auditService = auditService;
   }
 
   @Transactional(readOnly = true)
   public List<CategoryResponse> list() {
-    return categoryRepository.findAll(Sort.by("name")).stream()
+    return categoryRepository.findAllByActiveTrueOrderByNameAsc().stream()
         .map(CategoryResponse::from)
         .toList();
   }
@@ -58,6 +63,8 @@ public class CategoryService {
             .createdAt(now)
             .updatedAt(now)
             .build();
-    return CategoryResponse.from(categoryRepository.save(category));
+    Category saved = categoryRepository.save(category);
+    auditService.record(user, "CATEGORY_CREATED", "CATEGORY", saved.getId(), null, null);
+    return CategoryResponse.from(saved);
   }
 }

@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { authApi } from '../api/authApi'
+import { AUTH_SESSION_EXPIRED_EVENT } from '../events/authEvents'
 import { AuthContext } from '../hooks/useAuth'
-import {
-  AUTH_SESSION_EVENT,
-  clearStoredSession,
-  getStoredSession,
-  storeSession,
-} from '../storage/authStorage'
 import type {
   AuthProviderProps,
   LoginPayload,
@@ -15,42 +10,31 @@ import type {
 } from '../types/auth.types'
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(
-    () => getStoredSession()?.user ?? null,
-  )
-  const [isInitializing, setIsInitializing] = useState(
-    () => Boolean(getStoredSession()),
-  )
+  const [user, setUser] = useState<User | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
 
   useEffect(() => {
-    const syncSession = () => setUser(getStoredSession()?.user ?? null)
-    window.addEventListener(AUTH_SESSION_EVENT, syncSession)
-    window.addEventListener('storage', syncSession)
+    const expireSession = () => setUser(null)
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, expireSession)
     return () => {
-      window.removeEventListener(AUTH_SESSION_EVENT, syncSession)
-      window.removeEventListener('storage', syncSession)
+      window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, expireSession)
     }
   }, [])
 
   useEffect(() => {
     let active = true
-    const session = getStoredSession()
-
-    if (!session) {
-      return () => {
-        active = false
-      }
+    try {
+      localStorage.removeItem('booknest.auth.session')
+    } catch {
+      // Cleanup for sessions created before authentication moved to HttpOnly cookies.
     }
-
-    authApi
-      .currentUser()
+    authApi.initializeCsrf()
+      .then(() => authApi.currentUser())
       .then((currentUser) => {
-        if (!active) return
-        const latestSession = getStoredSession()
-        if (latestSession) storeSession({ ...latestSession, user: currentUser })
+        if (active) setUser(currentUser)
       })
       .catch(() => {
-        if (active) clearStoredSession()
+        if (active) setUser(null)
       })
       .finally(() => {
         if (active) setIsInitializing(false)
@@ -63,7 +47,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (payload: LoginPayload) => {
     const session = await authApi.login(payload)
-    storeSession(session)
+    setUser(session.user)
+    try {
+      await authApi.initializeCsrf()
+    } catch {
+      // The login response already issued a usable CSRF cookie.
+    }
   }, [])
 
   const register = useCallback(async (payload: RegisterPayload) => {
@@ -71,21 +60,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const logout = useCallback(async () => {
-    const refreshToken = getStoredSession()?.refreshToken
-    clearStoredSession()
-
-    if (refreshToken) {
+    try {
+      await authApi.logout()
+    } finally {
+      setUser(null)
       try {
-        await authApi.logout(refreshToken)
+        await authApi.initializeCsrf()
       } catch {
-        // Local logout remains valid when the API is temporarily unavailable.
+        // The local UI still closes the session if the API is unavailable.
       }
     }
   }, [])
 
   const updateUser = useCallback((nextUser: User) => {
-    const session = getStoredSession()
-    if (session) storeSession({ ...session, user: nextUser })
+    setUser(nextUser)
   }, [])
 
   const value = useMemo(

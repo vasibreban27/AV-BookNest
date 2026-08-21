@@ -1,4 +1,4 @@
-import { api } from '../../../api/client'
+import { api, initializeCsrf } from '../../../api/client'
 import type {
   AuthResponse,
   LoginPayload,
@@ -10,6 +10,10 @@ import type {
 } from '../types/auth.types'
 
 export const authApi = {
+  async initializeCsrf() {
+    await initializeCsrf()
+  },
+
   async login(payload: LoginPayload) {
     const { data } = await api.post<AuthResponse>('/auth/login', payload)
     return data
@@ -55,7 +59,7 @@ export const authApi = {
     return data
   },
 
-  async logout(refreshToken: string) {
-    await api.post('/auth/logout', { refreshToken })
+  async logout() {
+    await api.post('/auth/logout')
   },
 }

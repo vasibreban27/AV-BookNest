@@ -70,10 +70,10 @@
 
 .password-toggle {
   position: absolute;
-  right: 9px;
+  right: 5px;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   place-items: center;
   outline: none;

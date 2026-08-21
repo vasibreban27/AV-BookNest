@@ -40,9 +40,7 @@ export function Navbar() {
   return (
     <header className="app-navbar">
       <nav className="app-navbar__inner" aria-label="Navigație principală">
-        <Link to="/" onClick={closeMenu} aria-label="BookNest — pagina principală">
-          <Logo />
-        </Link>
+        <Logo onClick={closeMenu} />
 
         <button
           className="app-navbar__menu-button"

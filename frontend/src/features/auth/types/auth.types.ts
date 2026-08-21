@@ -24,8 +24,6 @@ export type RegisterPayload = LoginPayload & {
 }
 
 export type AuthResponse = {
-  accessToken: string
-  refreshToken: string
   tokenType: string
   expiresIn: number
   user: User

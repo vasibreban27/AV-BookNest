@@ -11,8 +11,15 @@ import {
 import type { UserMenuProps } from './types/navbar-component.types'
 
 function AccountLinks({ onNavigate }: UserMenuProps) {
+  const { user } = useAuth()
   return (
     <div className="user-menu__links">
+      {user?.role === 'ADMIN' && (
+        <NavLink to="/admin" onClick={onNavigate}>
+          <UserIcon />
+          <span><strong>Administrare</strong><small>Centru de control BookNest</small></span>
+        </NavLink>
+      )}
       <NavLink to="/my-books" onClick={onNavigate}>
         <BookOutlineIcon />
         <span><strong>Cărțile mele</strong><small>Gestionează anunțurile</small></span>

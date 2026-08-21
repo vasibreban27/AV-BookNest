@@ -46,8 +46,10 @@
 }
 
 @media (max-width: 650px) {
-  .app-footer { padding-top: 48px; }
+  .app-footer { padding-top: 48px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .app-footer__socials a { width: 44px; height: 44px; }
   .app-footer__links { grid-template-columns: 1fr 1fr; gap: 36px 24px; }
+  .app-footer__column a { display: flex; align-items: center; min-height: 34px; margin-block: -5px; }
   .app-footer__bottom { flex-direction: column; gap: 7px; }
 }
 

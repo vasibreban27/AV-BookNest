@@ -1,4 +1,10 @@
 package com.avbooknest.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record AuthResponse(
-    String accessToken, String refreshToken, String tokenType, long expiresIn, UserResponse user) {}
+    @JsonIgnore String accessToken,
+    @JsonIgnore String refreshToken,
+    String tokenType,
+    long expiresIn,
+    UserResponse user) {}

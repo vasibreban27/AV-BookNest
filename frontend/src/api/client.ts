@@ -2,11 +2,7 @@ import axios, {
   AxiosError,
   type AxiosRequestConfig,
 } from 'axios'
-import {
-  clearStoredSession,
-  getStoredSession,
-  storeSession,
-} from '../features/auth/storage/authStorage'
+import { notifyAuthSessionExpired } from '../features/auth/events/authEvents'
 import type {
   ApiErrorResponse,
   AuthResponse,
@@ -18,20 +14,48 @@ const baseURL = import.meta.env.VITE_API_URL ?? '/api'
 export const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 })
 
 const refreshClient = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
 })
 
+const SAFE_METHODS = new Set(['get', 'head', 'options'])
+let csrfRequest: Promise<void> | null = null
 let refreshRequest: Promise<AuthResponse> | null = null
 
-api.interceptors.request.use((config) => {
-  const accessToken = getStoredSession()?.accessToken
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`
-  }
+function hasCsrfCookie() {
+  if (typeof document === 'undefined') return false
+  return document.cookie
+    .split('; ')
+    .some((cookie) => cookie.startsWith('XSRF-TOKEN='))
+}
+
+export async function initializeCsrf() {
+  if (hasCsrfCookie()) return
+
+  csrfRequest ??= refreshClient
+    .get('/auth/csrf')
+    .then(() => undefined)
+    .finally(() => {
+      csrfRequest = null
+    })
+
+  await csrfRequest
+}
+
+api.interceptors.request.use(async (config) => {
+  const method = config.method?.toLowerCase() ?? 'get'
+  if (!SAFE_METHODS.has(method)) await initializeCsrf()
   return config
 })
 
@@ -48,14 +72,11 @@ api.interceptors.response.use(
       '/auth/forgot-password',
       '/auth/reset-password',
     ].includes(request?.url ?? '')
-    const session = getStoredSession()
-
     if (
       error.response?.status !== 401 ||
       !request ||
       request._retry ||
-      isCredentialRequest ||
-      !session?.refreshToken
+      isCredentialRequest
     ) {
       return Promise.reject(error)
     }
@@ -63,23 +84,18 @@ api.interceptors.response.use(
     request._retry = true
 
     try {
+      await initializeCsrf()
       refreshRequest ??= refreshClient
-        .post<AuthResponse>('/auth/refresh', {
-          refreshToken: session.refreshToken,
-        })
-        .then((response) => {
-          storeSession(response.data)
-          return response.data
-        })
+        .post<AuthResponse>('/auth/refresh')
+        .then((response) => response.data)
         .finally(() => {
           refreshRequest = null
         })
 
-      const refreshedSession = await refreshRequest
-      request.headers.Authorization = `Bearer ${refreshedSession.accessToken}`
+      await refreshRequest
       return api.request(request)
     } catch (refreshError) {
-      clearStoredSession()
+      notifyAuthSessionExpired()
       return Promise.reject(refreshError)
     }
   },

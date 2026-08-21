@@ -30,3 +30,15 @@ export function PublicOnlyRoute() {
   if (isAuthenticated) return <Navigate to="/" replace />
   return <Outlet />
 }
+
+export function AdminRoute() {
+  const { user, isAuthenticated, isInitializing } = useAuth()
+  const location = useLocation()
+
+  if (isInitializing) return <LoadingScreen />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
+  if (user?.role !== 'ADMIN') return <Navigate to="/" replace />
+  return <Outlet />
+}

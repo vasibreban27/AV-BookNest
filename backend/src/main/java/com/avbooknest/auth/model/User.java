@@ -44,6 +44,16 @@ public class User {
   @Column(nullable = false)
   private boolean enabled;
 
+  @Column(name = "suspended_at")
+  private Instant suspendedAt;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "suspended_by")
+  private User suspendedBy;
+
+  @Column(name = "suspension_reason", length = 500)
+  private String suspensionReason;
+
   @Column(name = "stripe_account_id", unique = true, length = 255)
   private String stripeAccountId;
 
@@ -74,6 +84,9 @@ public class User {
     this.role = builder.role;
     this.emailVerified = builder.emailVerified;
     this.enabled = builder.enabled;
+    this.suspendedAt = builder.suspendedAt;
+    this.suspendedBy = builder.suspendedBy;
+    this.suspensionReason = builder.suspensionReason;
     this.stripeAccountId = builder.stripeAccountId;
     this.stripeDetailsSubmitted = builder.stripeDetailsSubmitted;
     this.stripeChargesEnabled = builder.stripeChargesEnabled;
@@ -116,6 +129,34 @@ public class User {
 
   public boolean isEnabled() {
     return enabled;
+  }
+
+  public Instant getSuspendedAt() {
+    return suspendedAt;
+  }
+
+  public User getSuspendedBy() {
+    return suspendedBy;
+  }
+
+  public String getSuspensionReason() {
+    return suspensionReason;
+  }
+
+  public void suspend(User administrator, String reason, Instant now) {
+    enabled = false;
+    suspendedAt = now;
+    suspendedBy = administrator;
+    suspensionReason = reason;
+    updatedAt = now;
+  }
+
+  public void reactivate(Instant now) {
+    enabled = true;
+    suspendedAt = null;
+    suspendedBy = null;
+    suspensionReason = null;
+    updatedAt = now;
   }
 
   public String getStripeAccountId() {
@@ -187,6 +228,9 @@ public class User {
     private Role role;
     private boolean emailVerified;
     private boolean enabled;
+    private Instant suspendedAt;
+    private User suspendedBy;
+    private String suspensionReason;
     private String stripeAccountId;
     private boolean stripeDetailsSubmitted;
     private boolean stripeChargesEnabled;
@@ -236,6 +280,21 @@ public class User {
 
     public Builder enabled(boolean enabled) {
       this.enabled = enabled;
+      return this;
+    }
+
+    public Builder suspendedAt(Instant value) {
+      suspendedAt = value;
+      return this;
+    }
+
+    public Builder suspendedBy(User value) {
+      suspendedBy = value;
+      return this;
+    }
+
+    public Builder suspensionReason(String value) {
+      suspensionReason = value;
       return this;
     }
 

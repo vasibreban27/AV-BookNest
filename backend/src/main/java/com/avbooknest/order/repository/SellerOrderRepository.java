@@ -1,11 +1,14 @@
 package com.avbooknest.order.repository;
 
+import com.avbooknest.order.model.OrderIssueStatus;
 import com.avbooknest.order.model.SellerOrder;
 import com.avbooknest.order.model.SellerOrderStatus;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -33,6 +36,23 @@ public interface SellerOrderRepository extends JpaRepository<SellerOrder, Long> 
 
   @EntityGraph(attributePaths = {"order", "seller", "items", "items.seller", "shipment"})
   List<SellerOrder> findAllByOrderId(Long orderId);
+
+  @EntityGraph(attributePaths = {"order", "order.buyer", "seller", "issueResolvedBy"})
+  @Query(
+      """
+      select distinct so from SellerOrder so
+      where (:status is null or so.issueStatus = :status)
+      """)
+  Page<SellerOrder> searchIssuesForAdmin(
+      @Param("status") OrderIssueStatus status, Pageable pageable);
+
+  long countBySellerId(Long sellerId);
+
+  long countByIssueStatus(OrderIssueStatus status);
+
+  @Query(
+      "select coalesce(sum(so.commissionAmount), 0) from SellerOrder so where so.status <> com.avbooknest.order.model.SellerOrderStatus.CANCELLED")
+  java.math.BigDecimal sumActiveCommission();
 
   @EntityGraph(attributePaths = {"order", "order.buyer", "seller", "items", "shipment"})
   @Query("select so from SellerOrder so where so.id = :id")

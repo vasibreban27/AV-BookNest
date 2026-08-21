@@ -5,6 +5,8 @@ import com.avbooknest.integration.model.IntegrationEventStatus;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 
@@ -17,4 +19,11 @@ public interface IntegrationEventRepository extends JpaRepository<IntegrationEve
   Optional<IntegrationEvent>
       findFirstByAggregateTypeAndAggregateIdAndEventTypeAndStatusOrderByCreatedAtDesc(
           String aggregateType, Long aggregateId, String eventType, IntegrationEventStatus status);
+
+  Page<IntegrationEvent> findAllByStatus(IntegrationEventStatus status, Pageable pageable);
+
+  long countByStatus(IntegrationEventStatus status);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  Optional<IntegrationEvent> findByIdAndStatus(Long id, IntegrationEventStatus status);
 }

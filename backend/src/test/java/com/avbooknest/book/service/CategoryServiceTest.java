@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.avbooknest.admin.service.AdminAuditService;
 import com.avbooknest.auth.model.Role;
 import com.avbooknest.auth.model.User;
 import com.avbooknest.auth.repository.UserRepository;
@@ -25,11 +26,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CategoryServiceTest {
   @Mock private CategoryRepository categoryRepository;
   @Mock private UserRepository userRepository;
+  @Mock private AdminAuditService auditService;
   private CategoryService categoryService;
 
   @BeforeEach
   void setUp() {
-    categoryService = new CategoryService(categoryRepository, userRepository);
+    categoryService = new CategoryService(categoryRepository, userRepository, auditService);
   }
 
   @Test

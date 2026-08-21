@@ -92,6 +92,27 @@ Parola poate fi suprascrisă din configurația IntelliJ prin `APP_SEED_PASSWORD`
 
 Datele standard din coș și wishlist sunt readăugate la fiecare pornire în profilul `dev` dacă lipsesc. Astfel, scenariul principal de test rămâne repetabil după un checkout.
 
+## Autentificare prin cookie-uri și CSRF
+
+Access token-ul și refresh token-ul sunt păstrate în cookie-uri `HttpOnly`, nu în răspunsul
+JSON și nu în `localStorage`. Endpoint-ul `GET /api/auth/csrf` emite cookie-ul public
+`XSRF-TOKEN`; frontend-ul îl retransmite pentru cererile nesigure prin header-ul
+`X-XSRF-TOKEN`. Webhook-ul Stripe este singura rută exceptată de la CSRF, deoarece își
+verifică propria semnătură.
+
+În development pe HTTP se folosesc valorile implicite. În producție, numai după ce domeniul
+este disponibil prin HTTPS, configurează:
+
+```text
+AUTH_COOKIE_SECURE=true
+AUTH_COOKIE_SAME_SITE=Lax
+CORS_ALLOWED_ORIGINS=https://booknest.example
+```
+
+Cu `AUTH_COOKIE_SECURE=true`, cookie-urile de autentificare primesc automat prefixul
+`__Host-`, atributul `Secure`, `Path=/` și nu au atribut `Domain`. Publicarea recomandată
+servește frontend-ul și `/api` pe aceeași origine printr-un reverse proxy.
+
 ## Configurare Sameday eAWB
 
 Integrarea este dezactivată implicit, astfel încât lipsa credențialelor Sameday nu oprește

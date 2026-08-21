@@ -195,6 +195,7 @@
   .home-hero__trust i { height: 42px; }
   .home-hero__trust span { max-width: 84px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 20px; }
+  .section-heading > a { min-height: 44px; padding-block: 10px; }
   .section-heading h2 { font-size: 35px; }
   .home-section { padding: 58px 0; }
   .catalog-toolbar { display: grid; grid-template-columns: 1fr 1fr; }

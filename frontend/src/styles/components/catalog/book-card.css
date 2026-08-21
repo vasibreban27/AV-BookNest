@@ -128,4 +128,8 @@
 .catalog-state--error svg { color: var(--terracotta); }
 
 @media (max-width: 980px) { .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 540px) { .book-grid { grid-template-columns: 1fr; } .book-card__cover { aspect-ratio: 4 / 3.8; } }
+@media (max-width: 540px) {
+  .book-grid { grid-template-columns: 1fr; }
+  .book-card__cover { aspect-ratio: 4 / 5; }
+  .add-to-cart__button { min-height: 46px; }
+}

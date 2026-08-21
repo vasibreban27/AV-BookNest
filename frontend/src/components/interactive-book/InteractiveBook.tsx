@@ -169,11 +169,12 @@ export function InteractiveBook({ className = '' }: InteractiveBookProps) {
           </button>
         </div>
 
-        <div className="story-book__controls" aria-label="Navigare prin carte">
-          <button type="button" onClick={goBackward} disabled={currentPage === 0} aria-label="Pagina anterioară">←</button>
-          <span aria-live="polite">{pageLabel}</span>
-          <button type="button" onClick={goForward} disabled={currentPage === lastPage} aria-label="Pagina următoare">→</button>
-        </div>
+      </div>
+
+      <div className="story-book__controls" aria-label="Navigare prin carte">
+        <button type="button" onClick={goBackward} disabled={currentPage === 0} aria-label="Pagina anterioară">←</button>
+        <span aria-live="polite">{pageLabel}</span>
+        <button type="button" onClick={goForward} disabled={currentPage === lastPage} aria-label="Pagina următoare">→</button>
       </div>
     </div>
   )

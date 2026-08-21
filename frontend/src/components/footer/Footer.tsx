@@ -34,9 +34,7 @@ export function Footer() {
     <footer className="app-footer" id="footer">
       <div className="app-footer__grid">
         <div className="app-footer__brand">
-          <Link to="/" aria-label="BookNest — pagina principală">
-            <Logo />
-          </Link>
+          <Logo />
           <p>Dăm cărților citite șansa la un capitol nou.</p>
           <div className="app-footer__socials">
             <span>Urmărește BookNest</span>

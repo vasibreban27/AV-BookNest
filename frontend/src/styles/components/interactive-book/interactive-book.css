@@ -398,7 +398,7 @@
 .story-book__controls {
   position: absolute;
   z-index: 30;
-  bottom: 0;
+  bottom: 18px;
   left: 50%;
   display: flex;
   align-items: center;
@@ -410,8 +410,8 @@
 
 .story-book__controls button {
   display: grid;
-  width: 31px;
-  height: 31px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   place-items: center;
   border: 1px solid rgba(31, 92, 78, .14);
@@ -463,11 +463,18 @@
 
 @media (max-width: 680px) {
   .book-experience { min-height: 410px; }
-  .book-experience__halo { width: 330px; height: 330px; box-shadow: 0 0 0 35px rgba(255,255,255,.1); }
+  .book-experience__halo { width: min(330px, calc(100% - 8px)); height: auto; aspect-ratio: 1; box-shadow: 0 0 0 35px rgba(255,255,255,.1); }
   .book-experience__stage { height: 365px; transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) scale(.66); }
   .book-experience__stage::after { bottom: 0; }
+  .story-book__controls { bottom: 0; }
   .book-experience__particle--one { right: 7%; }
   .book-experience__particle--two { left: 5%; }
+}
+
+@media (max-width: 380px) {
+  .book-experience { min-height: 380px; }
+  .book-experience__halo { width: min(286px, calc(100% - 8px)); box-shadow: 0 0 0 26px rgba(255,255,255,.1); }
+  .book-experience__stage { height: 345px; transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) scale(.58); }
 }
 
 @media (prefers-reduced-motion: reduce) {

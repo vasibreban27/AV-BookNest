@@ -1,5 +1,6 @@
 package com.avbooknest.auth.security;
 
+import com.avbooknest.auth.service.AuthCookieService;
 import com.avbooknest.auth.service.JwtService;
 import com.avbooknest.auth.service.UserSecurityService;
 import jakarta.servlet.FilterChain;
@@ -19,23 +20,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
   private final UserSecurityService userSecurityService;
+  private final AuthCookieService authCookieService;
 
-  public JwtAuthenticationFilter(JwtService jwtService, UserSecurityService userSecurityService) {
+  public JwtAuthenticationFilter(
+      JwtService jwtService,
+      UserSecurityService userSecurityService,
+      AuthCookieService authCookieService) {
     this.jwtService = jwtService;
     this.userSecurityService = userSecurityService;
+    this.authCookieService = authCookieService;
   }
 
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String authorization = request.getHeader("Authorization");
-    if (authorization == null || !authorization.startsWith("Bearer ")) {
+    String token = resolveToken(request);
+    if (token == null) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    String token = authorization.substring(7);
     try {
       String email = jwtService.extractUsername(token);
       if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -53,5 +58,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     filterChain.doFilter(request, response);
+  }
+
+  private String resolveToken(HttpServletRequest request) {
+    return authCookieService.accessToken(request).orElse(null);
   }
 }

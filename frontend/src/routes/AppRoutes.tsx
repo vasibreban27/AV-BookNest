@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthLayout } from '../components/auth/AuthLayout'
 import { AppLayout } from '../layout/AppLayout'
@@ -28,7 +29,21 @@ import {
   PrivacyPage,
   TermsPage,
 } from '../pages/legal/LegalPages'
-import { ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
+import { AdminRoute, ProtectedRoute, PublicOnlyRoute } from './guards/AuthRouteGuards'
+
+const AdminLayout = lazy(() => import('../components/admin/AdminLayout').then((module) => ({ default: module.AdminLayout })))
+const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })))
+const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })))
+const AdminBooksPage = lazy(() => import('../pages/admin/AdminBooksPage').then((module) => ({ default: module.AdminBooksPage })))
+const AdminCategoriesPage = lazy(() => import('../pages/admin/AdminCategoriesPage').then((module) => ({ default: module.AdminCategoriesPage })))
+const AdminOrdersPage = lazy(() => import('../pages/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })))
+const AdminIssuesPage = lazy(() => import('../pages/admin/AdminIssuesPage').then((module) => ({ default: module.AdminIssuesPage })))
+const AdminOperationsPage = lazy(() => import('../pages/admin/AdminOperationsPage').then((module) => ({ default: module.AdminOperationsPage })))
+const AdminAuditPage = lazy(() => import('../pages/admin/AdminAuditPage').then((module) => ({ default: module.AdminAuditPage })))
+
+function AdminRouteLoading() {
+  return <main className="admin-page"><div className="admin-state" role="status"><span className="spinner" /><div><strong>Se încarcă secțiunea</strong><p>Pregătim datele administrative.</p></div></div></main>
+}
 
 export function AppRoutes() {
   return (
@@ -42,6 +57,19 @@ export function AppRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/verify-email-sent" element={<VerifyEmailSentPage />} />
+      </Route>
+
+      <Route element={<AdminRoute />}>
+        <Route element={<Suspense fallback={<div className="loading-screen" role="status"><span className="spinner" /><span className="sr-only">Se încarcă administrarea...</span></div>}><AdminLayout /></Suspense>}>
+          <Route path="/admin" element={<Suspense fallback={<AdminRouteLoading />}><AdminDashboardPage /></Suspense>} />
+          <Route path="/admin/users" element={<Suspense fallback={<AdminRouteLoading />}><AdminUsersPage /></Suspense>} />
+          <Route path="/admin/books" element={<Suspense fallback={<AdminRouteLoading />}><AdminBooksPage /></Suspense>} />
+          <Route path="/admin/categories" element={<Suspense fallback={<AdminRouteLoading />}><AdminCategoriesPage /></Suspense>} />
+          <Route path="/admin/orders" element={<Suspense fallback={<AdminRouteLoading />}><AdminOrdersPage /></Suspense>} />
+          <Route path="/admin/issues" element={<Suspense fallback={<AdminRouteLoading />}><AdminIssuesPage /></Suspense>} />
+          <Route path="/admin/operations" element={<Suspense fallback={<AdminRouteLoading />}><AdminOperationsPage /></Suspense>} />
+          <Route path="/admin/audit" element={<Suspense fallback={<AdminRouteLoading />}><AdminAuditPage /></Suspense>} />
+        </Route>
       </Route>
 
       <Route element={<AppLayout />}>

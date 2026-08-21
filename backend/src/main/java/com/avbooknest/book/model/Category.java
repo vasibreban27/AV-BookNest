@@ -24,6 +24,9 @@ public class Category {
   @Column(length = 500)
   private String description;
 
+  @Column(nullable = false)
+  private boolean active;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -37,6 +40,7 @@ public class Category {
     name = builder.name;
     slug = builder.slug;
     description = builder.description;
+    active = builder.active;
     createdAt = builder.createdAt;
     updatedAt = builder.updatedAt;
   }
@@ -57,6 +61,21 @@ public class Category {
     return description;
   }
 
+  public boolean isActive() {
+    return active;
+  }
+
+  public void update(String newName, String newDescription, Instant now) {
+    name = newName;
+    description = newDescription;
+    updatedAt = now;
+  }
+
+  public void setActive(boolean value, Instant now) {
+    active = value;
+    updatedAt = now;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -74,6 +93,7 @@ public class Category {
     private String name;
     private String slug;
     private String description;
+    private boolean active = true;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -94,6 +114,11 @@ public class Category {
 
     public Builder description(String value) {
       description = value;
+      return this;
+    }
+
+    public Builder active(boolean value) {
+      active = value;
       return this;
     }
 

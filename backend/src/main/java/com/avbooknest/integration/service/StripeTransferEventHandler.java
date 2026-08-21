@@ -6,6 +6,7 @@ import com.avbooknest.integration.model.IntegrationEventStatus;
 import com.avbooknest.integration.repository.IntegrationEventRepository;
 import com.avbooknest.notification.model.NotificationType;
 import com.avbooknest.notification.service.NotificationService;
+import com.avbooknest.order.model.IssueResolution;
 import com.avbooknest.order.model.Payment;
 import com.avbooknest.order.model.PaymentStatus;
 import com.avbooknest.order.model.SellerOrder;
@@ -67,6 +68,10 @@ public class StripeTransferEventHandler {
           sellerOrderRepository
               .findByIdForUpdate(event.getAggregateId())
               .orElseThrow(() -> new IllegalStateException("Seller order not found"));
+      if (sellerOrder.getIssueResolution() == IssueResolution.REFUND_BUYER) {
+        event.markProcessed(Instant.now());
+        return true;
+      }
       SellerTransfer transfer =
           transferRepository
               .findBySellerOrderId(sellerOrder.getId())

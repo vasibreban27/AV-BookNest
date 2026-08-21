@@ -88,6 +88,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/stripe/webhook")
                     .permitAll()
+                    .requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())
         .authenticationProvider(authenticationProvider())

@@ -7,6 +7,7 @@ import com.avbooknest.book.dto.BookResponse;
 import com.avbooknest.book.dto.CatalogCategoryResponse;
 import com.avbooknest.book.model.Book;
 import com.avbooknest.book.model.BookCondition;
+import com.avbooknest.book.model.BookModerationStatus;
 import com.avbooknest.book.model.BookStatus;
 import com.avbooknest.book.model.Category;
 import com.avbooknest.book.repository.BookRepository;
@@ -115,7 +116,9 @@ public class BookService {
   @Transactional(readOnly = true)
   public BookResponse get(Long bookId, String email) {
     Book book = findBook(bookId);
-    if (book.getStatus() != BookStatus.AVAILABLE
+    if ((book.getStatus() != BookStatus.AVAILABLE
+            || book.getModerationStatus() != BookModerationStatus.VISIBLE
+            || !book.getCategory().isActive())
         && (email == null || !isOwner(book, currentUser(email)))) {
       throw new NotFoundException("Book not found");
     }
@@ -242,7 +245,7 @@ public class BookService {
 
   private Category findCategory(Long categoryId) {
     return categoryRepository
-        .findById(categoryId)
+        .findByIdAndActiveTrue(categoryId)
         .orElseThrow(() -> new NotFoundException("Category not found"));
   }
 

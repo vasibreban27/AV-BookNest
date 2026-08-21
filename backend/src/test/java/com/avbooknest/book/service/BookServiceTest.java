@@ -17,6 +17,7 @@ import com.avbooknest.book.dto.BookRequest;
 import com.avbooknest.book.dto.BookResponse;
 import com.avbooknest.book.model.Book;
 import com.avbooknest.book.model.BookCondition;
+import com.avbooknest.book.model.BookModerationReason;
 import com.avbooknest.book.model.BookStatus;
 import com.avbooknest.book.model.Category;
 import com.avbooknest.book.repository.BookRepository;
@@ -82,7 +83,7 @@ class BookServiceTest {
     User seller = user(10L, "seller@example.com");
     Category category = category(4L);
     when(userRepository.findByEmail("seller@example.com")).thenReturn(Optional.of(seller));
-    when(categoryRepository.findById(4L)).thenReturn(Optional.of(category));
+    when(categoryRepository.findByIdAndActiveTrue(4L)).thenReturn(Optional.of(category));
     when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     BookResponse response = bookService.create(request(), "seller@example.com");
@@ -110,6 +111,20 @@ class BookServiceTest {
   }
 
   @Test
+  void getHidesModeratedBookFromPublicButKeepsItVisibleToOwner() {
+    User owner = user(2L, "owner@example.com");
+    Book hiddenBook = book(12L, owner, BookStatus.AVAILABLE);
+    hiddenBook.hide(
+        BookModerationReason.POLICY_VIOLATION, "Policy violation", owner, Instant.now());
+    when(bookRepository.findById(12L)).thenReturn(Optional.of(hiddenBook));
+
+    assertThrows(NotFoundException.class, () -> bookService.get(12L, null));
+
+    when(userRepository.findByEmail("owner@example.com")).thenReturn(Optional.of(owner));
+    assertEquals(12L, bookService.get(12L, "owner@example.com").id());
+  }
+
+  @Test
   void updateRejectsAUserWhoDoesNotOwnTheBook() {
     User owner = user(2L, "owner@example.com");
     User anotherUser = user(3L, "other@example.com");
@@ -130,7 +145,7 @@ class BookServiceTest {
 
     assertThrows(
         ConflictException.class, () -> bookService.update(11L, request(), "owner@example.com"));
-    verify(categoryRepository, never()).findById(any());
+    verify(categoryRepository, never()).findByIdAndActiveTrue(any());
   }
 
   @Test

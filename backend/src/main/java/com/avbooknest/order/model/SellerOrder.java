@@ -89,6 +89,17 @@ public class SellerOrder {
   @Column(name = "issue_resolved_at")
   private Instant issueResolvedAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "issue_resolution", length = 40)
+  private IssueResolution issueResolution;
+
+  @Column(name = "issue_resolution_note", length = 500)
+  private String issueResolutionNote;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "issue_resolved_by")
+  private User issueResolvedBy;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -122,6 +133,9 @@ public class SellerOrder {
     issueReason = builder.issueReason;
     issueOpenedAt = builder.issueOpenedAt;
     issueResolvedAt = builder.issueResolvedAt;
+    issueResolution = builder.issueResolution;
+    issueResolutionNote = builder.issueResolutionNote;
+    issueResolvedBy = builder.issueResolvedBy;
     createdAt = builder.createdAt;
     updatedAt = builder.updatedAt;
   }
@@ -196,6 +210,18 @@ public class SellerOrder {
 
   public Instant getIssueResolvedAt() {
     return issueResolvedAt;
+  }
+
+  public IssueResolution getIssueResolution() {
+    return issueResolution;
+  }
+
+  public String getIssueResolutionNote() {
+    return issueResolutionNote;
+  }
+
+  public User getIssueResolvedBy() {
+    return issueResolvedBy;
   }
 
   public Instant getIssueDeadline() {
@@ -287,11 +313,24 @@ public class SellerOrder {
     issueReason = reason;
     issueOpenedAt = now;
     issueResolvedAt = null;
+    issueResolution = null;
+    issueResolutionNote = null;
+    issueResolvedBy = null;
     updatedAt = now;
   }
 
   public void resolveIssue(Instant now) {
     issueStatus = OrderIssueStatus.RESOLVED;
+    issueResolvedAt = now;
+    updatedAt = now;
+  }
+
+  public void resolveIssue(
+      IssueResolution resolution, String note, User administrator, Instant now) {
+    issueStatus = OrderIssueStatus.RESOLVED;
+    issueResolution = resolution;
+    issueResolutionNote = note;
+    issueResolvedBy = administrator;
     issueResolvedAt = now;
     updatedAt = now;
   }
@@ -319,6 +358,9 @@ public class SellerOrder {
     private String issueReason;
     private Instant issueOpenedAt;
     private Instant issueResolvedAt;
+    private IssueResolution issueResolution;
+    private String issueResolutionNote;
+    private User issueResolvedBy;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -409,6 +451,21 @@ public class SellerOrder {
 
     public Builder issueResolvedAt(Instant value) {
       issueResolvedAt = value;
+      return this;
+    }
+
+    public Builder issueResolution(IssueResolution value) {
+      issueResolution = value;
+      return this;
+    }
+
+    public Builder issueResolutionNote(String value) {
+      issueResolutionNote = value;
+      return this;
+    }
+
+    public Builder issueResolvedBy(User value) {
+      issueResolvedBy = value;
       return this;
     }
 

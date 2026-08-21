@@ -10,6 +10,7 @@ import com.avbooknest.integration.model.IntegrationEvent;
 import com.avbooknest.integration.model.IntegrationEventStatus;
 import com.avbooknest.integration.repository.IntegrationEventRepository;
 import com.avbooknest.notification.service.NotificationService;
+import com.avbooknest.order.model.IssueResolution;
 import com.avbooknest.order.model.SellerOrder;
 import com.avbooknest.order.repository.PaymentRepository;
 import com.avbooknest.order.repository.SellerOrderRepository;
@@ -63,5 +64,35 @@ class StripeTransferEventHandlerTest {
     assertEquals(0, event.getAttempts());
     assertTrue(event.getNextAttemptAt().isAfter(before));
     verifyNoInteractions(paymentRepository, stripeGateway, notificationService);
+  }
+
+  @Test
+  void buyerRefundResolutionPermanentlyConsumesPendingPayout() {
+    IntegrationEvent event =
+        IntegrationEvent.pending(
+            "SELLER_TRANSFER",
+            20L,
+            "STRIPE_CREATE_TRANSFER",
+            "{\"sellerOrderId\":20}",
+            Instant.now());
+    when(eventRepository
+            .findFirstByEventTypeAndStatusAndNextAttemptAtLessThanEqualOrderByCreatedAtAsc(
+                any(), any(), any()))
+        .thenReturn(Optional.of(event));
+    when(sellerOrderRepository.findByIdForUpdate(20L)).thenReturn(Optional.of(sellerOrder));
+    when(sellerOrder.getIssueResolution()).thenReturn(IssueResolution.REFUND_BUYER);
+    StripeTransferEventHandler handler =
+        new StripeTransferEventHandler(
+            eventRepository,
+            sellerOrderRepository,
+            transferRepository,
+            paymentRepository,
+            stripeGateway,
+            notificationService);
+
+    assertTrue(handler.processNext());
+
+    assertEquals(IntegrationEventStatus.PROCESSED, event.getStatus());
+    verifyNoInteractions(transferRepository, paymentRepository, stripeGateway, notificationService);
   }
 }

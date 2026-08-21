@@ -80,6 +80,24 @@ public class Book {
   @Column(nullable = false, length = 20)
   private BookStatus status;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "moderation_status", nullable = false, length = 20)
+  private BookModerationStatus moderationStatus;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "moderation_reason", length = 40)
+  private BookModerationReason moderationReason;
+
+  @Column(name = "moderation_note", length = 500)
+  private String moderationNote;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "moderated_by")
+  private User moderatedBy;
+
+  @Column(name = "moderated_at")
+  private Instant moderatedAt;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -108,6 +126,11 @@ public class Book {
     seller = builder.seller;
     category = builder.category;
     status = builder.status;
+    moderationStatus = builder.moderationStatus;
+    moderationReason = builder.moderationReason;
+    moderationNote = builder.moderationNote;
+    moderatedBy = builder.moderatedBy;
+    moderatedAt = builder.moderatedAt;
     createdAt = builder.createdAt;
     updatedAt = builder.updatedAt;
   }
@@ -186,6 +209,44 @@ public class Book {
 
   public BookStatus getStatus() {
     return status;
+  }
+
+  public BookModerationStatus getModerationStatus() {
+    return moderationStatus;
+  }
+
+  public BookModerationReason getModerationReason() {
+    return moderationReason;
+  }
+
+  public String getModerationNote() {
+    return moderationNote;
+  }
+
+  public User getModeratedBy() {
+    return moderatedBy;
+  }
+
+  public Instant getModeratedAt() {
+    return moderatedAt;
+  }
+
+  public void hide(BookModerationReason reason, String note, User administrator, Instant now) {
+    moderationStatus = BookModerationStatus.HIDDEN;
+    moderationReason = reason;
+    moderationNote = note;
+    moderatedBy = administrator;
+    moderatedAt = now;
+    updatedAt = now;
+  }
+
+  public void restore(User administrator, Instant now) {
+    moderationStatus = BookModerationStatus.VISIBLE;
+    moderationReason = null;
+    moderationNote = null;
+    moderatedBy = administrator;
+    moderatedAt = now;
+    updatedAt = now;
   }
 
   public Instant getCreatedAt() {
@@ -297,6 +358,11 @@ public class Book {
     private User seller;
     private Category category;
     private BookStatus status;
+    private BookModerationStatus moderationStatus = BookModerationStatus.VISIBLE;
+    private BookModerationReason moderationReason;
+    private String moderationNote;
+    private User moderatedBy;
+    private Instant moderatedAt;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -392,6 +458,31 @@ public class Book {
 
     public Builder status(BookStatus value) {
       status = value;
+      return this;
+    }
+
+    public Builder moderationStatus(BookModerationStatus value) {
+      moderationStatus = value;
+      return this;
+    }
+
+    public Builder moderationReason(BookModerationReason value) {
+      moderationReason = value;
+      return this;
+    }
+
+    public Builder moderationNote(String value) {
+      moderationNote = value;
+      return this;
+    }
+
+    public Builder moderatedBy(User value) {
+      moderatedBy = value;
+      return this;
+    }
+
+    public Builder moderatedAt(Instant value) {
+      moderatedAt = value;
       return this;
     }
 

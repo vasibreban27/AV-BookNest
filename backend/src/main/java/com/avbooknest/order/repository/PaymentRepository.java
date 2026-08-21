@@ -23,4 +23,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
   List<Payment> findAllByStatusInAndExpiresAtLessThanEqual(
       List<PaymentStatus> statuses, Instant now);
+
+  @Query(
+      """
+      select coalesce(sum(payment.amount - payment.refundedAmount), 0)
+      from Payment payment
+      where payment.status in (
+        com.avbooknest.order.model.PaymentStatus.SUCCEEDED,
+        com.avbooknest.order.model.PaymentStatus.PARTIALLY_REFUNDED
+      )
+      """)
+  java.math.BigDecimal sumNetCapturedAmount();
 }

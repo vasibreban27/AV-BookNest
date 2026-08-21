@@ -94,6 +94,10 @@ public class IntegrationEvent {
     return aggregateId;
   }
 
+  public String getAggregateType() {
+    return aggregateType;
+  }
+
   public String getEventType() {
     return eventType;
   }
@@ -104,6 +108,26 @@ public class IntegrationEvent {
 
   public int getAttempts() {
     return attempts;
+  }
+
+  public String getLastError() {
+    return lastError;
+  }
+
+  public Instant getProcessedAt() {
+    return processedAt;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public void retry(Instant now) {
+    status = IntegrationEventStatus.PENDING;
+    attempts = 0;
+    nextAttemptAt = now;
+    processedAt = null;
+    lastError = null;
   }
 
   public void startProcessing() {

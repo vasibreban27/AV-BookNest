@@ -143,12 +143,12 @@ export function CookiesPage() {
     >
       <section>
         <h2>1. Situația actuală</h2>
-        <p>Versiunea actuală BookNest nu folosește cookie-uri de publicitate sau analiză. Pentru menținerea autentificării, aplicația salvează în spațiul local al browserului cheia tehnică <code>booknest.auth.session</code>, care conține tokenurile sesiunii și datele de bază ale contului.</p>
+        <p>Versiunea actuală BookNest nu folosește cookie-uri de publicitate sau analiză. Pentru autentificare folosim cookie-uri tehnice securizate: două cookie-uri <code>HttpOnly</code> pentru sesiune și un cookie <code>XSRF-TOKEN</code> folosit pentru protecția cererilor împotriva atacurilor CSRF.</p>
       </section>
 
       <section>
         <h2>2. De ce este necesară stocarea locală</h2>
-        <p>Această informație permite păstrarea sesiunii, autorizarea cererilor către server și deconectarea. Nu este folosită pentru publicitate și nu urmărește navigarea pe alte site-uri. Este eliminată când te deconectezi; o poți șterge și din setările browserului, caz în care vei fi deconectat.</p>
+        <p>Cookie-urile permit păstrarea sesiunii, autorizarea cererilor către server și deconectarea sigură. Tokenurile de autentificare nu pot fi citite de JavaScript și nu mai sunt salvate în <code>localStorage</code>. Cookie-urile nu sunt folosite pentru publicitate și nu urmăresc navigarea pe alte site-uri. Sunt eliminate la deconectare sau pot fi șterse din setările browserului.</p>
       </section>
 
       <section>

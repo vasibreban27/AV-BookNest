@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PasswordField } from '../../../components/auth/PasswordField'
 import { authApi } from '../../../features/auth/api/authApi'
-import { clearStoredSession } from '../../../features/auth/storage/authStorage'
+import { notifyAuthSessionExpired } from '../../../features/auth/events/authEvents'
 import { resetPasswordSchema } from '../../../features/auth/schemas/auth.schemas'
 import type { ResetPasswordFormValues } from '../../../features/auth/types/auth-form.types'
 import { getFormErrorMessage } from '../../../features/auth/utils/authFormErrors'
@@ -27,7 +27,7 @@ export function ResetPasswordPage() {
     }
     try {
       await authApi.resetPassword(token, password)
-      clearStoredSession()
+      notifyAuthSessionExpired()
       window.history.replaceState(window.history.state, '', '/reset-password')
       setSuccess(true)
     } catch (requestError) {

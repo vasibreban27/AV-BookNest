@@ -132,6 +132,19 @@ DB_PASSWORD=your_postgres_password
 JWT_SECRET=replace_with_a_secret_of_at_least_32_characters
 ```
 
+Pentru rularea locală pe HTTP, valorile implicite ale cookie-urilor sunt suficiente. În
+producție, după activarea HTTPS, setează și:
+
+```text
+AUTH_COOKIE_SECURE=true
+AUTH_COOKIE_SAME_SITE=Lax
+CORS_ALLOWED_ORIGINS=https://booknest.example
+```
+
+JWT-urile sunt trimise exclusiv prin cookie-uri `HttpOnly`; frontend-ul nu le salvează și nu
+le poate citi. Cererile care modifică date folosesc protecție CSRF prin cookie-ul
+`XSRF-TOKEN` și header-ul `X-XSRF-TOKEN`.
+
 To enable book-cover uploads, also set:
 
 ```text
@@ -171,10 +184,11 @@ npm run dev
 
 The application starts at **http://localhost:5173**. In development, Vite proxies `/api` requests to the local backend.
 
-To connect the frontend to a separately hosted API, copy `frontend/.env.example` to `frontend/.env` and update:
+În configurația recomandată, frontend-ul și API-ul sunt publicate pe aceeași origine, iar
+`/api` este redirecționat către backend. Pentru development poți lăsa:
 
 ```text
-VITE_API_URL=http://localhost:8085/api
+VITE_API_URL=/api
 ```
 
 <details>

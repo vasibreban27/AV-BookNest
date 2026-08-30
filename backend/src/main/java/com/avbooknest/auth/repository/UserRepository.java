@@ -14,6 +14,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
 
+  /** Public reputation must not turn buyer-only accounts into public profiles. */
+  @Query(
+      """
+      select u from User u where u.id = :id and (
+        exists (select b.id from Book b where b.seller = u
+          and b.status <> com.avbooknest.book.model.BookStatus.DRAFT)
+        or exists (select so.id from SellerOrder so where so.seller = u))
+      """)
+  Optional<User> findSellerById(@Param("id") Long id);
+
   Optional<User> findByStripeAccountId(String stripeAccountId);
 
   boolean existsByEmail(String email);

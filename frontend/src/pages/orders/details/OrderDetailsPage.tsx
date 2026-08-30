@@ -5,6 +5,7 @@ import { OrderItemsList } from '../../../components/orders/OrderItemsList'
 import { OrdersErrorState, OrdersLoadingState } from '../../../components/orders/OrdersStates'
 import { OrderStatusBadge } from '../../../components/orders/OrderStatusBadge'
 import { ShipmentCard } from '../../../components/orders/ShipmentCard'
+import { OrderReviews } from '../../../components/reviews/OrderReviews'
 import { useOrder } from '../../../features/orders/hooks/useOrders'
 import type { OrderDetailsLocationState } from '../../../features/orders/types/orders.types'
 
@@ -64,6 +65,7 @@ export function OrderDetailsPage() {
                       ))}
                     </div>
                   </section>
+                  <OrderReviews orderId={orderQuery.data.id} key={orderQuery.data.id} />
                 </div>
 
                 <OrderDetailsSummary order={orderQuery.data} />

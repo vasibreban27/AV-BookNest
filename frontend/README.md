@@ -68,3 +68,40 @@ src/
 npm run lint
 npm run build
 ```
+
+## Recenzii și reputație
+
+- `/orders/:orderId`: cumpărătorul vede eligibilitatea fiecărei cărți și poate publica
+  o recenzie după livrarea coletului. Notele pentru vânzător, descriere și starea cărții
+  sunt obligatorii; comentariul are maximum 2000 de caractere. Formularele păstrează
+  textul la erori, iar recenziile deja publicate nu pot fi duplicate sau editate.
+- `/books/:bookId`: reputația vânzătorului și recenziile verificate, paginate.
+- `/sales`: vânzătorul își vede reputația și feedbackul primit.
+- `/admin/reviews`: căutare, filtrare și ascundere/restaurare cu motiv obligatoriu.
+  Motivul este vizibil autorului. Recenziile ascunse nu intră în mediile publice;
+  cele vechi, neverificate, nu pot fi publicate.
+
+Frontend-ul necesită backend-ul cu migrarea V19. Nu sunt necesare variabile de mediu noi.
+Cache-ul recenziilor private este separat pe utilizator; publicarea și moderarea
+invalidează recenziile și reputația, iar moderarea reîmprospătează și auditul.
+
+### Teste UI
+
+```bash
+npm test
+npx playwright install chromium
+npm run test:e2e:reviews
+```
+
+Testele Vitest verifică eligibilitatea, cele trei note, erorile, duplicatele ascunse,
+reputația fără recenzii, paginarea și moderarea. Testele Playwright verifică paginile
+reale la 320 px, 390 px și 1440 px, cu API complet simulat: nu folosesc conturi,
+plăți sau comenzi reale. Serverul Vite dedicat pornește automat pe portul 4179.
+Capturile și trace-urile sunt salvate în `test-results/` (ignorat de Git).
+
+Pentru Edge deja instalat, fără descărcarea Chromium, în PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_CHANNEL='msedge'
+npm run test:e2e:reviews
+```

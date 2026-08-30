@@ -35,6 +35,7 @@ const AdminLayout = lazy(() => import('../components/admin/AdminLayout').then((m
 const AdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })))
 const AdminUsersPage = lazy(() => import('../pages/admin/AdminUsersPage').then((module) => ({ default: module.AdminUsersPage })))
 const AdminBooksPage = lazy(() => import('../pages/admin/AdminBooksPage').then((module) => ({ default: module.AdminBooksPage })))
+const AdminReviewsPage = lazy(() => import('../pages/admin/AdminReviewsPage').then((module) => ({ default: module.AdminReviewsPage })))
 const AdminCategoriesPage = lazy(() => import('../pages/admin/AdminCategoriesPage').then((module) => ({ default: module.AdminCategoriesPage })))
 const AdminOrdersPage = lazy(() => import('../pages/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })))
 const AdminIssuesPage = lazy(() => import('../pages/admin/AdminIssuesPage').then((module) => ({ default: module.AdminIssuesPage })))
@@ -64,6 +65,7 @@ export function AppRoutes() {
           <Route path="/admin" element={<Suspense fallback={<AdminRouteLoading />}><AdminDashboardPage /></Suspense>} />
           <Route path="/admin/users" element={<Suspense fallback={<AdminRouteLoading />}><AdminUsersPage /></Suspense>} />
           <Route path="/admin/books" element={<Suspense fallback={<AdminRouteLoading />}><AdminBooksPage /></Suspense>} />
+          <Route path="/admin/reviews" element={<Suspense fallback={<AdminRouteLoading />}><AdminReviewsPage /></Suspense>} />
           <Route path="/admin/categories" element={<Suspense fallback={<AdminRouteLoading />}><AdminCategoriesPage /></Suspense>} />
           <Route path="/admin/orders" element={<Suspense fallback={<AdminRouteLoading />}><AdminOrdersPage /></Suspense>} />
           <Route path="/admin/issues" element={<Suspense fallback={<AdminRouteLoading />}><AdminIssuesPage /></Suspense>} />

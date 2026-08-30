@@ -31,6 +31,7 @@ export function BookDetailsPage() {
         )}
         {bookQuery.data && <BookDetails book={bookQuery.data} key={bookQuery.data.id} />}
         {bookQuery.data && <SellerReputation sellerId={bookQuery.data.sellerId} key={bookQuery.data.sellerId} />}
+        {bookQuery.data && <p><Link to={`/contact?topic=LISTING&bookId=${bookQuery.data.id}`}>Ai o întrebare sau o problemă cu acest anunț? Contactează suportul →</Link></p>}
       </div>
     </main>
   )

@@ -105,3 +105,48 @@ Pentru Edge deja instalat, fără descărcarea Chromium, în PowerShell:
 $env:PLAYWRIGHT_CHANNEL='msedge'
 npm run test:e2e:reviews
 ```
+
+## Sistem de suport
+
+- `/contact`: formular public, cu referință de tichet după salvare. Când utilizatorul este
+  autentificat, numele și emailul provin din cont. Linkurile din comenzi și anunțuri pot
+  precompleta `topic`, `orderId` și `bookId`; asocierea se poate elimina înainte de trimitere.
+- `/support`: solicitările contului curent, filtrare după stare și paginare.
+- `/support/:ticketId`: conversație, istoric paginat, răspuns și stare. Un răspuns redeschide
+  solicitările rezolvate, dar cele închise pot fi redeschise numai de un administrator.
+- `/admin/support` și `/admin/support/:ticketId`: căutare, filtrare după stare/responsabil,
+  repartizare, răspuns, închidere/redeschidere cu motiv de audit și reîncercare email.
+
+Necesită backend-ul cu migrarea V20. Solicitările trimise ca vizitator nu sunt asociate
+automat unui cont după email. Răspunsurile vizitatorului pe email sunt gestionate manual
+în căsuța de suport; nu există import automat de emailuri. Interfața afișează explicit
+emailurile dezactivate/eșuate. Datele private din cache sunt separate pe utilizator;
+conversațiile și listele se actualizează la 30 de secunde cât pagina este activă.
+
+```powershell
+npm test
+$env:PLAYWRIGHT_CHANNEL='msedge'
+npm run test:e2e:support
+npm run test:e2e
+npm run build
+npm run lint
+```
+
+Testele de suport acoperă formularul, istoricul, accesul, erorile cu păstrarea textului,
+stările, repartizarea și reîncercarea emailurilor. Playwright verifică fluxurile pentru
+utilizator, administrator și vizitator la 320, 390 și 1440 px, cu API complet simulat.
+
+### Configurația Playwright și `.env`
+
+`process` este importat din `node:process`, nu din Zod. Zod validează date, dar nu este
+obiectul Node.js care conține variabilele procesului. Configurația folosește `loadEnv`
+din Vite pentru `.env`, `.env.local`, `.env.test` și `.env.test.local`, limitat la prefixul
+`PLAYWRIGHT_`. Variabila din proces are prioritate. Opțional, în `frontend/.env.test.local`:
+
+```dotenv
+PLAYWRIGHT_CHANNEL=msedge
+```
+
+Fără această variabilă, Playwright folosește Chromium-ul instalat prin
+`npx playwright install chromium`. Fișierele Playwright și Vitest sunt incluse în
+`tsconfig.node.json`, astfel încât `npm run build` verifică și tipurile configurațiilor.

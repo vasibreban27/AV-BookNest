@@ -19,8 +19,12 @@ export type ContactPayload = {
   message: string
   privacyAccepted: boolean
   website: string
+  orderId?: number
+  bookId?: number
 }
 
 export type ContactResponse = {
   message: string
+  ticketId: number | null
+  reference: string | null
 }

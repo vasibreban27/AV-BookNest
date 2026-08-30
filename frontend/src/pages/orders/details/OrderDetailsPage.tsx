@@ -66,6 +66,7 @@ export function OrderDetailsPage() {
                     </div>
                   </section>
                   <OrderReviews orderId={orderQuery.data.id} key={orderQuery.data.id} />
+                  <section className="order-panel"><h2>Ai nevoie de ajutor?</h2><p>Trimite echipei o solicitare asociată acestei comenzi.</p><Link to={`/contact?topic=ORDER&orderId=${orderQuery.data.id}`}>Contactează suportul →</Link></section>
                 </div>
 
                 <OrderDetailsSummary order={orderQuery.data} />

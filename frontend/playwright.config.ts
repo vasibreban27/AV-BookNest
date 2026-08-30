@@ -1,15 +1,19 @@
 import { defineConfig } from '@playwright/test'
-import { process } from "zod/v4/core"
+import process from 'node:process'
+import { loadEnv } from 'vite'
+
+const testEnv = loadEnv('test', import.meta.dirname, 'PLAYWRIGHT_')
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: 'reviews.spec.ts',
+  testMatch: ['reviews.spec.ts', 'support.spec.ts'],
   fullyParallel: false,
   workers: 1,
+  timeout: 60_000,
   retries: 0,
   use: {
     baseURL: 'http://127.0.0.1:4179',
-    channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
+    channel: process.env.PLAYWRIGHT_CHANNEL || testEnv.PLAYWRIGHT_CHANNEL || undefined,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },

@@ -1,12 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { CheckIcon, MailIcon } from '../../components/common/Icons'
 import { getApiError, isNetworkError } from '../../api/client'
 import { contactApi } from '../../features/contact/api/contactApi'
 import { contactSchema, type ContactFormValues } from '../../features/contact/schemas/contact.schema'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { CONTACT_TOPICS, type ContactResponse } from '../../features/contact/types/contact.types'
+import { referenceId } from '../../features/support/utils'
 
 const topicOptions = [
   ['GENERAL', 'Întrebare generală'],
@@ -21,7 +24,12 @@ const topicOptions = [
 
 export function ContactPage() {
   const { user } = useAuth()
-  const [success, setSuccess] = useState<string | null>(null)
+  const client = useQueryClient()
+  const [params, setParams] = useSearchParams()
+  const topic = CONTACT_TOPICS.find(value => value === params.get('topic')) ?? 'GENERAL'
+  const orderId = user ? referenceId(params.get('orderId')) : undefined
+  const bookId = user ? referenceId(params.get('bookId')) : undefined
+  const [success, setSuccess] = useState<ContactResponse | null>(null)
   const [requestError, setRequestError] = useState<string | null>(null)
   const {
     register,
@@ -33,7 +41,7 @@ export function ContactPage() {
     defaultValues: {
       name: user ? `${user.firstName} ${user.lastName}` : '',
       email: user?.email ?? '',
-      topic: 'GENERAL',
+      topic,
       subject: '',
       message: '',
       privacyAccepted: false,
@@ -46,24 +54,25 @@ export function ContactPage() {
     reset({
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
-      topic: 'GENERAL',
+      topic,
       subject: '',
       message: '',
       privacyAccepted: false,
       website: '',
     })
-  }, [reset, user])
+  }, [reset, user, topic])
 
   const submit = handleSubmit(async (values) => {
     setSuccess(null)
     setRequestError(null)
     try {
-      const response = await contactApi.send(values)
-      setSuccess(response.message)
+      const response = await contactApi.send({ ...values, orderId, bookId })
+      setSuccess(response)
+      void client.invalidateQueries({ queryKey: ['support'] })
       reset({
         name: user ? `${user.firstName} ${user.lastName}` : '',
         email: user?.email ?? '',
-        topic: 'GENERAL',
+        topic,
         subject: '',
         message: '',
         privacyAccepted: false,
@@ -88,8 +97,9 @@ export function ContactPage() {
           <h1>Cum te putem ajuta?</h1>
           <p>
             Spune-ne ce nu este clar sau ce nu funcționează. Mesajul ajunge direct la echipa
-            BookNest și îți răspundem pe email.
+            BookNest și îl poți urmări în cont. Dacă nu ești autentificat, îți răspundem pe email.
           </p>
+          {user && <Link to="/support">Vezi solicitările mele →</Link>}
         </div>
       </section>
 
@@ -108,22 +118,24 @@ export function ContactPage() {
         <div className="contact-form-card">
           <header>
             <h2>Trimite un mesaj</h2>
-            <p>Îți vom răspunde la adresa introdusă în formular.</p>
+            <p>{user ? 'Solicitarea va fi asociată contului tău. Răspundem în cont și pe email.' : 'Îți vom răspunde la adresa introdusă în formular. Autentifică-te pentru istoric și conversație în cont.'}</p>
           </header>
 
-          {success && <div className="contact-message contact-message--success" role="status"><CheckIcon />{success}</div>}
+          {success && <div className="contact-message contact-message--success" role="status"><CheckIcon /><div>{success.message}{success.reference && <p>Referință: <strong>{success.reference}</strong></p>}{user && success.ticketId && <Link to={`/support/${success.ticketId}`}>Vezi solicitarea</Link>}</div></div>}
           {requestError && <div className="contact-message contact-message--error" role="alert">{requestError}</div>}
 
           <form className="contact-form" onSubmit={submit} noValidate>
+            {!user && (params.has('orderId') || params.has('bookId')) && <p>Pentru a asocia comanda sau anunțul și a urmări conversația în cont, <Link to="/login" state={{ from: `/contact?${params.toString()}` }}>autentifică-te</Link>. Dacă trimiți ca vizitator, menționează referința în mesaj.</p>}
+            {(orderId || bookId) && <div className="contact-details__note"><p>{orderId ? `Comandă asociată: #${orderId}. ` : ''}{bookId ? `Anunț asociat: #${bookId}.` : ''}</p><button type="button" onClick={() => { const next = new URLSearchParams(params); next.delete('orderId'); next.delete('bookId'); setParams(next) }}>Elimină asocierea</button></div>}
             <div className="contact-form__row">
               <label>
                 <span>Nume</span>
-                <input type="text" autoComplete="name" {...register('name')} />
+                <input type="text" autoComplete="name" readOnly={Boolean(user)} {...register('name')} />
                 {errors.name && <small>{errors.name.message}</small>}
               </label>
               <label>
                 <span>Email pentru răspuns</span>
-                <input type="email" autoComplete="email" {...register('email')} />
+                <input type="email" autoComplete="email" readOnly={Boolean(user)} {...register('email')} />
                 {errors.email && <small>{errors.email.message}</small>}
               </label>
             </div>

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:e2e:reviews": "playwright test --config playwright.config.ts",
+    "test:e2e:reviews": "playwright test reviews.spec.ts",
+    "test:e2e:support": "playwright test support.spec.ts",
+    "test:e2e": "playwright test",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

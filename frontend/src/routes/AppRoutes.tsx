@@ -41,6 +41,8 @@ const AdminOrdersPage = lazy(() => import('../pages/admin/AdminOrdersPage').then
 const AdminIssuesPage = lazy(() => import('../pages/admin/AdminIssuesPage').then((module) => ({ default: module.AdminIssuesPage })))
 const AdminOperationsPage = lazy(() => import('../pages/admin/AdminOperationsPage').then((module) => ({ default: module.AdminOperationsPage })))
 const AdminAuditPage = lazy(() => import('../pages/admin/AdminAuditPage').then((module) => ({ default: module.AdminAuditPage })))
+const SupportPage = lazy(() => import('../pages/support/SupportPage').then((module) => ({ default: module.SupportPage })))
+const SupportTicketPage = lazy(() => import('../pages/support/SupportTicketPage').then((module) => ({ default: module.SupportTicketPage })))
 
 function AdminRouteLoading() {
   return <main className="admin-page"><div className="admin-state" role="status"><span className="spinner" /><div><strong>Se încarcă secțiunea</strong><p>Pregătim datele administrative.</p></div></div></main>
@@ -66,6 +68,8 @@ export function AppRoutes() {
           <Route path="/admin/users" element={<Suspense fallback={<AdminRouteLoading />}><AdminUsersPage /></Suspense>} />
           <Route path="/admin/books" element={<Suspense fallback={<AdminRouteLoading />}><AdminBooksPage /></Suspense>} />
           <Route path="/admin/reviews" element={<Suspense fallback={<AdminRouteLoading />}><AdminReviewsPage /></Suspense>} />
+          <Route path="/admin/support" element={<Suspense fallback={<AdminRouteLoading />}><SupportPage admin /></Suspense>} />
+          <Route path="/admin/support/:ticketId" element={<Suspense fallback={<AdminRouteLoading />}><SupportTicketPage admin /></Suspense>} />
           <Route path="/admin/categories" element={<Suspense fallback={<AdminRouteLoading />}><AdminCategoriesPage /></Suspense>} />
           <Route path="/admin/orders" element={<Suspense fallback={<AdminRouteLoading />}><AdminOrdersPage /></Suspense>} />
           <Route path="/admin/issues" element={<Suspense fallback={<AdminRouteLoading />}><AdminIssuesPage /></Suspense>} />
@@ -86,6 +90,8 @@ export function AppRoutes() {
         <Route path="/consumer-rights" element={<ConsumerRightsPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/support" element={<Suspense fallback={<p role="status">Se încarcă suportul…</p>}><SupportPage /></Suspense>} />
+          <Route path="/support/:ticketId" element={<Suspense fallback={<p role="status">Se încarcă suportul…</p>}><SupportTicketPage /></Suspense>} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />

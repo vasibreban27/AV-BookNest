@@ -13,6 +13,9 @@ export type NotificationType =
   | 'SHIPMENT_PROBLEM'
   | 'ORDER_ISSUE_OPENED'
   | 'ORDER_ISSUE_RESOLVED'
+  | 'SUPPORT_REPLY'
+  | 'SUPPORT_STATUS_CHANGED'
+  | 'SUPPORT_ASSIGNED'
 
 export type Notification = {
   id: number

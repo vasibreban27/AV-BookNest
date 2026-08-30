@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { CONTACT_TOPICS } from '../types/contact.types'
 
 export const contactSchema = z.object({
-  name: z.string().trim().min(2, 'Introdu numele tău.').max(100, 'Numele este prea lung.'),
+  name: z.string().trim().min(2, 'Introdu numele tău.').max(201, 'Numele este prea lung.'),
   email: z.string().trim().email('Introdu o adresă de email validă.').max(254),
   topic: z.enum(CONTACT_TOPICS),
   subject: z.string().trim().min(5, 'Descrie pe scurt subiectul.').max(150, 'Subiectul este prea lung.'),

@@ -1,5 +1,65 @@
 # BookNest backend
 
+## Recenzii verificate și reputație
+
+Migrarea Flyway `V19__add_verified_purchase_reviews.sql` se aplică automat la pornire.
+Nu modifica migrările V1–V18 deja aplicate.
+
+- Cumpărătorul autentificat poate evalua fiecare articol din propria comandă după
+  confirmarea livrării coletului său (`seller_orders.fulfilled_at`). Livrarea altor colete
+  din aceeași comandă nu este obligatorie. Disputele și rambursările ulterioare nu anulează
+  dreptul la feedback pentru o achiziție livrată.
+- Trei note obligatorii, întregi, 1–5: `sellerRating`, `descriptionRating`, `conditionRating`.
+  Comentariul este opțional, maximum 2000 de caractere. Descrierea și starea evaluează
+  concordanța cu anunțul, nu valoarea literară a cărții.
+- O recenzie per articol cumpărat, inclusiv dacă este ascunsă. Lock-ul comenzii și
+  constrângerea unică în PostgreSQL protejează împotriva trimiterilor duplicate.
+- Recenziile sunt definitive pentru cumpărător; nu există editare sau ștergere publică.
+  Adminul poate ascunde/restaura, fără să modifice notele, cu motiv de maximum 500 de
+  caractere. Motivul este vizibil autorului, iar fiecare schimbare este în audit.
+- Reputația este media pe fiecare dimensiune a recenziilor verificate și vizibile,
+  cu greutate egală per articol cumpărat. Fără recenzii: număr 0, medii `null`.
+- Recenziile vechi sunt păstrate ascunse, fără a inventa achiziții sau note lipsă;
+  nu pot fi restaurate ca recenzii verificate. Titlul cumpărat este păstrat ca snapshot.
+- API-ul public afișează doar prenumele și inițiala numelui autorului, fără email,
+  identificatori de comandă sau note de moderare. Conturile suspendate nu pot publica.
+  Conturile fără anunțuri publicate sau vânzări nu sunt expuse ca profil de vânzător.
+
+Endpoint-uri:
+
+| Metodă și rută | Acces / rezultat |
+| --- | --- |
+| `GET /api/orders/{orderId}/reviews` | Cumpărător: eligibilitatea și recenzia fiecărui articol |
+| `POST /api/orders/{orderId}/items/{itemId}/review` | Cumpărător: publicare, răspuns `201` |
+| `GET /api/sellers/{sellerId}/reputation` | Public: cele trei medii și numărul recenziilor |
+| `GET /api/sellers/{sellerId}/reviews?page=0&size=10` | Public: recenzii vizibile, cele mai noi primele |
+| `GET /api/admin/reviews?q=&status=HIDDEN&page=0&size=25` | Admin: căutare și filtrare |
+| `PATCH /api/admin/reviews/{reviewId}/moderation` | Admin: `{ "status": "HIDDEN", "reason": "Motiv" }` |
+
+Operațiile de scriere folosesc protecția CSRF existentă. Paginarea este zero-based,
+cu maximum 100 de rezultate pe pagină; ordonarea folosește data și ID-ul pentru stabilitate.
+
+### Testarea recenziilor
+
+`./mvnw test` rulează testele unitare și de securitate MVC fără servicii externe.
+Testele PostgreSQL se activează numai cu `BOOKNEST_TEST_DATABASE_URL`; creează scheme
+separate pentru migrare, validare Hibernate, persistență, unicitate și reputație.
+Nu seta această variabilă către o bază de producție.
+
+Pe Windows, cu Java 21+ și PostgreSQL instalat:
+
+```powershell
+./scripts/test-reviews-postgres.ps1 -PostgresBin 'C:\Program Files\PostgreSQL\18\bin'
+```
+
+Scriptul creează un cluster temporar local pe portul 55439, rulează întreaga suită și
+oprește clusterul în `finally`. Datele sintetice și logurile rămân în `backend/target/`.
+Poți schimba portul cu `-Port`. Nu folosește baza configurată în `DB_URL`.
+
+Pe alte sisteme poți furniza o bază dedicată prin `BOOKNEST_TEST_DATABASE_URL`,
+`BOOKNEST_TEST_DATABASE_USER` și `BOOKNEST_TEST_DATABASE_PASSWORD`, apoi rula `./mvnw test`.
+Utilizatorul de test trebuie să poată crea scheme. Aceste scheme sunt păstrate pentru diagnostic.
+
 ## Email verification and password reset
 
 Account registration now requires email verification before login. Verification links expire after

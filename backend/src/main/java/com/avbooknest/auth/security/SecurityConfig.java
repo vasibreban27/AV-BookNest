@@ -84,6 +84,8 @@ public class SecurityConfig {
                         "/api/books/languages",
                         "/api/books/catalog-categories",
                         "/api/books/{bookId}",
+                        "/api/sellers/{sellerId}/reputation",
+                        "/api/sellers/{sellerId}/reviews",
                         "/api/categories")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/stripe/webhook")

@@ -5,11 +5,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record ContactRequest(
     @NotBlank(message = "Name is required")
-        @Size(max = 100, message = "Name must contain at most 100 characters")
+        @Size(max = 201, message = "Name must contain at most 201 characters")
         String name,
     @NotBlank(message = "Email is required")
         @Email(message = "Email must be valid")
@@ -29,4 +30,17 @@ public record ContactRequest(
     @NotNull(message = "Privacy consent is required")
         @AssertTrue(message = "Privacy policy must be accepted")
         Boolean privacyAccepted,
-    @Size(max = 100) String website) {}
+    @Size(max = 100) String website,
+    @Positive Long orderId,
+    @Positive Long bookId) {
+  public ContactRequest(
+      String name,
+      String email,
+      String topic,
+      String subject,
+      String message,
+      Boolean privacyAccepted,
+      String website) {
+    this(name, email, topic, subject, message, privacyAccepted, website, null, null);
+  }
+}

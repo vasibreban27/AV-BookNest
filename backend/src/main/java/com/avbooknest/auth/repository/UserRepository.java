@@ -2,6 +2,7 @@ package com.avbooknest.auth.repository;
 
 import com.avbooknest.auth.model.User;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,10 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
+
+  @Query(
+      "select u from User u where u.enabled = true and u.role.name = 'ADMIN' order by u.firstName, u.lastName, u.id")
+  List<User> findSupportAdministrators();
 
   /** Public reputation must not turn buyer-only accounts into public profiles. */
   @Query(

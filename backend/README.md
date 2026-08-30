@@ -1,5 +1,11 @@
 # BookNest backend
 
+## Sistem de suport
+
+Tichete persistente, conversații în cont, repartizare și gestionare administrativă,
+notificări, audit și emailuri cu reîncercare. Migrările V20–V21 se aplică automat la pornire.
+Vezi [documentația de suport](docs/support.md) pentru API, configurarea SMTP, limite și teste.
+
 ## Recenzii verificate și reputație
 
 Migrarea Flyway `V19__add_verified_purchase_reviews.sql` se aplică automat la pornire.

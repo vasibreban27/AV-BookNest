@@ -1,10 +1,13 @@
 import { PackageIcon } from '../../components/common/icons/AppIcons'
+import { SellerReputation } from '../../components/reviews/SellerReputation'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 import { SellerOrderCard } from '../../components/sales/SellerOrderCard'
 import { SalesEmptyState, SalesErrorState, SalesLoadingState } from '../../components/sales/SalesStates'
 import { useSellerOrders } from '../../features/seller-orders/hooks/useSellerOrders'
 import type { SellerOrderStatus } from '../../features/orders/types/orders.types'
 
 export function SalesPage() {
+  const { user } = useAuth()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<SellerOrderStatus | ''>('')
   const deferredQuery = useDeferredValue(query)
@@ -26,6 +29,7 @@ export function SalesPage() {
       </section>
       <section className="seller-shipments-content">
         <div className="seller-shipments-container">
+          {user && <SellerReputation sellerId={user.id} key={user.id} />}
           <div className="marketplace-filters">
             <label>
               <span>Caută în vânzări</span>

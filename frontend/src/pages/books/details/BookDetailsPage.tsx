@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { BookDetails } from '../../../components/catalog/BookDetails'
+import { SellerReputation } from '../../../components/reviews/SellerReputation'
 import {
   BookDetailsErrorState,
   BookDetailsLoadingState,
@@ -29,6 +30,7 @@ export function BookDetailsPage() {
           <BookDetailsErrorState onRetry={() => void bookQuery.refetch()} />
         )}
         {bookQuery.data && <BookDetails book={bookQuery.data} key={bookQuery.data.id} />}
+        {bookQuery.data && <SellerReputation sellerId={bookQuery.data.sellerId} key={bookQuery.data.sellerId} />}
       </div>
     </main>
   )

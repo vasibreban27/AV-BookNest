@@ -288,3 +288,9 @@ Fluxul de test:
 6. o plată nefinalizată expiră după 30 de minute și eliberează cărțile;
 7. după livrare și încă 24 de ore, suma de 95% este transferată în soldul Stripe sandbox al
    vânzătorului.
+
+## Raportarea conținutului
+
+Raportări de anunțuri/utilizatori, dovezi private, coadă de moderare și suspendări
+temporare: [documentație și API](docs/content-reporting.md). Necesită migrările **V22–V23**, aplicate
+automat de Flyway. Nu modifica migrațiile deja aplicate și nu rula `repair` pentru această funcționalitate.

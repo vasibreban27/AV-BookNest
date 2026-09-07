@@ -101,8 +101,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       @Param("moderationStatus") BookModerationStatus moderationStatus,
       Pageable pageable);
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
   List<Book> findAllBySellerIdAndModerationStatus(Long sellerId, BookModerationStatus status);
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
   List<Book> findAllBySellerIdAndModerationStatusAndModerationReason(
       Long sellerId, BookModerationStatus status, BookModerationReason reason);
 

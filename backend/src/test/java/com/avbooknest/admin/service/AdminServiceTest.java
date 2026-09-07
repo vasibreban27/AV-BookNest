@@ -109,6 +109,7 @@ class AdminServiceTest {
     Book book = book(10L, target);
     when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(administrator));
     when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+    when(userRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(target));
     when(refreshTokenRepository.findAllByUserIdAndRevokedFalse(2L)).thenReturn(List.of(token));
     when(bookRepository.findAllBySellerIdAndModerationStatus(2L, BookModerationStatus.VISIBLE))
         .thenReturn(List.of(book));
@@ -134,7 +135,7 @@ class AdminServiceTest {
     User administrator = user(1L, "admin@example.com", "ADMIN");
     User anotherAdministrator = user(3L, "other-admin@example.com", "ADMIN");
     when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(administrator));
-    when(userRepository.findById(3L)).thenReturn(Optional.of(anotherAdministrator));
+    when(userRepository.findByIdForUpdate(3L)).thenReturn(Optional.of(anotherAdministrator));
 
     assertThrows(
         ForbiddenException.class,

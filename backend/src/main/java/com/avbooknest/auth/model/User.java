@@ -47,6 +47,9 @@ public class User {
   @Column(name = "suspended_at")
   private Instant suspendedAt;
 
+  @Column(name = "suspended_until")
+  private Instant suspendedUntil;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "suspended_by")
   private User suspendedBy;
@@ -85,6 +88,7 @@ public class User {
     this.emailVerified = builder.emailVerified;
     this.enabled = builder.enabled;
     this.suspendedAt = builder.suspendedAt;
+    this.suspendedUntil = builder.suspendedUntil;
     this.suspendedBy = builder.suspendedBy;
     this.suspensionReason = builder.suspensionReason;
     this.stripeAccountId = builder.stripeAccountId;
@@ -135,6 +139,14 @@ public class User {
     return suspendedAt;
   }
 
+  public Instant getSuspendedUntil() {
+    return suspendedUntil;
+  }
+
+  public void setSuspendedUntil(Instant until) {
+    suspendedUntil = until;
+  }
+
   public User getSuspendedBy() {
     return suspendedBy;
   }
@@ -145,6 +157,7 @@ public class User {
 
   public void suspend(User administrator, String reason, Instant now) {
     enabled = false;
+    suspendedUntil = null;
     suspendedAt = now;
     suspendedBy = administrator;
     suspensionReason = reason;
@@ -153,6 +166,7 @@ public class User {
 
   public void reactivate(Instant now) {
     enabled = true;
+    suspendedUntil = null;
     suspendedAt = null;
     suspendedBy = null;
     suspensionReason = null;
@@ -229,6 +243,7 @@ public class User {
     private boolean emailVerified;
     private boolean enabled;
     private Instant suspendedAt;
+    private Instant suspendedUntil;
     private User suspendedBy;
     private String suspensionReason;
     private String stripeAccountId;
@@ -285,6 +300,11 @@ public class User {
 
     public Builder suspendedAt(Instant value) {
       suspendedAt = value;
+      return this;
+    }
+
+    public Builder suspendedUntil(Instant value) {
+      suspendedUntil = value;
       return this;
     }
 

@@ -15,6 +15,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
 
+  @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+  @Query("select u from User u where u.id = :id")
+  Optional<User> findByIdForUpdate(@Param("id") Long id);
+
+  @Query(
+      "select u.id from User u where u.enabled = false and u.suspendedUntil <= :now order by u.id")
+  List<Long> findExpiredSuspensions(@Param("now") Instant now, Pageable pageable);
+
   @Query(
       "select u from User u where u.enabled = true and u.role.name = 'ADMIN' order by u.firstName, u.lastName, u.id")
   List<User> findSupportAdministrators();

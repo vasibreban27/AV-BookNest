@@ -48,6 +48,7 @@ public final class AdminDtos {
       boolean emailVerified,
       boolean stripePayoutsEnabled,
       Instant suspendedAt,
+      Instant suspendedUntil,
       String suspensionReason,
       Instant createdAt) {
     public static UserSummaryResponse from(User user) {
@@ -62,6 +63,7 @@ public final class AdminDtos {
           user.isEmailVerified(),
           user.isStripePayoutsEnabled(),
           user.getSuspendedAt(),
+          user.getSuspendedUntil(),
           user.getSuspensionReason(),
           user.getCreatedAt());
     }

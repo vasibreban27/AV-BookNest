@@ -18,7 +18,7 @@ export function ProtectedRoute() {
 
   if (isInitializing) return <LoadingScreen />
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />
   }
   return <Outlet />
 }
@@ -37,7 +37,7 @@ export function AdminRoute() {
 
   if (isInitializing) return <LoadingScreen />
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />
   }
   if (user?.role !== 'ADMIN') return <Navigate to="/" replace />
   return <Outlet />

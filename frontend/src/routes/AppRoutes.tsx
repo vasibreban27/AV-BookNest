@@ -42,6 +42,9 @@ const AdminIssuesPage = lazy(() => import('../pages/admin/AdminIssuesPage').then
 const AdminOperationsPage = lazy(() => import('../pages/admin/AdminOperationsPage').then((module) => ({ default: module.AdminOperationsPage })))
 const AdminAuditPage = lazy(() => import('../pages/admin/AdminAuditPage').then((module) => ({ default: module.AdminAuditPage })))
 const SupportPage = lazy(() => import('../pages/support/SupportPage').then((module) => ({ default: module.SupportPage })))
+const CreateReportPage = lazy(() => import('../pages/reports/CreateReportPage').then(module => ({ default: module.CreateReportPage })))
+const ReportsPage = lazy(() => import('../pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })))
+const ReportDetailsPage = lazy(() => import('../pages/reports/ReportDetailsPage').then(module => ({ default: module.ReportDetailsPage })))
 const SupportTicketPage = lazy(() => import('../pages/support/SupportTicketPage').then((module) => ({ default: module.SupportTicketPage })))
 
 function AdminRouteLoading() {
@@ -68,6 +71,8 @@ export function AppRoutes() {
           <Route path="/admin/users" element={<Suspense fallback={<AdminRouteLoading />}><AdminUsersPage /></Suspense>} />
           <Route path="/admin/books" element={<Suspense fallback={<AdminRouteLoading />}><AdminBooksPage /></Suspense>} />
           <Route path="/admin/reviews" element={<Suspense fallback={<AdminRouteLoading />}><AdminReviewsPage /></Suspense>} />
+          <Route path="/admin/reports" element={<Suspense fallback={<AdminRouteLoading />}><ReportsPage admin /></Suspense>} />
+          <Route path="/admin/reports/:reportId" element={<Suspense fallback={<AdminRouteLoading />}><ReportDetailsPage admin /></Suspense>} />
           <Route path="/admin/support" element={<Suspense fallback={<AdminRouteLoading />}><SupportPage admin /></Suspense>} />
           <Route path="/admin/support/:ticketId" element={<Suspense fallback={<AdminRouteLoading />}><SupportTicketPage admin /></Suspense>} />
           <Route path="/admin/categories" element={<Suspense fallback={<AdminRouteLoading />}><AdminCategoriesPage /></Suspense>} />
@@ -90,6 +95,9 @@ export function AppRoutes() {
         <Route path="/consumer-rights" element={<ConsumerRightsPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/report" element={<Suspense fallback={<p role="status">Se încarcă formularul…</p>}><CreateReportPage /></Suspense>} />
+          <Route path="/reports" element={<Suspense fallback={<p role="status">Se încarcă raportările…</p>}><ReportsPage /></Suspense>} />
+          <Route path="/reports/:reportId" element={<Suspense fallback={<p role="status">Se încarcă raportarea…</p>}><ReportDetailsPage /></Suspense>} />
           <Route path="/support" element={<Suspense fallback={<p role="status">Se încarcă suportul…</p>}><SupportPage /></Suspense>} />
           <Route path="/support/:ticketId" element={<Suspense fallback={<p role="status">Se încarcă suportul…</p>}><SupportTicketPage /></Suspense>} />
           <Route path="/cart" element={<CartPage />} />

@@ -50,6 +50,7 @@ export type AdminUser = {
   emailVerified: boolean
   stripePayoutsEnabled: boolean
   suspendedAt: string | null
+  suspendedUntil?: string | null
   suspensionReason: string | null
   createdAt: string
 }

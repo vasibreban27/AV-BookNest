@@ -38,7 +38,9 @@ class SupportMigrationPostgresTest {
             """);
       }
 
-      Flyway latest = Flyway.configure().dataSource(url, user, password).schemas(schema).load();
+      // This regression specifically verifies the V20 -> V21 corrective migration.
+      Flyway latest =
+          Flyway.configure().dataSource(url, user, password).schemas(schema).target("21").load();
       assertEquals(1, latest.migrate().migrationsExecuted);
       latest.validate();
       assertEquals(201, columnLength(connection));

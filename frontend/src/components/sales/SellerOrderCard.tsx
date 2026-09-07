@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ReportLink } from '../reports/ReportLink'
 import type { SellerOrder } from '../../features/orders/types/orders.types'
 import {
   formatOrderDate,
@@ -47,6 +48,7 @@ export function SellerOrderCard({ sellerOrder }: { sellerOrder: SellerOrder }) {
           <small>{formatOrderDate(sellerOrder.createdAt)}</small>
           <h2>{sellerOrder.orderNumber}</h2>
           <p>Cumpărător: <strong>{sellerOrder.buyerName}</strong></p>
+          {sellerOrder.buyerId && <ReportLink targetType="USER" targetId={sellerOrder.buyerId} ownerId={sellerOrder.buyerId} />}
         </div>
         <span className={`seller-shipment-status seller-shipment-status--${sellerOrder.status.toLowerCase()}`}>
           {formatSellerOrderStatus(sellerOrder.status)}

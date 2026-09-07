@@ -6,7 +6,7 @@ const testEnv = loadEnv('test', import.meta.dirname, 'PLAYWRIGHT_')
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['reviews.spec.ts', 'support.spec.ts'],
+  testMatch: ['reviews.spec.ts', 'support.spec.ts', 'reports.spec.ts'],
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,

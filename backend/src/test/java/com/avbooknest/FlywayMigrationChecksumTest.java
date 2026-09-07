@@ -19,6 +19,11 @@ class FlywayMigrationChecksumTest {
     assertEquals(-301408915, checksum("/db/migration/V20__create_support_tickets.sql"));
   }
 
+  @Test
+  void alreadyAppliedV22MigrationKeepsItsChecksum() throws Exception {
+    assertEquals(-1868220646, checksum("/db/migration/V22__add_content_reporting.sql"));
+  }
+
   private int checksum(String resource) throws Exception {
     CRC32 checksum = new CRC32();
     try (BufferedReader reader =

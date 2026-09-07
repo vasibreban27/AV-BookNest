@@ -6,6 +6,7 @@ import { OrdersErrorState, OrdersLoadingState } from '../../../components/orders
 import { OrderStatusBadge } from '../../../components/orders/OrderStatusBadge'
 import { ShipmentCard } from '../../../components/orders/ShipmentCard'
 import { OrderReviews } from '../../../components/reviews/OrderReviews'
+import { ReportLink } from '../../../components/reports/ReportLink'
 import { useOrder } from '../../../features/orders/hooks/useOrders'
 import type { OrderDetailsLocationState } from '../../../features/orders/types/orders.types'
 
@@ -66,6 +67,7 @@ export function OrderDetailsPage() {
                     </div>
                   </section>
                   <OrderReviews orderId={orderQuery.data.id} key={orderQuery.data.id} />
+                  <section className="order-panel"><h2>Semnalează un utilizator</h2>{orderQuery.data.sellerOrders.map(sellerOrder => <p key={sellerOrder.id}>{sellerOrder.sellerName}: <ReportLink targetType="USER" targetId={sellerOrder.sellerId} ownerId={sellerOrder.sellerId} /></p>)}</section>
                   <section className="order-panel"><h2>Ai nevoie de ajutor?</h2><p>Trimite echipei o solicitare asociată acestei comenzi.</p><Link to={`/contact?topic=ORDER&orderId=${orderQuery.data.id}`}>Contactează suportul →</Link></section>
                 </div>
 

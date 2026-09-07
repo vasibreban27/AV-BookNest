@@ -143,3 +143,11 @@ export function BellIcon(props: IconProps) {
     </svg>
   )
 }
+
+export function FlagIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+      <path d="M6 21V4m0 1h9.2l2.3 2.7-2.3 2.8H6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}

@@ -333,7 +333,7 @@
   .admin-sidebar__brand > button { display: grid; width: 44px; height: 44px; place-items: center; }
   .admin-sidebar__backdrop { position: fixed; inset: 0; z-index: 75; display: block; border: 0; background: rgba(10,30,24,.55); }
   .admin-workspace { margin-left: 0; }
-  .admin-topbar { min-height: 70px; padding: 0 18px; }
+  .admin-topbar { position: relative; min-height: 70px; padding: 0 18px; }
   .admin-topbar__menu { display: grid; }
   .admin-topbar > div:first-of-type { margin-right: auto; margin-left: 12px; }
   .admin-topbar > div:first-of-type span { display: none; }

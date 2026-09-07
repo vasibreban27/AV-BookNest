@@ -1,0 +1,52 @@
+.report-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #745046;
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-decoration: none !important;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.report-link:visited {
+  color: #745046;
+  text-decoration: none;
+}
+
+.report-link:hover {
+  border-color: #ead7d0;
+  background: #fff7f4;
+  color: #8b3f32;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.report-link:active {
+  background: #faeee9;
+  transform: translateY(0);
+}
+
+.report-link:focus-visible {
+  outline: 3px solid rgba(191, 133, 48, 0.45);
+  outline-offset: 3px;
+  text-decoration: none;
+}
+
+.report-link svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-link {
+    transition-duration: 0.01ms;
+  }
+}

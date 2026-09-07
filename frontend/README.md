@@ -150,3 +150,12 @@ PLAYWRIGHT_CHANNEL=msedge
 Fără această variabilă, Playwright folosește Chromium-ul instalat prin
 `npx playwright install chromium`. Fișierele Playwright și Vitest sunt incluse în
 `tsconfig.node.json`, astfel încât `npm run build` verifică și tipurile configurațiilor.
+
+## Raportarea conținutului
+
+Raportarea este disponibilă din anunț, reputația vânzătorului și participanții la comenzi.
+Utilizatorii urmăresc sesizările în `/reports`, iar administratorii moderează din
+`/admin/reports`. [Fluxuri, limite și teste](docs/content-reporting.md).
+
+Backend-ul trebuie actualizat până la migrarea V23. Testele dedicate interfeței se rulează
+cu `npm run test:e2e:reports`; suita `npm run test:e2e` include raportări, suport și recenzii.

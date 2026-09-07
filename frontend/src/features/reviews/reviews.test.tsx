@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { OrderReviews } from '../../components/reviews/OrderReviews'
 import { SellerReputation } from '../../components/reviews/SellerReputation'
@@ -21,7 +22,7 @@ const pageOf = <T,>(content: T[]): ReviewPage<T> => ({ content, totalElements: c
 
 function renderUi(component: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
-  return render(<QueryClientProvider client={client}>{component}</QueryClientProvider>)
+  return render(<QueryClientProvider client={client}><MemoryRouter>{component}</MemoryRouter></QueryClientProvider>)
 }
 
 beforeEach(() => {

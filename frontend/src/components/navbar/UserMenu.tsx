@@ -40,6 +40,10 @@ function AccountLinks({ onNavigate }: UserMenuProps) {
         <UserIcon />
         <span><strong>Solicitările mele</strong><small>Conversații cu echipa de suport</small></span>
       </NavLink>
+      <NavLink to="/reports" onClick={onNavigate}>
+        <UserIcon />
+        <span><strong>Raportările mele</strong><small>Conținut semnalat și decizii</small></span>
+      </NavLink>
     </div>
   )
 }

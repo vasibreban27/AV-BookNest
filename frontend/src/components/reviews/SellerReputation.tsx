@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ReportLink } from '../reports/ReportLink'
 import axios from 'axios'
 import { useSellerReputation, useSellerReviews } from '../../features/reviews/hooks/useReviews'
 import { formatRating } from '../../features/reviews/utils/reviewFormatters'
@@ -14,6 +15,7 @@ export function SellerReputation({ sellerId }: { sellerId: number }) {
   if (axios.isAxiosError(reputation.error) && reputation.error.response?.status === 404) return null
 
   return <section className="reviews-panel seller-reputation" aria-label="Reputația vânzătorului">
+    <p><ReportLink targetType="USER" targetId={sellerId} ownerId={sellerId} /></p>
     <header className="seller-reputation__header"><div><span className="home-kicker">Încredere între cititori</span><h2>Reputația vânzătorului</h2>{reputation.data && <p>{reputation.data.sellerName}</p>}</div>
       {stats && <div className="seller-reputation__score"><strong><span aria-hidden="true">★ </span>{formatRating(stats.sellerRating)}<small> / 5</small></strong><span>{stats.reviewCount} {stats.reviewCount === 1 ? 'recenzie verificată' : 'recenzii verificate'}</span></div>}
     </header>

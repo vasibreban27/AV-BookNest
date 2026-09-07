@@ -514,7 +514,10 @@ public class AdminService {
   }
 
   private User mutableRegularUser(Long userId, User administrator) {
-    User target = findUser(userId);
+    User target =
+        userRepository
+            .findByIdForUpdate(userId)
+            .orElseThrow(() -> new NotFoundException("User not found"));
     if (target.getId().equals(administrator.getId())
         || "ADMIN".equals(target.getRole().getName())) {
       throw new ForbiddenException("Administrator accounts cannot be changed here");

@@ -1,4 +1,5 @@
 import { useDeferredValue, useState } from 'react'
+import { ModerationHistory } from '../reports/ReportDetailsPage'
 import {
   AdminBadge,
   AdminModal,
@@ -113,6 +114,8 @@ export function AdminUsersPage() {
               <dl className="admin-detail-grid"><div><dt>Telefon</dt><dd>{userDetails.data.user.phoneNumber || '—'}</dd></div><div><dt>Email</dt><dd>{userDetails.data.user.emailVerified ? 'Verificat' : 'Neverificat'}</dd></div><div><dt>Stripe payouts</dt><dd>{userDetails.data.user.stripePayoutsEnabled ? 'Active' : 'Inactive'}</dd></div><div><dt>Înregistrat</dt><dd>{formatAdminDate(userDetails.data.user.createdAt)}</dd></div></dl>
               <div className="admin-mini-stats"><div><strong>{userDetails.data.listingCount}</strong><span>Anunțuri</span></div><div><strong>{userDetails.data.buyerOrderCount}</strong><span>Comenzi</span></div><div><strong>{userDetails.data.sellerOrderCount}</strong><span>Vânzări</span></div></div>
               {userDetails.data.user.suspensionReason && <div className="admin-callout admin-callout--danger"><strong>Motivul suspendării</strong><p>{userDetails.data.user.suspensionReason}</p><small>{formatAdminDate(userDetails.data.user.suspendedAt)}</small></div>}
+              {userDetails.data.user.suspendedUntil && <p>Reactivare automată după {formatAdminDate(userDetails.data.user.suspendedUntil)}</p>}
+              <ModerationHistory userId={userDetails.data.user.id} />
               {actionError && <AdminNotice tone="error" onClose={() => setActionError(null)}>{actionError}</AdminNotice>}
               <div className="admin-detail__actions">
                 {userDetails.data.user.role !== 'ADMIN' && (userDetails.data.user.enabled ? <button className="admin-button admin-button--danger" type="button" onClick={() => setAction({ type: 'suspend', user: userDetails.data!.user })}>Suspendă</button> : <button className="admin-button" type="button" onClick={() => setAction({ type: 'reactivate', user: userDetails.data!.user })}>Reactivează</button>)}

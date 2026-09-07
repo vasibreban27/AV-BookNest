@@ -79,6 +79,7 @@ export type SellerOrder = {
   orderId: number
   orderNumber: string
   buyerName: string
+  buyerId?: number
   sellerId: number
   sellerName: string
   status: SellerOrderStatus

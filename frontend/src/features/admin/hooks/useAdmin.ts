@@ -34,6 +34,7 @@ function useRefreshAdmin() {
   return (...keys: QueryKey[]) => {
     void queryClient.invalidateQueries({ queryKey: adminQueryKeys.dashboard })
     void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] })
+    void queryClient.invalidateQueries({ queryKey: ['moderation-history'] })
     keys.forEach((key) => void queryClient.invalidateQueries({ queryKey: key }))
   }
 }

@@ -1,6 +1,7 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { BookDetails } from '../../../components/catalog/BookDetails'
 import { SellerReputation } from '../../../components/reviews/SellerReputation'
+import { ReportLink } from '../../../components/reports/ReportLink'
 import {
   BookDetailsErrorState,
   BookDetailsLoadingState,
@@ -30,6 +31,7 @@ export function BookDetailsPage() {
           <BookDetailsErrorState onRetry={() => void bookQuery.refetch()} />
         )}
         {bookQuery.data && <BookDetails book={bookQuery.data} key={bookQuery.data.id} />}
+        {bookQuery.data && <p><ReportLink targetType="BOOK" targetId={bookQuery.data.id} ownerId={bookQuery.data.sellerId} /></p>}
         {bookQuery.data && <SellerReputation sellerId={bookQuery.data.sellerId} key={bookQuery.data.sellerId} />}
         {bookQuery.data && <p><Link to={`/contact?topic=LISTING&bookId=${bookQuery.data.id}`}>Ai o întrebare sau o problemă cu acest anunț? Contactează suportul →</Link></p>}
       </div>

@@ -16,6 +16,8 @@ export type NotificationType =
   | 'SUPPORT_REPLY'
   | 'SUPPORT_STATUS_CHANGED'
   | 'SUPPORT_ASSIGNED'
+  | 'REPORT_RESOLVED'
+  | 'MODERATION_NOTICE'
 
 export type Notification = {
   id: number
